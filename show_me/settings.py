@@ -1,18 +1,14 @@
 from pathlib import Path
 import os
-
+from env_config import get_env_variable
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = get_env_variable('SECRET_KEY')
 
-SECRET_KEY = 'django-insecure-vwk-a8hhbdo4n34=-40w1qn9!mag^c2@5uf%nbx8l$qkr#*=@#'
-
-
-DEBUG = True
+DEBUG = get_env_variable('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
-
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -53,57 +49,39 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'show_me.wsgi.application'
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'e_com',  
-        'USER': 'postgres',        
-        'PASSWORD': '2025',
-        'HOST': 'localhost',            
-        'PORT': '5432',  
+        'NAME': get_env_variable('DB_NAME'),
+        'USER': get_env_variable('DB_USER'),
+        'PASSWORD': get_env_variable('DB_PASSWORD'),
+        'HOST': get_env_variable('DB_HOST'),
+        'PORT': get_env_variable('DB_PORT'),
     }
-}              
-
+}
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# smtp settings
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'modaksubham69@gmail.com'
-EMAIL_HOST_PASSWORD = 'rvmu brjg resv nkhc'  
-
+EMAIL_HOST = get_env_variable('EMAIL_HOST')
+EMAIL_PORT = int(get_env_variable('EMAIL_PORT'))
+EMAIL_USE_TLS = get_env_variable('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = get_env_variable('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD')
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-AUTH_USER_MODEL = 'E_COMERCE.User'
 
+AUTH_USER_MODEL = 'E_COMERCE.User'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
-
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
