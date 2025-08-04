@@ -1,0 +1,90 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+
+{% block title %}Users | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Registered Users</h2>
+
+  <div class="mb-3 text-end">
+    <a href="{% url 'user_create' %}" class="btn btn-success">+ Add User</a>
+  </div>
+
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Full Name</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.get_full_name }}</td>
+        <td>{{ user.role|title }}</td>
+        <td>
+          <span id="status-badge-{{ user.id }}" class="badge {% if user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if user.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'user_update' user.id %}" class="btn btn-sm btn-warning me-1">Update</a>
+          <button id="toggle-btn-{{ user.id }}"
+                  class="btn btn-sm {% if user.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="toggleUserStatus({{ user.id }}, {{ user.is_active|yesno:'true,false' }})">
+            {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">No users found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function toggleUserStatus(userId, currentStatus) {
+    try {
+      const response = await fetch(`/admin/users/toggle-status/${userId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ is_active: !currentStatus })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const newStatus = result.new_status;
+
+        const badge = document.getElementById(`status-badge-${userId}`);
+        badge.textContent = newStatus ? 'Active' : 'Inactive';
+        badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+        const button = document.getElementById(`toggle-btn-${userId}`);
+        button.textContent = newStatus ? 'Deactivate' : 'Activate';
+        button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+        button.setAttribute('onclick', `toggleUserStatus(${userId}, ${newStatus})`);
+      } else {
+        alert(result.error || 'Status update failed.');
+      }
+    } catch (error) {
+      alert('Server error occurred.');
+    }
+  }
+</script>
+{% endblock %}

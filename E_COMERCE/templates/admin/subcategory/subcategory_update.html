@@ -1,0 +1,59 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Update Subcategory{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 40px;max-width: 600px;background: whitesmoke;border-radius: 10px;">
+  <h2 class="mb-4">Update Subcategory</h2>
+
+  <form id="updateSubcategoryForm">
+    <div class="mb-3">
+      <label for="category_id" class="form-label">Category</label>
+      <select class="form-select" id="category_id" required>
+        {% for category in categories %}
+          <option value="{{ category.id }}" {% if category.id == subcategory.category.id %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Subcategory Name</label>
+      <input type="text" class="form-control" id="name" value="{{ subcategory.name }}" required>
+    </div>
+    
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" rows="3" required>{{ subcategory.description }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+  </form>
+</div>
+
+<script>
+  document.getElementById('updateSubcategoryForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const data = {
+      name: document.getElementById('name').value,
+      description: document.getElementById('description').value,
+      category_id: document.getElementById('category_id').value
+    };
+
+    const response = await fetch("{% url 'subcategory_update' subcategory.id %}", {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    if (result.id) {
+      window.location.href = "{% url 'subcategory' %}";
+    } else {
+      alert(result.error || 'Update failed.');
+    }
+  });
+</script>
+{% endblock %}

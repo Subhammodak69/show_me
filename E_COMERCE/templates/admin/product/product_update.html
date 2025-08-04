@@ -1,0 +1,82 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Update Product | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Update Product</h2>
+
+  <form id="productUpdateForm">
+    {% csrf_token %}
+    <div class="card shadow-sm p-4">
+      <div class="mb-3">
+        <label class="form-label">Subcategory</label>
+        <select name="subcategory" class="form-select" required>
+          {% for sub in subcategories %}
+          <option value="{{ sub.id }}" {% if sub.id == product.subcategory.id %}selected{% endif %}>{{ sub.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Product Name</label>
+        <input type="text" name="name" value="{{ product.name }}" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" rows="4" class="form-control" required>{{ product.description }}</textarea>
+      </div>
+
+      <div id="updateAlert" class="alert d-none"></div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'product' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update Product</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('productUpdateForm');
+  const alertBox = document.getElementById('updateAlert');
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": formData.get('csrfmiddlewaretoken')
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alertBox.className = "alert alert-success";
+        alertBox.textContent = "Product updated successfully!";
+        alertBox.classList.remove("d-none");
+
+        // Optional: Redirect or auto-hide
+        setTimeout(() => {
+          window.location.href = "{% url 'product' %}";
+        }, 1000);
+      } else {
+        alertBox.className = "alert alert-danger";
+        alertBox.textContent = data.error || "Something went wrong.";
+        alertBox.classList.remove("d-none");
+      }
+    } catch (error) {
+      alertBox.className = "alert alert-danger";
+      alertBox.textContent = "Network error.";
+      alertBox.classList.remove("d-none");
+    }
+  });
+</script>
+{% endblock %}

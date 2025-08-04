@@ -1,0 +1,50 @@
+{% extends 'admin/home.html' %}
+{% block title %}Update Cart Item | Show_me{% endblock %}
+{% block content %}
+
+<div class="mb-3 text-center">
+  <h2 class="mb-4">CartItem Update</h2>
+</div>
+<div class="container" style="padding: 40px; max-width: 600px; background: whitesmoke; border-radius: 10px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Cart</label>
+      <select class="form-select" name="cart" disabled>
+        <option value="{{ cart_item.cart.id }}">{{ cart_item.cart.id }}</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Product Item</label>
+      <select class="form-select" name="product_item">
+        {% for item in product_items %}
+          <option value="{{ item.id }}" {% if item.id == cart_item.product_item.id %}selected{% endif %}>
+            {{ item.product.name }} (ID: {{ item.id }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Size</label>
+      <select class="form-select" name="size">
+        {% for s in sizes %}
+          <option value="{{ s.0 }}" {% if s.0 == cart_item.size %}selected{% endif %}>{{ s.1 }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Color</label>
+      <select class="form-select" name="color">
+        {% for c in colors %}
+          <option value="{{ c.0 }}" {% if c.0 == cart_item.color %}selected{% endif %}>{{ c.1 }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Quantity</label>
+      <input type="number" class="form-control" name="quantity" value="{{ cart_item.quantity }}" min="1">
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+  </form>
+</div>
+{% endblock %}

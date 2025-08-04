@@ -1,0 +1,77 @@
+{% extends 'admin/home.html' %}
+{% block title %}Create Wishlist | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Add New Wishlist</h2>
+
+  <form id="wishlist-create-form">
+    <div class="card p-4 shadow-sm">
+
+      <!-- User Dropdown -->
+      <div class="mb-3">
+        <label class="form-label">User</label>
+        <select class="form-select" name="user_id" required>
+          <option value="" disabled selected>Select a user</option>
+          {% for user in users %}
+            <option value="{{ user.id }}">{{ user.get_full_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Product Item Dropdown -->
+      <div class="mb-3">
+        <label class="form-label">Product Item</label>
+        <select class="form-select" name="product_item_id" required>
+          <option value="" disabled selected>Select a product</option>
+          {% for product in products %}
+            <option value="{{ product.id }}">{{ product.product.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Status Dropdown -->
+      <div class="mb-3">
+        <label class="form-label">Status</label>
+        <select class="form-select" name="is_active">
+          <option value="true" selected>Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+
+      <!-- Submit Buttons -->
+      <button type="submit" class="btn btn-primary">Create</button>
+      <a href="{% url 'wishlist_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+document.getElementById('wishlist-create-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const data = {
+    user_id: form.user_id.value,
+    product_item_id: form.product_item_id.value,
+    is_active: form.is_active.value === 'true'
+  };
+
+  const response = await fetch("{% url 'wishlist_create' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+  if (result.message) {
+    window.location.href = "{% url 'wishlist_list' %}";
+  } else {
+    alert(result.error || 'Wishlist creation failed.');
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'admin/home.html'%}
+{% load static %}
+{% block title %}Category Update | Show_me {% endblock %}
+{% block content %}
+
+<div class="mb-3 text-center">
+  <h2 class="mb-4">Category Update</h2>
+</div>
+<div class="container" style="padding: 40px;max-width: 600px;background: whitesmoke;border-radius: 10px;">
+<form id="updateCategoryForm">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="name" class="form-label">Category Name</label>
+    <input type="text" class="form-control" id="name" name="name" value="{{ category.name }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea class="form-control" id="description" name="description" required>{{ category.description }}</textarea>
+  </div>
+
+  <button type="submit" class="btn btn-success">Update</button>
+</form>
+</div>
+
+<script>
+document.getElementById('updateCategoryForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  const data = {
+    name: document.getElementById('name').value,
+    description: document.getElementById('description').value,
+  };
+
+  const response = await fetch("{% url 'category_update' category.id %}", {
+    method: "PUT",
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+  window.location.href = "{% url 'category' %}";
+});
+</script>
+
+{% endblock %}

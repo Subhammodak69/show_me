@@ -1,0 +1,139 @@
+{% extends 'enduser/base.html' %}
+{% load static %}
+{% block title %}{{ product_item_data.product_name }} | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  {% if product_item_data %}
+  <div class="row">
+    <!-- Main Product Image + Related Items (stacked vertically) -->
+    <div class="col-md-5">
+      <div class="border rounded shadow-sm p-2 mb-3" style="height: 450px;">
+        <img src="{{ product_item_data.photo }}" alt="{{ product_item_data.product_name }}" class="img-fluid rounded" style="height: 100%; object-fit: contain;">
+      </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="col-md-7" style="background: whitesmoke;">
+         {% if related_products_data %}
+      <div>
+        <h6 class="text-muted mb-2">Other Available Items</h6>
+        <div class="d-flex flex-wrap gap-2">
+          {% for item in related_products_data %}
+          <div class="border p-2 text-center" style="width: 100px; cursor: pointer;" onclick="window.location.href='{% url 'product_details' item.id %}'">
+            <img src="{{ item.photo }}" class="img-fluid mb-1" style="height: 70px; object-fit: contain;">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <h3>{{ product_item_data.product_name }}</h3>
+      <p class="text-muted">
+        {{ product_item_data.product_category_name }} <br>
+        {{ product_item_data.product_subcategory_name }} 
+      </p>
+      <h4 class="text-success">₹{{ product_item_data.price }}</h4>
+
+      <div class="mb-2">
+        ⭐ 4.3 | 3,619 ratings & 166 reviews
+      </div>
+
+      <p><strong>Size:</strong> {{ product_item_data.size }}</p>
+
+      <p>
+        <strong>Availability:</strong>
+        {% if product_item_data.availibility > 0 %}
+          In stock ({{ product_item_data.availibility }} available)
+        {% else %}
+          <span class="text-danger">Out of stock</span>
+        {% endif %}
+      </p>
+
+      <p><strong>Color:</strong> {{ product_item_data.color }}</p>
+
+      <div class="d-flex gap-3 mt-3">
+        <button class="btn btn-warning" onclick="addToCart({{ product_item_data.id }})">
+          <i class="bi bi-cart-plus"></i> Add to Cart
+        </button>
+
+        <button class="btn btn-danger" onclick="buynow({{ product_item_data.id }})">Buy Now</button>
+      </div>
+
+      <div class="mt-4">
+        <h5>Description</h5>
+        <p>{{ product_item_data.product_description }}</p>
+      </div>
+
+      <div class="mt-4">
+        <h6 class="fw-bold">Available Offers</h6>
+        <ul class="list-unstyled">
+          <li>💳 5% Cashback on Axis Bank Credit/Debit Cards</li>
+          <li>🏦 Flat ₹500 off on HDFC Credit EMI</li>
+          <li>🔖 Special Price: Get extra 35% off</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  {% else %}
+    <h3>Product not found</h3>
+  {% endif %}
+</div>
+
+<script>
+function buynow(product_id) {
+  console.log("Buy Now clicked for product ID:", product_id);
+  // window.location.href = `/checkout/${product_id}/`;
+}
+
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const trimmed = cookie.trim();
+        if (trimmed.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function addToCart(productItemId) {
+    const csrftoken = getCookie('csrftoken');
+
+    fetch('/cart/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({
+        product_item_id: productItemId,
+        size: {{ product_item_data.size_value|default:0 }},
+        color: {{ product_item_data.color_value|default:0 }},
+        quantity: 1
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        window.location.href = "{% url 'user_cart' %}";
+      } else {
+        alert("Failed to add item to cart: " + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert("Something went wrong!");
+    });
+  }
+
+</script>
+
+
+{% endblock %}
+

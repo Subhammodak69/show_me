@@ -1,0 +1,55 @@
+{% extends 'admin/home.html' %}
+{% block title %}Create User{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+  <h2>Create New User</h2>
+
+  <form id="create-user-form">
+    {% csrf_token %}
+
+    <input class="form-control mb-2" name="email" placeholder="Email" type="email" required />
+    <input class="form-control mb-2" name="first_name" placeholder="First Name" />
+    <input class="form-control mb-2" name="last_name" placeholder="Last Name" />
+    <input class="form-control mb-2" name="password" placeholder="Password" type="password" required />
+    
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="checkbox" name="is_staff" id="is_staff">
+      <label class="form-check-label" for="is_staff">Is Staff</label>
+    </div>
+
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="checkbox" name="is_admin" id="is_admin">
+      <label class="form-check-label" for="is_admin">Is Admin</label>
+    </div>
+    
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked>
+      <label class="form-check-label" for="is_active">Is Active</label>
+    </div>
+
+    <button class="btn btn-primary">Create</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('create-user-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+
+  const response = await fetch("{% url 'user_create' %}", {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    body: formData
+  });
+
+  const result = await response.json();
+  if (result.success) {
+    window.location.href = "{% url 'user_list' %}";
+  } else {
+    alert(result.error || 'User creation failed');
+  }
+});
+</script>
+{% endblock %}

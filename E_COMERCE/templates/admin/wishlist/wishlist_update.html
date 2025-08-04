@@ -1,0 +1,73 @@
+{% extends 'admin/home.html' %}
+{% block title %}Update Wishlist | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Update Wishlist</h2>
+  <form id="wishlist-update-form">
+    <div class="card p-4 shadow-sm">
+      <div class="mb-3">
+        <label>User</label>
+        <select class="form-select" name="user_id">
+          {% for user in users %}
+            <option value="{{ user.id }}" {% if wishlist.created_by.id == user.id %}selected{% endif %}>
+              {{ user.get_full_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label>Product Item</label>
+        <select class="form-select" name="product_item_id">
+          {% for product in products %}
+            <option value="{{ product.id }}" {% if wishlist.product_item.id == product.id %}selected{% endif %}>
+              {{ product.product.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label>Status</label>
+        <select class="form-select" name="is_active">
+          <option value="true" {% if wishlist.is_active %}selected{% endif %}>Active</option>
+          <option value="false" {% if not wishlist.is_active %}selected{% endif %}>Inactive</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Update</button>
+      <a href="{% url 'wishlist_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  document.getElementById('wishlist-update-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+
+    const data = {
+      user_id: form.user_id.value,
+      product_item_id: form.product_item_id.value,
+      is_active: form.is_active.value === 'true'
+    };
+
+    const response = await fetch(window.location.pathname, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    if (result.message) {
+      window.location.href = "{% url 'wishlist_list' %}";
+    } else {
+      alert(result.error || 'Update failed.');
+    }
+  });
+</script>
+{% endblock %}

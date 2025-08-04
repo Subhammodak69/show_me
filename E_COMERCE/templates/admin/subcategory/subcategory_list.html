@@ -1,0 +1,88 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Subcategory List | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">All Subcategories</h2>
+    <div class="mb-3 text-end">
+    <a href="{% url 'subcategory_create' %}" class="btn btn-success">+ Add SubCategory</a>
+  </div>
+
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Category</th>
+        <th>Created By</th>
+        <th>Created At</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for subcategory in subcategory_data %}
+      <tr id="subcategory-row-{{ subcategory.id }}">
+        <td>{{ subcategory.id }}</td>
+        <td>{{ subcategory.name }}</td>
+        <td>{{ subcategory.description|truncatechars:50 }}</td>
+        <td>{{ subcategory.category.name }}</td>
+        <td>{{ subcategory.created_by.get_full_name }}</td>
+        <td>{{ subcategory.created_at }}</td>
+        <td>
+          <span id="status-badge-{{ subcategory.id }}"
+                class="badge {% if subcategory.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if subcategory.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'subcategory_update' subcategory.id %}" class="btn btn-sm btn-warning me-1">Update</a>
+
+          <button id="toggle-btn-{{ subcategory.id }}"
+                  class="btn btn-sm {% if subcategory.is_active %}btn-danger{% else %}btn-success{% endif %} me-1"
+                  onclick="toggleSubcategoryStatus({{ subcategory.id }}, {{ subcategory.is_active|yesno:'true,false' }})">
+            {% if subcategory.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center">No subcategories found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function toggleSubcategoryStatus(subcategoryId, currentStatus) {
+    const response = await fetch(`/admin/subcategory/toggle-status/${subcategoryId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      const newStatus = result.new_status;
+
+      const badge = document.getElementById(`status-badge-${subcategoryId}`);
+      badge.textContent = newStatus ? 'Active' : 'Inactive';
+      badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+      const button = document.getElementById(`toggle-btn-${subcategoryId}`);
+      button.textContent = newStatus ? 'Deactivate' : 'Activate';
+      button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+      button.setAttribute('onclick', `toggleSubcategoryStatus(${subcategoryId}, ${newStatus})`);
+    } else {
+      alert(result.error || 'Failed to update status.');
+    }
+  }
+</script>
+{% endblock %}

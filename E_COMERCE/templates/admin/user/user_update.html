@@ -1,0 +1,50 @@
+{% extends 'admin/home.html' %}
+{% block title %}Update User{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+  <h2>Update User</h2>
+
+  <form id="update-user-form">
+    {% csrf_token %}
+
+    <input class="form-control mb-2" name="email" value="{{ user.email }}" placeholder="Email" type="email" required />
+    <input class="form-control mb-2" name="first_name" value="{{ user.first_name }}" placeholder="First Name" />
+    <input class="form-control mb-2" name="last_name" value="{{ user.last_name }}" placeholder="Last Name" />
+    <input class="form-control mb-2" name="password" placeholder="New Password (leave blank to keep unchanged)" type="password" />
+
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="checkbox" name="is_staff" {% if user.is_staff %}checked{% endif %}>
+      <label class="form-check-label">Is Staff</label>
+    </div>
+
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="is_active" {% if user.is_active %}checked{% endif %}>
+      <label class="form-check-label">Is Active</label>
+    </div>
+
+    <button class="btn btn-primary">Update</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('update-user-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+
+  const response = await fetch("{{ request.path }}", {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    body: formData
+  });
+
+  const result = await response.json();
+  if (result.success) {
+    window.location.href = "{% url 'user_list' %}";
+  } else {
+    alert(result.error || 'User update failed');
+  }
+});
+</script>
+{% endblock %}

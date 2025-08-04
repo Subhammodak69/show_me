@@ -1,0 +1,125 @@
+{% extends "enduser/base.html" %}
+{% load static %}
+
+{% block title %}Home | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 96%;margin: auto;">
+  {% for category, items in categorized_products.items %}
+    <div class="category-section mb-5">
+      <h3 class="mb-3 text-center text-uppercase">{{ category }}</h3>
+      <div class="row justify-content-start">
+        {% for item in items %}
+          <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card h-100 shadow-sm position-relative">
+
+              <!-- Image (clickable) -->
+              <a href="{% url 'product_details' item.id %}" class="product_img d-block" style="height: 200px; overflow: hidden;">
+                <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro" style="width: 100%; height: 100%; object-fit: cover;">
+              </a>
+
+              <!-- Product Info -->
+              <div class="card-body p-2">
+                <a href="{% url 'product_details' item.id %}" class="text-decoration-none text-dark">
+                  <h6 class="card-title text-truncate mb-1">{{ item.product.name }}</h6>
+                </a>
+                <p class="text-muted mb-0">Size: {{ item.size }}</p>
+                <p class="text-muted mb-0">Color: {{ item.color }}</p>
+                <p class="fw-bold mb-0">₹{{ item.price }}</p>
+              </div>
+
+              <!-- Wishlist Icon -->
+              <div class="position-absolute top-0 end-0 m-2" style="cursor: pointer;"
+                   onclick="event.stopPropagation(); toggle_wishlist_create_update({{ item.id }})">
+                {% if item.id in user_wishlist_items_ids %}
+                  <i id="wishlist-icon-{{ item.id }}" data-product-id="{{ item.id }}" class="bi bi-heart-fill text-danger"></i>
+                {% else %}
+                  <i id="wishlist-icon-{{ item.id }}" data-product-id="{{ item.id }}" class="bi bi-heart"></i>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+<script>
+function toggle_wishlist_create_update(item_id) {
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+
+    if (isAuthenticated) {
+        fetch("{% url 'wishlist_create_update' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify({ item_id: item_id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const icon = document.querySelector(`#wishlist-icon-${item_id}`);
+            if (icon) {
+                if (data.status === 'added') {
+                    icon.className = "bi bi-heart-fill text-danger";
+                } else if (data.status === 'removed') {
+                    icon.className = "bi bi-heart";
+                }
+            } else {
+                console.warn("Wishlist icon not found for product ID:", item_id);
+            }
+        })
+        .catch(err => {
+            console.error("Error toggling wishlist:", err);
+        });
+    } else {
+        window.location.href = "{% url 'log_in' %}";
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+<style>
+.product_img {
+    height: 150px;
+    overflow: hidden;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.img-pro {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.card-body {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    height: 30%;
+}
+
+.category-section {
+    scroll-margin-top: 100px;
+}
+</style>
+
+{% endblock %}

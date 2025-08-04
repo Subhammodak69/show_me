@@ -1,0 +1,60 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Cart Create | Show_me{% endblock %}
+
+{% block content %}
+<div class="mb-3 text-center">
+  <h2 class="mb-4">Cart Create</h2>
+</div>
+<div class="container" style="padding: 40px;max-width: 600px;background: whitesmoke;border-radius: 10px;">
+
+  <form id="createCartForm">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="user" class="form-label">User</label>
+      <select class="form-select" id="user" name="user_id" required>
+        {% for u in users %}
+          <option value="{{ u.id }}">{{ u.get_full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="is_active" checked>
+      <label class="form-check-label" for="is_active">Active</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('createCartForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  const data = {
+    user_id: document.getElementById('user').value,
+    is_active: document.getElementById('is_active').checked
+  };
+
+  const response = await fetch("{% url 'admin_cart_create' %}", {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+
+  if (result.error) {
+    alert("Error: " + result.error);
+  } else {
+    window.location.href = "{% url 'admin_cart_list' %}";
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "enduser/base.html" %}
+{% load static %}
+
+{% block title %}Wishlist | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="height: 88vh;">
+  {% for item in wishlist_items_data %}
+    <div class="row py-3 border-bottom align-items-center" style="background: #defffb; height:120px;" data-item-id="{{ item.wishlist_id }}">
+      
+      <div class="col-md-2 text-center"style="height:100%;">
+        <img src="{{ item.photo }}" height="100%;" alt="{{ item.name }}">
+        {% if item.availibility == 0 %}
+          <p class="text-danger mt-2">Currently<br>unavailable</p>
+        {% endif %}
+      </div>
+
+      <div class="col-md-6" onclick="window.location.href='{% url 'product_details' item.id %}'" style="cursor:pointer;">
+
+        <h5 class="mb-1">{{ item.name }}</h5>
+        <p>{{item.description}}</p>
+
+        {% if item.price %}
+          <p class="mt-2 mb-0">
+            <span class="fw-bold text-dark fs-5">₹{{ item.price }}</span>
+          </p>
+        {% else %}
+          <p class="text-dark mt-2">Price: Not Available</p>
+        {% endif %}
+      </div>
+
+      <div class="col-md-2 text-end">
+        <button class="btn btn-link text-danger" title="Remove" onclick="delete_wishlist({{ item.wishlist_id }})">
+          <i class="bi bi-trash" style="font-size: 1.4rem;"></i>
+        </button>
+      </div>
+
+    </div>
+  {% endfor %}
+</div>
+
+<style>
+    .text-danger {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 5px 10px;
+}
+
+</style>
+
+<script>
+  function delete_wishlist(wishlist_id) {
+    fetch("{% url 'wishlist_delete' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      body: JSON.stringify({wishlist_id: wishlist_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const itemRow = document.querySelector(`[data-item-id="${wishlist_id}"]`);
+        if (itemRow) {
+          itemRow.remove();  // ✅ Remove the div after success
+        }
+      } else {
+        alert(data.error || "Something went wrong while deleting.");
+      }
+    })
+    .catch(() => {
+      alert("Failed to communicate with the server.");
+    });
+  }
+
+  // Helper to get CSRF token from cookies
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+
+{% endblock %}

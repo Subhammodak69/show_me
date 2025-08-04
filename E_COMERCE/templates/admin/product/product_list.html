@@ -1,0 +1,93 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Product List | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">All Products</h2>
+
+  <div class="mb-3 text-end">
+    <a href="{% url 'product_create' %}" class="btn btn-success">+ Add Product</a>
+  </div>
+
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Subcategory</th>
+        <th>Created At</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>{{ product.id }}</td>
+        <td>{{ product.name }}</td>
+        <td>{{ product.subcategory.name }}</td>
+        <td>{{ product.created_at }}</td>
+        <td>
+          <span id="status-badge-{{ product.id }}" class="badge {% if product.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if product.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td>
+          <!-- Update Button -->
+          <a href="{% url 'Product_update' product.id %}" class="btn btn-sm btn-warning me-1">
+        Update
+          </a>
+
+          <button id="toggle-btn-{{ product.id }}"
+                  class="btn btn-sm {% if product.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="toggleProductStatus({{ product.id }}, {{ product.is_active|yesno:'true,false' }})">
+            {% if product.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">No products found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function toggleProductStatus(productId, currentStatus) {
+    try {
+      const response = await fetch(`/product/toggle-status/${productId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ is_active: !currentStatus })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const newStatus = result.new_status;
+
+        // Update badge
+        const badge = document.getElementById(`status-badge-${productId}`);
+        badge.textContent = newStatus ? 'Active' : 'Inactive';
+        badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+        // Update button
+        const button = document.getElementById(`toggle-btn-${productId}`);
+        button.textContent = newStatus ? 'Deactivate' : 'Activate';
+        button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+        button.setAttribute('onclick', `toggleProductStatus(${productId}, ${newStatus})`);
+      } else {
+        alert(result.error || 'Status update failed.');
+      }
+    } catch (error) {
+      alert('Server error occurred.');
+    }
+  }
+</script>
+{% endblock %}
