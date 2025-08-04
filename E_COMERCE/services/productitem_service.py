@@ -38,7 +38,9 @@ def get_product_items_data(item_id):
         'photo': product_item.photo_url,
         'price': product_item.price,
         'size': product_item.size,
+        'display_size': Size(product_item.size).name,
         'color': product_item.color,
+        'display_color': Color(product_item.color).name,
         'availibility': product_item.availibility,
         'created_at': product_item.created_at,
         'product_id': product_item.product.id,
@@ -134,8 +136,44 @@ def toggle_productitem_status(productitem_id):
     except ProductItem.DoesNotExist:
         raise Exception("ProductItem not found.")
 
+
+def get_size_name(value):
+    return Size(value).name if value is not None else None
+
+def get_color_name(value):
+    return Color(value).name if value is not None else None
+
 def get_product_item_by_id(item_id):
-    return ProductItem.objects.get(id=item_id)
+    item = (
+        ProductItem.objects
+        .select_related('product')
+        .filter(id=item_id, is_active=True)
+        .first()
+    )
+
+    if not item:
+        return None
+
+    return {
+        "id": item.id,
+        "product_name": item.product.name,
+        "price": item.price,
+        "photo_url": item.photo_url,
+        "size": item.size,
+        "size_name": get_size_name(item.size),
+        "color": item.color,
+        "color_name": get_color_name(item.color),
+        "available_sizes": [
+            {"value": s.value, "name": s.name}
+            for s in Size
+        ],
+        "available_colors": [
+            {"value": c.value, "name": c.name}
+            for c in Color
+        ] if item.color is not None else []
+    }
+
+
 
 
 def get_product_items():

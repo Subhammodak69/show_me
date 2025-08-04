@@ -32,7 +32,6 @@ class WishlistCreateUpdateView(EnduserRequiredMixin,View):
         try:
             data = json.loads(request.body)
             item_id = data.get("item_id")
-            print(item_id,"hvgvbvb")
             if not item_id:
                 return JsonResponse({'status': 'error', 'message': 'Product item ID is required'}, status=400)
 
@@ -70,7 +69,6 @@ class AdminWishlistCreateView(AdminRequiredMixin, View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            print(data)
 
             wishlist = wishlist_service.create_wishlist(data)
             return JsonResponse({'message': 'Wishlist created successfully', 'id': wishlist.id})

@@ -6,7 +6,6 @@ def  wishlist_item_ids(user_id):
 
 def get_wishlist_items(user_id):
     whishlist_items = list(Wishlist.objects.filter(created_by=user_id , is_active = True))
-    print(whishlist_items)
     items_data = []
     if whishlist_items:
         items_data = [

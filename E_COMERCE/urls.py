@@ -79,9 +79,9 @@ urlpatterns = [
     path('admin/api/product-items/<int:product_id>/',views.AdminProductItemByProductView.as_view(), name='api_product_items_by_product'),
 
     #order
-    path('order/',views.OrderListView.as_view(),name='order'),
-    path('order/create/',views.OrderCreateView.as_view(),name='order_create'),
-    path('order/update/<int:order_id>/',views.OrderUpdateView.as_view(),name='order_update'),
-    path('order/delete/<int:order_id>/',views.OrderDeleteView.as_view(),name='order_delete'),
-    path('order/details/<int:order_id>/',views.OrderDetailsView.as_view(),name='order_details'),
+    path('orders/', views.OrderListView.as_view(), name='orders'),
+    path('order/create/', views.OrderCreateView.as_view(), name='order_create'),
+    path('direct-order/create/<int:item_id>/', views.DirectOrderView.as_view(), name='direct_order'),
+    path('cart/update/<int:pk>/', views.CartItemUpdateView.as_view(), name='cart_item_update'),
+    path('cart/remove/<int:pk>/', views.CartItemRemoveView.as_view(), name='cart_item_remove'),
 ]

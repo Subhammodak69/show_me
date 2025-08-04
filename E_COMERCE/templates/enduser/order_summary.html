@@ -1,0 +1,198 @@
+{% extends "enduser/base.html" %}
+{% load static %}
+
+{% block title %}Cart | Show_me{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-5 pt-4"style="padding: 20px;background: whitesmoke;">
+
+  <h2>Your Order Summary</h2>
+
+  <form id="order-form" style="display: flex;justify-content: space-between;">
+    <div id="cart-items">
+      {% for item in cart_items %}
+        <div class="cart-item border p-3 my-3 rounded text-center" data-id="{{ item.id }}">
+            <!-- Product Image -->
+            <img src="{{ item.photo }}" width="150" class="mb-3 rounded" alt="Product Image">
+
+            <!-- Product Info -->
+            <h5 class="fw-semibold">{{ item.product_name }}</h5>
+
+            <!-- Quantity Selector -->
+            <div style="display: flex;align-items: center;gap: 10px;">
+                <div class="mb-2">
+                <label class="d-block">Quantity:</label>
+                <input type="number" class="quantity form-control d-inline-block w-auto text-center" value="{{ item.quantity }}" min="1">
+            </div>
+
+            <!-- Size Selector -->
+            <div class="mb-2">
+                <label class="d-block">Size:</label>
+                <select class="size form-select w-auto d-inline-block">
+                {% for s in item.available_sizes %}
+                    <option value="{{ s.value }}" {% if s.value == item.size %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+                </select>
+            </div>
+
+            <!-- Color Selector -->
+            {% if item.available_colors %}
+            <div class="mb-2">
+                <label class="d-block">Color:</label>
+                <select class="color form-select w-auto d-inline-block">
+                {% for c in item.available_colors %}
+                    <option value="{{ c.value }}" {% if c.value == item.color %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            </div>
+
+            <!-- Remove Button -->
+            <div class="mt-2">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem({{ item.id }})">Remove</button>
+            </div>
+        </div>
+
+      {% endfor %}
+    </div>
+
+   <div class="mt-4" style="width: 45%;">
+  <!-- User Details Box -->
+  <div class="border rounded p-4 my-4 bg-light">
+    <h4 class="mb-3">User Details</h4>
+
+    <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    {% if user.phone %}
+      <p><strong>Phone:</strong> {{ user.phone }}</p>
+    {% endif %}
+
+    {% if user.address %}
+      <p><strong>Address:</strong> {{ user.address }}</p>
+    {% endif %}
+  </div>
+
+  <!-- Delivery Address Input -->
+  <label for="delivery-address"><strong>Delivery Address</strong></label>
+  <textarea id="delivery-address" name="address" class="form-control mb-2"
+    placeholder="Enter delivery address manually..." required></textarea>
+
+  <!-- Use Current Location Button -->
+  <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
+    Use My Current Location
+  </button>
+
+  <!-- Submit Button -->
+  <button type="submit" class="btn btn-primary d-block">Place Order</button>
+</div>
+
+<script>
+function getCurrentLocation() {
+  const textarea = document.getElementById('delivery-address');
+  textarea.placeholder = "Fetching location...";
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        const { latitude, longitude } = position.coords;
+
+        // Use reverse geocoding via OpenStreetMap (Nominatim)
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
+          .then(response => response.json())
+          .then(data => {
+  const addr = data.address;
+
+  let addressParts = [
+    addr.house_number,
+    addr.road,
+    addr.suburb,
+    addr.village,
+    addr.town,
+    addr.city,
+    addr.state,
+    addr.postcode,
+    addr.country
+  ].filter(Boolean);
+
+  let address = addressParts.join('\n');  // 👈 multi-line format
+
+  // Fallback to display_name if address is too short
+  if (addressParts.length < 4) {
+    address = data.display_name;
+  }
+
+  textarea.value = address;
+  textarea.placeholder = "Location fetched successfully.";
+})
+
+.catch(() => {
+textarea.placeholder = "Failed to retrieve address.";
+});
+},
+    function () {
+    textarea.placeholder = "Permission denied or location unavailable.";
+    }
+);
+  } else {
+    textarea.placeholder = "Geolocation not supported.";
+  }
+}
+</script>
+
+  </form>
+</div>
+
+<script>
+function removeItem(itemId) {
+  fetch(`/cart/remove/${itemId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}'
+    }
+  }).then(() => location.reload());
+}
+
+document.querySelectorAll('.quantity, .size, .color').forEach(el => {
+  el.addEventListener('change', () => {
+    const cartItemEl = el.closest('.cart-item');
+    const id = cartItemEl.dataset.id;
+    const quantity = cartItemEl.querySelector('.quantity')?.value;
+    const size = cartItemEl.querySelector('.size')?.value;
+    const color = cartItemEl.querySelector('.color')?.value;
+
+    fetch(`/cart/update/${id}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify({ quantity, size, color })
+    });
+  });
+});
+
+document.getElementById('order-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+
+  fetch("", {
+    method: "POST",
+    body: formData,
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("Order placed successfully!");
+      window.location.href = "/orders/";
+    } else {
+      alert("Error: " + data.error);
+    }
+  });
+});
+</script>
+{% endblock %}

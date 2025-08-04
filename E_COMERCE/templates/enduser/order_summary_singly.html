@@ -1,0 +1,140 @@
+{% extends "enduser/base.html" %}
+{% load static %}
+
+{% block title %}Order | Show_me{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-5 pt-4"style="padding: 20px;background: whitesmoke;">
+  <h2>Your Order Summary</h2>
+
+  <form id="direct-order-form" style="display: flex; justify-content: space-between;">
+    <!-- Product Item -->
+    <div class="cart-item border p-3 my-3 rounded text-center" style="width: 50%;">
+      <img src="{{ product_item.photo_url }}" width="150" class="mb-3 rounded" alt="Product Image">
+
+      <h5 class="fw-semibold">{{ product_item.product_name }}</h5>
+
+      <div class="d-flex justify-content-center gap-3 flex-wrap mt-3">
+
+        <!-- Quantity -->
+        <div>
+          <label class="d-block">Quantity:</label>
+          <input type="number" id="quantity" class="form-control w-auto text-center" value="1" min="1">
+        </div>
+
+        <!-- Size -->
+        <div>
+          <label class="d-block">Size:</label>
+          <select id="size" class="form-select w-auto">
+            {% for s in product_item.available_sizes %}
+              <option value="{{ s.value }}" {% if s.value == product_item.size %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Color (if applicable) -->
+        {% if product_item.available_colors %}
+        <div>
+          <label class="d-block">Color:</label>
+          <select id="color" class="form-select w-auto">
+            {% for c in product_item.available_colors %}
+              <option value="{{ c.value }}" {% if c.value == product_item.color %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- User + Address Info -->
+    <div class="mt-4" style="width: 45%;">
+      <div class="border rounded p-4 my-4 bg-light">
+        <h4 class="mb-3">User Details</h4>
+        <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        {% if user.phone %}
+          <p><strong>Phone:</strong> {{ user.phone }}</p>
+        {% endif %}
+        {% if user.address %}
+          <p><strong>Address:</strong> {{ user.address }}</p>
+        {% endif %}
+      </div>
+
+      <label for="delivery-address"><strong>Delivery Address</strong></label>
+      <textarea id="delivery-address" name="address" class="form-control mb-2"
+        placeholder="Enter delivery address manually..." required></textarea>
+
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
+        Use My Current Location
+      </button>
+
+      <button type="submit" class="btn btn-primary d-block">Place Order</button>
+    </div>
+  </form>
+</div>
+
+<!-- Location Script -->
+<script>
+function getCurrentLocation() {
+  const textarea = document.getElementById('delivery-address');
+  textarea.placeholder = "Fetching location...";
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        const { latitude, longitude } = position.coords;
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
+          .then(res => res.json())
+          .then(data => {
+            const addr = data.address;
+            const address = [
+              addr.house_number, addr.road, addr.suburb, addr.village,
+              addr.town, addr.city, addr.state, addr.postcode, addr.country
+            ].filter(Boolean).join('\n');
+            document.getElementById('delivery-address').value = address.length > 20 ? address : data.display_name;
+            textarea.placeholder = "Location fetched.";
+          })
+          .catch(() => { textarea.placeholder = "Failed to fetch location."; });
+      },
+      () => { textarea.placeholder = "Permission denied or location unavailable."; }
+    );
+  } else {
+    textarea.placeholder = "Geolocation not supported.";
+  }
+}
+</script>
+
+<!-- Direct Order Submit Script -->
+<script>
+document.getElementById('direct-order-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const data = {
+  product_item_id: {{ product_item.id }},
+  quantity: document.getElementById('quantity').value,
+  size: document.getElementById('size').value,
+  color: document.getElementById('color')?.value,
+  address: document.getElementById('delivery-address').value
+};
+
+
+  fetch("", {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("Order placed successfully!");
+      window.location.href = "/orders/";
+    } else {
+      alert("Error: " + data.error);
+    }
+  });
+});
+</script>
+{% endblock %}

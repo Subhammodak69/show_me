@@ -1,0 +1,46 @@
+{% extends "enduser/base.html" %}
+{% load static %}
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Your Orders</h2>
+
+  {% if orders %}
+    {% for order in orders %}
+      <div class="border rounded p-4 my-4 bg-light">
+        <!-- Order Info -->
+        <h5>Order ID: {{ order.id }}</h5>
+        <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+        <p><strong>Delivery Address:</strong> {{ order.delivery_address }}</p>
+        <p><strong>Total Price:</strong> ₹{{ order.total_price }}</p>
+        <p><strong>Placed on:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
+
+        <!-- Order Items -->
+        <div class="mt-4">
+          <h6 class="mb-3">Order Items</h6>
+
+          {% for item in order.orderitems.all %}
+            <div class="border rounded p-3 mb-3">
+              <div class="d-flex align-items-center gap-4">
+                <img src="{{ item.product_item.photo_url }}" width="100" alt="Product Image">
+                <div>
+                  <p><strong>Product Name:</strong> {{ item.product_item.product.name }}</p>
+                  <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+                  <p><strong>Size:</strong> {{ item.get_size_display }}</p>
+                  {% if item.get_color_display %}
+                    <p><strong>Color:</strong> {{ item.get_color_display }}</p>
+                  {% endif %}
+                  <p><strong>Price:</strong> ₹{{ item.product_item.price }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>You have no orders yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -39,7 +39,7 @@
         ⭐ 4.3 | 3,619 ratings & 166 reviews
       </div>
 
-      <p><strong>Size:</strong> {{ product_item_data.size }}</p>
+      <p><strong>Size:</strong> {{ product_item_data.display_size }}</p>
 
       <p>
         <strong>Availability:</strong>
@@ -50,14 +50,19 @@
         {% endif %}
       </p>
 
-      <p><strong>Color:</strong> {{ product_item_data.color }}</p>
+      <p><strong>Color:</strong> {{ product_item_data.display_color }}</p>
 
       <div class="d-flex gap-3 mt-3">
-        <button class="btn btn-warning" onclick="addToCart({{ product_item_data.id }})">
-          <i class="bi bi-cart-plus"></i> Add to Cart
+        <button class="btn btn-warning" onclick="addToCart({{ product_item_data.id }}, {{ product_item_data.size }}, {{ product_item_data.color }})">
+          <i class="bi bi-cart-plus"></i>Add to Cart
         </button>
 
-        <button class="btn btn-danger" onclick="buynow({{ product_item_data.id }})">Buy Now</button>
+
+        <button class="btn btn-danger"
+           onclick="window.location.href='{% url 'direct_order' item_id=product_item_data.id %}'">
+          Buy Now
+        </button>
+
       </div>
 
       <div class="mt-4">
@@ -81,12 +86,6 @@
 </div>
 
 <script>
-function buynow(product_id) {
-  console.log("Buy Now clicked for product ID:", product_id);
-  // window.location.href = `/checkout/${product_id}/`;
-}
-
-
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -102,7 +101,7 @@ function buynow(product_id) {
     return cookieValue;
   }
 
-  function addToCart(productItemId) {
+  function addToCart(productItemId,size,color) {
     const csrftoken = getCookie('csrftoken');
 
     fetch('/cart/create/', {
@@ -113,8 +112,8 @@ function buynow(product_id) {
       },
       body: JSON.stringify({
         product_item_id: productItemId,
-        size: {{ product_item_data.size_value|default:0 }},
-        color: {{ product_item_data.color_value|default:0 }},
+        size: size,
+        color: color,
         quantity: 1
       })
     })

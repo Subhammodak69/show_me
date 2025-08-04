@@ -64,7 +64,6 @@ class CartDetailsView(EnduserRequiredMixin, View):
 
     def get(self, request):
         cart_items = cart_service.get_cart_details(request.user)
-        print(cart_items)
         total_items = 0
         original_price = 0
         discount = 0
