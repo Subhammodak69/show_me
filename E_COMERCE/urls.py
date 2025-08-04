@@ -49,7 +49,6 @@ urlpatterns = [
 
 
     #wishlist
-    path('admin/wishlist/',views.WishlistListView.as_view(),name='wishlist'),
     path('wishlist/',views.WishlistDetailsView.as_view(),name='user_wishlist'),
     path('wishlist/delete/',views.WishlistDeleteView.as_view(),name='wishlist_delete'),
     path('wishlist/create_update/',views.WishlistCreateUpdateView.as_view(),name='wishlist_create_update'),
@@ -77,6 +76,7 @@ urlpatterns = [
     path('admin/wishlist/toggle-status/<int:pk>/',views.AdminWishlistToggleStatusView.as_view(), name='toggle_wishlist_status'),
     path('admin/wishlist/create/',views.AdminWishlistCreateView.as_view(), name='admin_wishlist_create'),
     path('admin/wishlist/update/<int:pk>/',views.AdminWishlistUpdateView.as_view(), name='admin_wishlist_update'),
+    path('admin/api/product-items/<int:product_id>/',views.AdminProductItemByProductView.as_view(), name='api_product_items_by_product'),
 
     #order
     path('order/',views.OrderListView.as_view(),name='order'),

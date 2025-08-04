@@ -55,27 +55,35 @@ def delete_wishlist_item_by_id(wishlist_item_id):
 
 
 def get_all_wishlists():
-    return Wishlist.objects.select_related('created_by', 'product_item__product')
+    return Wishlist.objects.select_related(
+        'created_by', 
+        'product_item', 
+        'product_item__product'
+    )
+
 
 def get_wishlist_by_id(pk):
     return Wishlist.objects.select_related('created_by', 'product_item__product').get(pk=pk)
 
 def create_wishlist(data):
-    user = User.objects.get(id=data['created_by'])
-    product_item = ProductItem.objects.get(id=data['product_item'])
+    user = User.objects.get(id=data['user_id'])
+    product_item = ProductItem.objects.get(id=data['product_item_id'])
     return Wishlist.objects.create(
         created_by=user,
         product_item=product_item,
         is_active=data.get('is_active', True)
     )
 
+
+
 def update_wishlist(pk, data):
     wishlist = Wishlist.objects.get(pk=pk)
-    wishlist.created_by_id = data['created_by']
-    wishlist.product_item_id = data['product_item']
+    wishlist.created_by_id = data['user_id']
+    wishlist.product_item_id = data['product_item_id']
     wishlist.is_active = data.get('is_active', wishlist.is_active)
     wishlist.save()
     return wishlist
+
 
 def toggle_wishlist_status(pk, is_active):
     wishlist = Wishlist.objects.get(pk=pk)

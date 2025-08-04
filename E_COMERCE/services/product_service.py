@@ -53,3 +53,18 @@ def get_all_product_items():
         })
 
     return data
+
+
+def get_product_items_by_product(product_id):
+    items = ProductItem.objects.filter(product_id=product_id, is_active=True).select_related('product')
+    
+    response = []
+    for item in items:
+        response.append({
+            'id': item.id,
+            'size': Size(item.size).name if item.size in [s.value for s in Size] else "UNKNOWN",
+            'color': Color(item.color).name if item.color in [c.value for c in Color] else "UNKNOWN",
+            'price': item.price
+        })
+    
+    return response

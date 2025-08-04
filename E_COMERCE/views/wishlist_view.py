@@ -6,11 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import json
 from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.decorators import EnduserRequiredMixin,AdminRequiredMixin
-
-class WishlistListView(View):
-    def get(self,request):
-        return 
-    
+ 
     
 class WishlistDetailsView(EnduserRequiredMixin,View):
     def get(self,request):
@@ -62,40 +58,42 @@ class AdminWishlistListView(View):
 
 
 
-class AdminWishlistCreateView(AdminRequiredMixin,View):
+class AdminWishlistCreateView(AdminRequiredMixin, View):
     def get(self, request):
         users = user_service.get_all_user()
-        product_items = product_service.get_all_product_items()
+        products = product_service.get_all_products()
         return render(request, 'admin/wishlist/wishlist_create.html', {
             'users': users,
-            'product_items': product_items
+            'products': products
         })
 
     def post(self, request):
         try:
             data = json.loads(request.body)
+            print(data)
+
             wishlist = wishlist_service.create_wishlist(data)
             return JsonResponse({'message': 'Wishlist created successfully', 'id': wishlist.id})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
 
-class AdminWishlistUpdateView(AdminRequiredMixin,View):
+class AdminWishlistUpdateView(View):
     def get(self, request, pk):
         wishlist = wishlist_service.get_wishlist_by_id(pk)
         users = user_service.get_all_user()
-        product_items = product_service.get_all_product_items()
+        products = product_service.get_all_products()
         return render(request, 'admin/wishlist/wishlist_update.html', {
             'wishlist': wishlist,
             'users': users,
-            'product_items': product_items
+            'products': products
         })
 
     def post(self, request, pk):
         try:
             data = json.loads(request.body)
-            updated_wishlist = wishlist_service.update_wishlist(pk, data)
-            return JsonResponse({'message': 'Wishlist updated successfully', 'id': updated_wishlist.id})
+            wishlist = wishlist_service.update_wishlist(pk, data)
+            return JsonResponse({'message': 'Wishlist updated successfully', 'id': wishlist.id})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -111,3 +109,15 @@ class AdminWishlistToggleStatusView(LoginRequiredMixin, View):
             return JsonResponse({'success': False, 'error': str(e)})
         except Exception:
             return JsonResponse({'success': False, 'error': 'Something went wrong'})
+
+
+
+
+
+class AdminProductItemByProductView(View):
+    def get(self, request, product_id):
+        try:
+            items = product_service.get_product_items_by_product(product_id)
+            return JsonResponse(items, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)

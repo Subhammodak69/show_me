@@ -1,50 +1,87 @@
 {% extends "admin/home.html" %}
+{% block title %}Wishlist List | Show_me{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Wishlist List</h2>
+<div class="container mt-5">
+  <h2 class="mb-4">All Wishlists</h2>
+  <div class="mb-3 text-end">
+    <a href="{% url 'admin_wishlist_create' %}" class="btn btn-success">+ Add Wishlist</a>
+  </div>
 
-    <a href="{% url 'admin_wishlist_create' %}" class="btn btn-primary mb-3">Create Wishlist</a>
-
-    <table class="table table-bordered table-hover">
-        <thead class="thead-dark">
-            <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Product Item</th>
-                <th>Active</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for wishlist in wishlist_data %}
-            <tr>
-                <td>{{ wishlist.id }}</td>
-                <td>{{ wishlist.user.email }}</td>
-                <td>
-                    {{ wishlist.product_item.product.name }} -
-                    Size: {{ wishlist.product_item.get_size_display }}
-                </td>
-                <td>
-                    {% if wishlist.is_active %}
-                        <span class="badge bg-success">Active</span>
-                    {% else %}
-                        <span class="badge bg-secondary">Inactive</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'admin_wishlist_update' wishlist.id %}" class="btn btn-sm btn-warning">Update</a>
-                    <a href="{% url 'toggle_wishlist_status' wishlist.id %}" class="btn btn-sm btn-outline-info">
-                        {% if wishlist.is_active %}Deactivate{% else %}Activate{% endif %}
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">No wishlists found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Created By</th>
+        <th>Product Name</th>
+        <th>Product Item ID</th>
+        <th>Size</th>
+        <th>Color</th>
+        <th>Status</th>
+        <th>Created At</th>
+        <th>Updated At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wishlist in wishlist_data %}
+      <tr id="wishlist-row-{{ wishlist.id }}">
+        <td>{{ wishlist.id }}</td>
+        <td>{{ wishlist.created_by.get_full_name }}</td>
+        <td>{{ wishlist.product_item.product.name }}</td>
+        <td>{{ wishlist.product_item.id }}</td>
+        <td>{{ wishlist.product_item.get_size_display }}</td>
+        <td>{{ wishlist.product_item.get_color_display }}</td>
+        <td>
+          <span id="status-badge-{{ wishlist.id }}" class="badge {% if wishlist.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if wishlist.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td>{{ wishlist.created_at }}</td>
+        <td>{{ wishlist.updated_at }}</td>
+        <td>
+          <a href="{% url 'admin_wishlist_update' wishlist.id %}" class="btn btn-sm btn-warning me-1">Update</a>
+          <button id="toggle-btn-{{ wishlist.id }}"
+                  class="btn btn-sm {% if wishlist.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="toggleWishlistStatus({{ wishlist.id }}, {{ wishlist.is_active|yesno:'true,false' }})">
+            {% if wishlist.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10" class="text-center">No wishlists found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
+
+<script>
+  async function toggleWishlistStatus(wishlistId, currentStatus) {
+    const response = await fetch(`/admin/wishlist/toggle-status/${wishlistId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      const newStatus = result.new_status;
+      const badge = document.getElementById(`status-badge-${wishlistId}`);
+      badge.textContent = newStatus ? 'Active' : 'Inactive';
+      badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+      const button = document.getElementById(`toggle-btn-${wishlistId}`);
+      button.textContent = newStatus ? 'Deactivate' : 'Activate';
+      button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+      button.setAttribute('onclick', `toggleWishlistStatus(${wishlistId}, ${newStatus})`);
+    } else {
+      alert(result.error || 'Failed to toggle status.');
+    }
+  }
+</script>
 {% endblock %}

@@ -1,56 +1,121 @@
 {% extends 'admin/home.html' %}
-{% block title %}Update Wishlist | Show_me{% endblock %}
+{% load static %}
+{% block title %}Update Wishlist{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container" style="padding: 40px; max-width: 600px; background: whitesmoke; border-radius: 10px;">
   <h2 class="mb-4">Update Wishlist</h2>
-  <form id="wishlist-update-form">
-    <div class="card p-4 shadow-sm">
-      <div class="mb-3">
-        <label>User</label>
-        <select class="form-select" name="user_id">
-          {% for user in users %}
-            <option value="{{ user.id }}" {% if wishlist.created_by.id == user.id %}selected{% endif %}>
-              {{ user.get_full_name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
 
-      <div class="mb-3">
-        <label>Product Item</label>
-        <select class="form-select" name="product_item_id">
-          {% for product in products %}
-            <option value="{{ product.id }}" {% if wishlist.product_item.id == product.id %}selected{% endif %}>
-              {{ product.product.name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label>Status</label>
-        <select class="form-select" name="is_active">
-          <option value="true" {% if wishlist.is_active %}selected{% endif %}>Active</option>
-          <option value="false" {% if not wishlist.is_active %}selected{% endif %}>Inactive</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn btn-primary">Update</button>
-      <a href="{% url 'wishlist_list' %}" class="btn btn-secondary">Cancel</a>
+  <form id="wishlistUpdateForm">
+    <div class="mb-3">
+      <label for="user_id" class="form-label">User</label>
+      <select class="form-select" id="user_id" required>
+        {% for user in users %}
+          <option value="{{ user.id }}" {% if user.id == wishlist.created_by.id %}selected{% endif %}>{{ user.get_full_name }}</option>
+        {% endfor %}
+      </select>
     </div>
+
+    <div class="mb-3">
+      <label for="product_id" class="form-label">Product</label>
+      <select class="form-select" id="product_id" required>
+        <option value="" disabled>Select a product</option>
+        {% for product in products %}
+          <option value="{{ product.id }}"
+            {% if product.id == wishlist.product_item.product.id %}selected{% endif %}>
+            {{ product.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="product_item_id" class="form-label">Product Item</label>
+      <select class="form-select" id="product_item_id" required>
+        <option value="" disabled selected>Select a product item</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="size" class="form-label">Size</label>
+      <select class="form-select" id="size" disabled>
+        <option value="" selected disabled>Choose Size</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="color" class="form-label">Color</label>
+      <select class="form-select" id="color" disabled>
+        <option value="" selected disabled>Choose Color</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="is_active" class="form-label">Status</label>
+      <select class="form-select" id="is_active">
+        <option value="true" {% if wishlist.is_active %}selected{% endif %}>Active</option>
+        <option value="false" {% if not wishlist.is_active %}selected{% endif %}>Inactive</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
   </form>
 </div>
 
 <script>
-  document.getElementById('wishlist-update-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const form = e.target;
+  const productId = document.getElementById('product_id').value;
+  const selectedItemId = '{{ wishlist.product_item.id }}';
 
+  async function loadProductItems(productId, selectedId = null) {
+    const res = await fetch(`/admin/api/product-items/${productId}/`);
+    const items = await res.json();
+    const productItemSelect = document.getElementById('product_item_id');
+    const sizeSelect = document.getElementById('size');
+    const colorSelect = document.getElementById('color');
+
+    productItemSelect.innerHTML = '<option value="" disabled>Select a product item</option>';
+    window.currentProductItems = items;
+
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = `Item #${item.id} | Size: ${item.size}, Color: ${item.color}, Price: ₹${item.price}`;
+      if (selectedId && item.id == selectedId) {
+        opt.selected = true;
+        sizeSelect.innerHTML = `<option value="${item.size}" selected>${item.size}</option>`;
+        colorSelect.innerHTML = `<option value="${item.color}" selected>${item.color}</option>`;
+        sizeSelect.disabled = false;
+        colorSelect.disabled = false;
+      }
+      productItemSelect.appendChild(opt);
+    });
+  }
+
+  document.getElementById('product_id').addEventListener('change', function () {
+    const pid = this.value;
+    loadProductItems(pid);
+  });
+
+  document.getElementById('product_item_id').addEventListener('change', function () {
+    const selectedId = this.value;
+    const selectedItem = window.currentProductItems.find(item => item.id == selectedId);
+
+    const sizeSelect = document.getElementById('size');
+    const colorSelect = document.getElementById('color');
+
+    sizeSelect.innerHTML = `<option value="${selectedItem.size}" selected>${selectedItem.size}</option>`;
+    sizeSelect.disabled = false;
+
+    colorSelect.innerHTML = `<option value="${selectedItem.color}" selected>${selectedItem.color}</option>`;
+    colorSelect.disabled = false;
+  });
+
+  document.getElementById('wishlistUpdateForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
     const data = {
-      user_id: form.user_id.value,
-      product_item_id: form.product_item_id.value,
-      is_active: form.is_active.value === 'true'
+      user_id: document.getElementById('user_id').value,
+      product_item_id: document.getElementById('product_item_id').value,
+      is_active: document.getElementById('is_active').value === 'true'
     };
 
     const response = await fetch(window.location.pathname, {
@@ -63,11 +128,14 @@
     });
 
     const result = await response.json();
-    if (result.message) {
-      window.location.href = "{% url 'wishlist_list' %}";
+    if (result.id) {
+      window.location.href = "{% url 'admin_wishlist_list' %}";
     } else {
       alert(result.error || 'Update failed.');
     }
   });
+
+  // load product items on initial load (for pre-selection)
+  loadProductItems(productId, selectedItemId);
 </script>
 {% endblock %}
