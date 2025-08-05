@@ -53,12 +53,34 @@ def delete_wishlist_item_by_id(wishlist_item_id):
 
 
 
+from E_COMERCE.models import Wishlist
+from E_COMERCE.constants.default_values import Size, Color
+
 def get_all_wishlists():
-    return Wishlist.objects.select_related(
-        'created_by', 
-        'product_item', 
+    wishlists = Wishlist.objects.select_related(
+        'created_by',
+        'product_item',
         'product_item__product'
     )
+
+    detailed_data = []
+
+    for item in wishlists:
+        product_item = item.product_item
+        detailed_data.append({
+            'id': item.id,
+            'created_by': item.created_by.get_full_name() if hasattr(item.created_by, 'get_full_name') else str(item.created_by),
+            'product_name': product_item.product.name,
+            'size': product_item.size,
+            'color': product_item.color,
+            'display_size': Size(product_item.size).name,
+            'display_color': Color(product_item.color).name,
+            'created_at': item.created_at,
+            'product_item_id': product_item.id,
+        })
+
+    return detailed_data
+
 
 
 def get_wishlist_by_id(pk):

@@ -20,8 +20,8 @@
                 {{ item.product_item.name }}
               </h6>
 
-              <p class="mb-1">Size: {{ item.product_item.get_size_display }}</p>
-              <p class="mb-1">Color: {{ item.product_item.get_color_display }}</p>
+              <p class="mb-1">Size: {{ item.display_size }}</p>
+              <p class="mb-1">Color: {{ item.display_color }}</p>
 
               {% if item.product_item.availibility == 0 %}
                 <p class="text-danger fw-bold mb-2">Out Of Stock</p>

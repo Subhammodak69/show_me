@@ -27,11 +27,11 @@
       {% for wishlist in wishlist_data %}
       <tr id="wishlist-row-{{ wishlist.id }}">
         <td>{{ wishlist.id }}</td>
-        <td>{{ wishlist.created_by.get_full_name }}</td>
-        <td>{{ wishlist.product_item.product.name }}</td>
-        <td>{{ wishlist.product_item.id }}</td>
-        <td>{{ wishlist.product_item.get_size_display }}</td>
-        <td>{{ wishlist.product_item.get_color_display }}</td>
+        <td>{{ wishlist.created_by }}</td>
+        <td>{{ wishlist.product_name }}</td>
+        <td>{{ wishlist.product_item_id }}</td>
+        <td>{{ wishlist.display_size }}</td>
+        <td>{{ wishlist.display_color }}</td>
         <td>
           <span id="status-badge-{{ wishlist.id }}" class="badge {% if wishlist.is_active %}bg-success{% else %}bg-danger{% endif %}">
             {% if wishlist.is_active %}Active{% else %}Inactive{% endif %}

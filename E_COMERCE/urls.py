@@ -70,6 +70,7 @@ urlpatterns = [
     path('admin/cartitem/',views.AdminCartItemListView.as_view(), name='admin_cartitem_list'),
     path('admin/cartitem/create/',views.AdminCartItemCreateView.as_view(), name='admin_cartitem_create'),
     path('admin/cartitem/update/<int:pk>/',views.AdminCartItemUpdateView.as_view(), name='admin_cartitem_update'),
+     path('admin/cartitem/toggle-status/<int:cartitem_id>/', views.AdminCartItemToggleStatusView.as_view(), name='admin_cartitem_toggle_status'),
 
     #admin wishlist
     path('admin/wishlist/',views.AdminWishlistListView.as_view(), name='admin_wishlist_list'),

@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect
 from E_COMERCE.services import cart_service,cartitem_service,productitem_service
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.default_values import Size,Color
+from django.http import JsonResponse
+import json
 
 
 #admin
@@ -57,3 +59,16 @@ class AdminCartItemUpdateView(AdminRequiredMixin,View):
         cart_item.save()
 
         return redirect('admin_cartitem_list')
+
+
+class AdminCartItemToggleStatusView(AdminRequiredMixin,View):
+    def post(self, request, cartitem_id):
+        try:
+            data = json.loads(request.body)
+            new_status = data.get("is_active")
+
+            result = cartitem_service.toggle_cartitem_status(cartitem_id, new_status)
+            return JsonResponse(result)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Invalid JSON"})

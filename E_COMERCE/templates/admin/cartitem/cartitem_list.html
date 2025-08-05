@@ -17,29 +17,80 @@
         <th>Color</th>
         <th>Quantity</th>
         <th>Created At</th>
+        <th>Status</th>
         <th>Action</th>
       </tr>
     </thead>
-    <tbody>
-      {% for item in cartitem_data %}
-      <tr>
-        <td>{{ item.id }}</td>
-        <td>{{ item.cart.id }}</td>
-        <td>{{ item.product_item.product.name }}</td>
-        <td>{{ item.get_size_display }}</td>
-        <td>{{ item.get_color_display }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ item.created_at }}</td>
-        <td>
-          <a href="{% url 'admin_cartitem_update' item.id %}" class="btn btn-sm btn-warning">Update</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="8" class="text-center">No cart items found.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
+<tbody>
+  {% for item in cartitem_data %}
+  <tr>
+    <td>{{ item.id }}</td>
+    <td>{{ item.cart.id }}</td>
+    <td>{{ item.product_item.product.name }}</td>
+    <td>{{ item.get_size_display }}</td>
+    <td>{{ item.get_color_display }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>{{ item.created_at }}</td>
+    
+    <td>
+      <span id="status-badge-{{ item.id }}" class="badge {% if item.is_active %}bg-success{% else %}bg-danger{% endif %}">
+        {% if item.is_active %}Active{% else %}Inactive{% endif %}
+      </span>
+    </td>
+    
+    <td>
+      <a href="{% url 'admin_cartitem_update' item.id %}" class="btn btn-sm btn-warning me-1">
+        Update
+      </a>
+
+      <button id="toggle-cartitem-btn-{{ item.id }}"
+              class="btn btn-sm {% if item.is_active %}btn-danger{% else %}btn-success{% endif %}"
+              onclick="toggleCartItemStatus({{ item.id }}, {{ item.is_active|yesno:'true,false' }})">
+        {% if item.is_active %}Deactivate{% else %}Activate{% endif %}
+      </button>
+    </td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="9" class="text-center">No cart items found.</td>
+  </tr>
+  {% endfor %}
+</tbody>
+
   </table>
 </div>
+<script>
+  async function toggleCartItemStatus(cartItemId, currentStatus) {
+    const response = await fetch(`/admin/cartitem/toggle-status/${cartItemId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const newStatus = result.new_status;
+
+      // Update toggle button
+      const button = document.getElementById(`toggle-cartitem-btn-${cartItemId}`);
+      button.textContent = newStatus ? 'Deactivate' : 'Activate';
+      button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+      button.setAttribute('onclick', `toggleCartItemStatus(${cartItemId}, ${newStatus})`);
+
+      // ✅ Update status badge
+      const badge = document.getElementById(`status-badge-${cartItemId}`);
+      badge.textContent = newStatus ? 'Active' : 'Inactive';
+      badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+    } else {
+      alert(result.error || 'Failed to update cart item status.');
+    }
+  }
+</script>
+
+
 {% endblock %}

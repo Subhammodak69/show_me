@@ -5,11 +5,28 @@ from E_COMERCE.constants.default_values import Size, Color
 def get_or_create_cart(user):
     cart, created = Cart.objects.get_or_create(user=user, defaults={"is_active": True})
     return cart
+from E_COMERCE.constants.default_values import Size, Color
+
 def get_cart_details(user):
     cart = Cart.objects.filter(user=user, is_active=True).first()
+    
     if not cart:
-        return CartItem.objects.none()
-    return cart.items.select_related('product_item')
+        return []
+
+    cart_items_data = [
+        {
+            'product_item': item.product_item,
+            'quantity': item.quantity,
+            'size': item.size,
+            'color': item.color,
+            'display_size': Size(item.size).name,
+            'display_color': Color(item.color).name
+        }
+        for item in cart.items.select_related('product_item')
+    ]
+    
+    return cart_items_data
+
 
 def add_item_to_cart(user, product_item_id, size, color, quantity):
     cart = get_or_create_cart(user)
