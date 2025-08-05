@@ -4,16 +4,18 @@ from django.http import JsonResponse
 from E_COMERCE.services import cart_service,order_service,productitem_service
 from django.contrib.auth.mixins import LoginRequiredMixin
 import json
+from E_COMERCE.constants.decorators import AdminRequiredMixin
+from E_COMERCE.constants.default_values import Status
+from django.shortcuts import redirect
 
 
 class OrderListView(LoginRequiredMixin, View):
     def get(self, request):
         orders = order_service.get_user_orders(request.user)
-        print(orders)
-
         return render(request, 'enduser/order_list.html', {
-            'orders': orders
-        })    
+            'orders': orders,
+        })
+  
     
     
 class OrderCreateView(View):
@@ -58,7 +60,7 @@ class DirectOrderView(LoginRequiredMixin, View):
         })
     
     
-    def post(self, request):
+    def post(self, request,item_id):
         data = json.loads(request.body)
         product_item_id = data.get("product_item_id")
         quantity = int(data.get("quantity", 1))
@@ -102,3 +104,72 @@ class CartItemRemoveView(LoginRequiredMixin, View):
             return JsonResponse({'success': True})
         except ValueError as e:
             return JsonResponse({'error': str(e)}, status=404)
+        
+
+
+
+#admin
+
+
+
+class AdminOrderListView(AdminRequiredMixin,View):
+    def get(self, request):
+        orders = order_service.get_all_orders()
+        return render(request, 'admin/order/order_list.html', {'orders': orders})
+
+
+class AdminOrderCreateView(View):
+    def get(self, request):
+        users = order_service.get_all_users()
+        return render(request, 'admin/order/order_create.html', {
+            'users': users,
+            'statuses': [(s.value, s.name) for s in Status]
+        })
+
+    def post(self, request):
+        data = {
+            'created_by': request.POST.get("created_by"),
+            'delivery_address': request.POST.get("delivery_address"),
+            'status': request.POST.get("status"),
+            'total_price': request.POST.get("total_price"),
+            'is_active': request.POST.get("is_active") == "on",
+        }
+        order_service.create_order(data)
+        return redirect("admin_order_list")
+
+
+class AdminOrderUpdateView(View):
+    def get(self, request, pk):
+        order = order_service.get_order_by_id(pk)
+        users = order_service.get_all_users()
+        return render(request, 'admin/order/order_update.html', {
+            'order': order,
+            'users': users,
+            'statuses': [(s.value, s.name) for s in Status]
+        })
+
+    def post(self, request, pk):
+        data = {
+            'created_by': request.POST.get("created_by"),
+            'delivery_address': request.POST.get("delivery_address"),
+            'status': request.POST.get("status"),
+            'total_price': request.POST.get("total_price"),
+            'is_active': request.POST.get("is_active") == "on",
+        }
+        order_service.update_order(pk, data)
+        return redirect("admin_order_list")
+    
+
+class AdminOrderToggleStatusView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        try:
+            body = json.loads(request.body)
+            is_active = body.get('is_active')
+
+            new_status = order_service.toggle_order_active_status(pk, is_active)
+
+            return JsonResponse({'success': True, 'new_status': new_status})
+        except ValueError as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+        except Exception:
+            return JsonResponse({'success': False, 'error': 'Something went wrong'})

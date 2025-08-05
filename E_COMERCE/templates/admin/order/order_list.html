@@ -1,0 +1,89 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Order List | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">All Orders</h2>
+  <div class="mb-3 text-end">
+    <a href="{% url 'admin_order_create' %}" class="btn btn-success">+ Add Order</a>
+  </div>
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Delivery Address</th>
+        <th>Status</th>
+        <th>Total Price</th>
+        <th>Created At</th>
+        <th>Is Active</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.created_by.get_full_name }}</td>
+        <td>{{ order.delivery_address|truncatechars:50 }}</td>
+        <td>{{ order.get_status_display }}</td>
+        <td>{{ order.total_price }}</td>
+        <td>{{ order.created_at }}</td>
+        <td>
+          <span id="status-badge-{{ order.id }}" class="badge {% if order.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if order.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'admin_order_update' order.id %}" class="btn btn-sm btn-warning me-1">
+            Update
+          </a>
+
+          <button id="toggle-btn-{{ order.id }}"
+                  class="btn btn-sm {% if order.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="toggleOrderStatus({{ order.id }}, {{ order.is_active|yesno:'true,false' }})">
+            {% if order.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center">No orders found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function toggleOrderStatus(orderId, currentStatus) {
+    const response = await fetch(`/admin/orders/toggle-status/${orderId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      const newStatus = result.new_status;
+
+      // Update badge
+      const badge = document.getElementById(`status-badge-${orderId}`);
+      badge.textContent = newStatus ? 'Active' : 'Inactive';
+      badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+      // Update button
+      const button = document.getElementById(`toggle-btn-${orderId}`);
+      button.textContent = newStatus ? 'Deactivate' : 'Activate';
+      button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+      button.setAttribute('onclick', `toggleOrderStatus(${orderId}, ${newStatus})`);
+    } else {
+      alert(result.error || 'Failed to update order status.');
+    }
+  }
+</script>
+{% endblock %}

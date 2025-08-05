@@ -84,4 +84,19 @@ urlpatterns = [
     path('direct-order/create/<int:item_id>/', views.DirectOrderView.as_view(), name='direct_order'),
     path('cart/update/<int:pk>/', views.CartItemUpdateView.as_view(), name='cart_item_update'),
     path('cart/remove/<int:pk>/', views.CartItemRemoveView.as_view(), name='cart_item_remove'),
+
+
+    #admin order
+
+    path('admin/orders/', views.AdminOrderListView.as_view(), name='admin_order_list'),
+    path('admin/orders/create/', views.AdminOrderCreateView.as_view(), name='admin_order_create'),
+    path('admin/orders/update/<int:pk>/', views.AdminOrderUpdateView.as_view(), name='admin_order_update'),
+    path('admin/orders/toggle-status/<int:pk>/', views.AdminOrderToggleStatusView.as_view(), name='admin_order_toggle_status'),
+
+
+    #admin orderitem
+    path('admin/orderitems/', views.AdminOrderItemListView.as_view(), name='admin_orderitem_list'),
+    path('admin/orderitems/create/', views.AdminOrderItemCreateView.as_view(), name='admin_orderitem_create'),
+    path('admin/orderitems/update/<int:pk>/', views.AdminOrderItemUpdateView.as_view(), name='admin_orderitem_update'),
+    path('admin/orderitems/toggle-status/<int:pk>/', views.AdminOrderItemToggleStatusView.as_view(), name='admin_orderitem_toggle_status'),
 ]

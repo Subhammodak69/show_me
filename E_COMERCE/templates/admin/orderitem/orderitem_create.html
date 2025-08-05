@@ -1,0 +1,44 @@
+{% extends 'admin/home.html' %}
+{% block title %}Create OrderItem{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Create OrderItem</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label>Order:</label>
+      <select name="order_id" class="form-control" required>
+        {% for order in orders %}
+          <option value="{{ order.id }}">Order #{{ order.id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Product Item:</label>
+      <select name="product_item" class="form-control" required>
+        {% for item in product_items %}
+          <option value="{{ item.product.id }}">{{ item.product.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Size:</label>
+      <select name="size" class="form-control" required>
+        {% for value, name in sizes %}
+          <option value="{{ value }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Quantity:</label>
+      <input type="number" name="quantity" class="form-control" min="1" value="1" required />
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" name="is_active" class="form-check-input" checked />
+      <label class="form-check-label">Active</label>
+    </div>
+    <button type="submit" class="btn btn-success">Create</button>
+    <a href="{% url 'admin_orderitem_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

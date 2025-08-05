@@ -1,0 +1,40 @@
+{% extends "admin/home.html" %}
+{% block title %}Create Order{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Create Order</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label>User:</label>
+      <select name="created_by" class="form-control">
+        {% for user in users %}
+          <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Delivery Address:</label>
+      <textarea name="delivery_address" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="mb-3">
+      <label>Status:</label>
+      <select name="status" class="form-control">
+        {% for value, name in statuses %}
+          <option value="{{ value }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Total Price:</label>
+      <input type="number" name="total_price" class="form-control" required />
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" name="is_active" class="form-check-input" checked>
+      <label class="form-check-label">Active</label>
+    </div>
+    <button type="submit" class="btn btn-success">Create</button>
+    <a href="{% url 'admin_order_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

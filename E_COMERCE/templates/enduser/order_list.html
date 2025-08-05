@@ -1,46 +1,69 @@
 {% extends "enduser/base.html" %}
 {% load static %}
+
 {% block title %}My Orders{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <h2>Your Orders</h2>
-
+<div class="container my-5">
+  <h2 class="fw-bold text-primary mb-4">Your Orders</h2>
   {% if orders %}
     {% for order in orders %}
-      <div class="border rounded p-4 my-4 bg-light">
-        <!-- Order Info -->
-        <h5>Order ID: {{ order.id }}</h5>
-        <p><strong>Status:</strong> {{ order.get_status_display }}</p>
-        <p><strong>Delivery Address:</strong> {{ order.delivery_address }}</p>
-        <p><strong>Total Price:</strong> ₹{{ order.total_price }}</p>
-        <p><strong>Placed on:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
+      <div class="card shadow mb-5 border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge bg-secondary me-2">Order #{{ order.id }}</span>
+            {% if order.status == 5 %}
+              <span class="badge bg-danger ms-1">{{ order.get_status_display }}</span>
+            {% elif order.status == 4 %}
+              <span class="badge bg-success ms-1">{{ order.get_status_display }}</span>
+            {% else %}
+              <span class="badge bg-info text-dark ms-1">{{ order.get_status_display }}</span>
+            {% endif %}
+          </div>
+          <div class="small text-muted">
+            Placed: {{ order.created_at|date:"d M Y, H:i" }}
+          </div>
+        </div>
 
-        <!-- Order Items -->
-        <div class="mt-4">
-          <h6 class="mb-3">Order Items</h6>
+        <div class="card-body bg-light">
+          <div class="row mb-3">
+            <div class="col-md-8">
+              <p class="mb-1"><strong>Delivery Address:</strong> <span class="text-muted">{{ order.delivery_address }}</span></p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <p class="mb-1"><strong>Total:</strong> <span class="text-success fs-5">₹{{ order.total_price }}</span></p>
+            </div>
+          </div>
 
-          {% for item in order.orderitems.all %}
-            <div class="border rounded p-3 mb-3">
-              <div class="d-flex align-items-center gap-4">
-                <img src="{{ item.product_item.photo_url }}" width="100" alt="Product Image">
-                <div>
-                  <p><strong>Product Name:</strong> {{ item.product_item.product.name }}</p>
-                  <p><strong>Quantity:</strong> {{ item.quantity }}</p>
-                  <p><strong>Size:</strong> {{ item.get_size_display }}</p>
-                  {% if item.get_color_display %}
-                    <p><strong>Color:</strong> {{ item.get_color_display }}</p>
-                  {% endif %}
-                  <p><strong>Price:</strong> ₹{{ item.product_item.price }}</p>
+          <h6 class="mb-3 text-secondary">Order Items</h6>
+          <div class="row g-3">
+            {% for item in order.orderitems.all %}
+              <div class="col-md-6 col-lg-4">
+                <div class="d-flex align-items-center bg-white rounded shadow-sm p-2 h-100">
+                  <img src="{% if item.product_item.photo_url %}{{ item.product_item.photo_url }}{% else %}{% static 'no_image.png' %}{% endif %}" class="img-fluid rounded border me-3" style="width: 85px; height: 85px; object-fit: cover;" alt="Product Image">
+                  <div>
+                    <p class="fw-semibold mb-1">{{ item.product_item.product.name }}</p>
+                    <p class="mb-1"><span class="text-muted">Qty:</span> {{ item.quantity }}</p>
+                    <p class="mb-1"><span class="text-muted">Size:</span> {{ item.get_size_display }}</p>
+                    {% if item.get_color_display %}
+                      <p class="mb-1"><span class="text-muted">Color:</span> {{ item.get_color_display }}</p>
+                    {% endif %}
+                    <p class="mb-0 text-primary"><span class="text-muted">Price:</span> ₹{{ item.product_item.price }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
+        </div>
+        <div class="card-footer bg-white d-flex justify-content-end">
+          <!-- Optional Action Buttons -->
+          <a href="#" class="btn btn-outline-primary btn-sm me-2">Track Order</a>
+          <a href="#" class="btn btn-outline-secondary btn-sm">View Details</a>
         </div>
       </div>
     {% endfor %}
   {% else %}
-    <p>You have no orders yet.</p>
+    <div class="alert alert-info mt-4">You have no orders yet.</div>
   {% endif %}
 </div>
 {% endblock %}

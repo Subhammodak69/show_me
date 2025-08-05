@@ -1,0 +1,86 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}OrderItems | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">All OrderItems</h2>
+  <div class="mb-3 text-end">
+    <a href="{% url 'admin_orderitem_create' %}" class="btn btn-success">+ Add OrderItem</a>
+  </div>
+
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Created_by</th>
+        <th>Order</th>
+        <th>Product</th>
+        <th>Size</th>
+        <th>Quantity</th>
+        <th>Created</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in orderitems %}
+      <tr>
+        <td>{{ item.id }}</td>
+        <td>{{item.order_id.created_by.get_full_name}}</td>
+        <td>#{{ item.order_id.id }}</td>
+        <td>{{ item.product_item.product.name }}</td>
+        <td>{{ item.get_size_display }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.created_at }}</td>
+        <td>
+          <span id="status-badge-{{ item.id }}" class="badge {% if item.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if item.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'admin_orderitem_update' item.id %}" class="btn btn-sm btn-warning me-1">Update</a>
+          <button id="toggle-btn-{{ item.id }}"
+                  class="btn btn-sm {% if item.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="toggleOrderItemStatus({{ item.id }}, {{ item.is_active|yesno:'true,false' }})">
+            {% if item.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center">No order items found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function toggleOrderItemStatus(orderItemId, currentStatus) {
+    const response = await fetch(`/admin/orderitems/toggle-status/${orderItemId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      const newStatus = result.new_status;
+      const badge = document.getElementById(`status-badge-${orderItemId}`);
+      badge.textContent = newStatus ? 'Active' : 'Inactive';
+      badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+      const button = document.getElementById(`toggle-btn-${orderItemId}`);
+      button.textContent = newStatus ? 'Deactivate' : 'Activate';
+      button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+      button.setAttribute('onclick', `toggleOrderItemStatus(${orderItemId}, ${newStatus})`);
+    } else {
+      alert(result.error || 'Failed to update status.');
+    }
+  }
+</script>
+{% endblock %}

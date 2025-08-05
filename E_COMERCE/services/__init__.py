@@ -7,4 +7,5 @@ from .category_service import *
 from .sub_category_service import *
 from .productitem_service import *
 from .cartitem_service import *
+from .orderitem_service import *
 
