@@ -8,7 +8,8 @@ SECRET_KEY = get_env_variable('SECRET_KEY')
 
 DEBUG = get_env_variable('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # ✅ Not safe for production
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',

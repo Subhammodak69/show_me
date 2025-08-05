@@ -35,274 +35,204 @@
       class="main-container"
       style="background: #00ffe45c; flex-direction: column; display: flex"
     >
-      <nav
-        class="navbar navbar-expand-lg bg-body-tertiary"
-        style="padding: 0px !important"
-      >
-        <div
-          class="container-fluid  bg-dark"
-          style="padding: 5px 20px"
-        >
-          <div id="logo-wrp">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item dropdown">
-                <a
-                  class="nav-link"
-                  href="#"
-                  id="dropdownToggleBtn"
-                  style="padding: 0px !important; font-size: 25px; margin-left: 20px"
-                >
-                  ≡
-                </a>
-                <ul
-                  class="dropdown-menu custom-dropdown-menu overflow-auto"
-                  style="top: 126%; max-height: 80vh"
-                >
-                  <li><h6 class="dropdown-header">Categories</h6></li>
-                  {% for category in categories %}
-                    <li>
-                      <a
-                        class="dropdown-item"
-                        href="javascript:void(0);"
-                        onclick="showOnlyCategory('{{ category.name|slugify }}')"
-                        >{{ category.name }}</a
-                      >
-                    </li>
-                  {% endfor %}
-                  <li><hr class="dropdown-divider" /></li>
-                  <li>
-                    <a
-                      class="dropdown-item text-info"
-                      href="javascript:void(0);"
-                      onclick="showAllCategories()"
-                      >Show All</a
-                    >
-                  </li>
-                </ul>
-
-                <script>
-                  function showAllCategories() {
-                    document.querySelectorAll(".category-section").forEach((section) => {
-                      section.style.display = "block";
-                      section.style.opacity = 1;
-                    });
-                    // Close dropdown after clicking
-                    document
-                      .querySelector(".custom-dropdown-menu")
-                      .classList.remove("show");
-                  }
-
-                  
-                  function showOnlyCategory(slug) {
-                    slug = slug.toLowerCase();
-                    document.querySelectorAll(".category-section").forEach(section => {
-                      const sectionIdLower = section.id.toLowerCase();
-                      if (sectionIdLower === "category-" + slug) {
-                        section.style.display = "block";
-                        setTimeout(() => (section.style.opacity = 1), 50);
-                      } else {
-                        section.style.opacity = 0;
-                        setTimeout(() => (section.style.display = "none"), 300);
-                      }
-                    });
-                    document.querySelector(".custom-dropdown-menu").classList.remove("show");
-                  }
-
-                </script>
+<nav class="navbar navbar-expand-lg bg-body-tertiary" style="padding: 0px !important">
+  <div class="container-fluid bg-dark" style="padding: 5px 0px 5px 10px;">
+    <div id="logo-wrp" class="w-100 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center" style="gap: 40px;width: 100%;">
+        <!-- Dropdown menu -->
+        <ul class="navbar-nav mb-2 mb-lg-0">
+          <li class="nav-item dropdown">
+            <a class="nav-link" href="#" id="dropdownToggleBtn"
+              style="padding: 0px !important; font-size: 25px; margin-left: 20px">≡</a>
+            <ul class="dropdown-menu custom-dropdown-menu overflow-auto" style="top: 126%; max-height: 80vh">
+              <li><h6 class="dropdown-header">Categories</h6></li>
+              {% for category in categories %}
+              <li>
+                <a class="dropdown-item" href="javascript:void(0);"
+                  onclick="showOnlyCategory('{{ category.name|slugify }}')">{{ category.name }}</a>
+              </li>
+              {% endfor %}
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a class="dropdown-item text-info" href="javascript:void(0);" onclick="showAllCategories()">Show All</a>
               </li>
             </ul>
-            <div
-              class="navbar-brand"
-              style="font-size: 30px; color: #21d6f9 !important"
-              > <em><b>Show Me</b></em>
-          </div>
-          </div>
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <div class="btn-wrap">
-              <form
-                class="d-flex input"
-                role="search"
-                style="width: 50%;"
-                onsubmit="event.preventDefault();"
-              >
-                <input
-                  class="form-control  me-2"
-                  type="search"
-                  placeholder="Search"
-                  aria-label="Search"
-                  style="font-size: 15px !important; border-radius: 5px"
-                  id="searchInput"
-                />
-              </form>
-              <div class="wrp-pro"
-                style="
-                  width: 20%;
-                  gap: 20px;
-                  justify-content: end;
-                  align-items: center;
-                  display: flex;
-                "
-              >
-              <div
-                  class="cart-link d-flex align-items-center text-white"
-                  style="cursor: pointer; margin-right: 20px; gap: 10px"
-                >
-                   <i class="bi bi-house" style="font-size: 20px;"></i>
-                  <span style="font-size: 14px; white-space:nowrap;">
-                    Home
-                  </span>
-                </div>
-                <div
-                  class="cart-link d-flex align-items-center text-white"
-                  style="cursor: pointer; margin-right: 20px; gap: 10px"
-                >
-                    <i class="bi bi-truck" style="font-size: 20px;"></i>
-                  <span style="font-size: 14px; white-space:nowrap;">
-                    Track Order
-                  </span>
-                </div>
-                
-                <div
-                  class="cart-link d-flex align-items-center text-white"
-                  onclick="window.location.href='/cart/'"
-                  style="cursor: pointer; margin-right: 20px"
-                >
-                  <i
-                    class="bi bi-cart3 me-2"
-                    style="font-size: 20px"
-                  ></i>
-                  <span style="font-size: 14px">Cart</span>
-                </div>
-                {% if user.is_authenticated %}
-                <!-- Dropdown -->
-                <div class="dropdown">
-                  <a
-                    class="d-flex align-items-center text-decoration-none"
-                    href="#"
-                    id="avatarDropdown"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    {% if request.user.profile_photo_url %}
-                    <img
-                      src="{{ request.user.profile_photo_url }}"
-                      id="pro-pic"
-                      class="rounded-circle"
-                      width="40"
-                      height="40"
-                      style="object-fit: cover"
-                      alt="User profile photo"
-                    />
-                    {% else %}
-                    <div
-                      id="pro-pic"
-                      class="avatar-circle"
-                      aria-label="User initial avatar"
-                      role="img"
-                      >{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</div
-                    >
-                    {% endif %}
-                  </a>
+          </li>
+        </ul>
 
-                  <ul
-                    class="dropdown-menu dropdown-menu-end shadow-sm"
-                    aria-labelledby="profileDropdown"
-                    style="min-width: 250px; border-radius: 10px; top: 122%"
-                  >
-                    <li>
-                      <a
-                        class="dropdown-item d-flex align-items-center gap-2"
-                        href="/profile/"
-                      >
-                        <i class="bi bi-person-circle"></i> My Profile
-                      </a>
-                    </li>
+        <div class="navbar-brand" style="font-size: 30px; color: #21d6f9 !important">
+          <em><b>Show Me</b></em>
+        </div>
+      </div>
 
-                    <li>
-                      <a
-                        class="dropdown-item d-flex align-items-center gap-2"
-                        href="/orders/"
-                      >
-                        <i class="bi bi-box-seam"></i> Orders
-                      </a>
-                    </li>
+      <!-- Desktop Search -->
+      <input type="text" id="searchInputDesktop" class="form-control desktop-search" placeholder="Search...">
 
-                    <li>
-                      <a
-                        class="dropdown-item d-flex align-items-center gap-2"
-                        href="/wishlist/"
-                      >
-                        <i class="bi bi-heart"></i> Wishlist
-                      </a>
-                    </li>
+      <!-- Search Icon for Mobile -->
+      <i class="bi bi-search search-icon" id="searchToggleIcon"></i>
 
-                    <li>
-                      <a
-                        class="dropdown-item d-flex align-items-center gap-2"
-                        href="#"
-                      >
-                        <i class="bi bi-gear"></i> Settings
-                      </a>
-                    </li>
+      <!-- Right icons -->
+      <div class="d-flex align-items-center" style="padding: 0px 10px;">
+        <div class="cart-link d-flex align-items-center text-white" style="cursor: pointer; margin-right: 20px; gap: 10px">
+          <i class="bi bi-house" style="font-size: 20px;"></i>
+          <span style="font-size: 14px; white-space:nowrap;">Home</span>
+        </div>
+        <div class="cart-link d-flex align-items-center text-white tq1" style="cursor: pointer; margin-right: 20px; gap: 10px">
+          <i class="bi bi-truck" style="font-size: 20px;"></i>
+          <span style="font-size: 14px; white-space:nowrap;">Track Order</span>
+        </div>
+        <div class="cart-link d-flex align-items-center text-white" onclick="window.location.href='/cart/'"
+          style="cursor: pointer; margin-right: 20px">
+          <i class="bi bi-cart3 me-2" style="font-size: 20px"></i>
+          <span style="font-size: 14px">Cart</span>
+        </div>
 
-                    <li>
-                      <a
-                        class="dropdown-item d-flex align-items-center gap-2"
-                        href="#"
-                      >
-                        <i class="bi bi-bell"></i> Notifications
-                      </a>
-                    </li>
+        {% if user.is_authenticated %}
+        <div class="dropdown">
+          <a class="d-flex align-items-center text-decoration-none" href="#" id="avatarDropdown" role="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            {% if request.user.profile_photo_url %}
+            <img src="{{ request.user.profile_photo_url }}" id="pro-pic" class="rounded-circle" width="40" height="40"
+              style="object-fit: cover" alt="User profile photo" />
+            {% else %}
+            <div id="pro-pic" class="avatar-circle" aria-label="User initial avatar" role="img">
+              {{request.user.first_name|default:request.user.username|slice:":1"|upper }}</div>
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="profileDropdown"
+            style="min-width: 250px; border-radius: 10px; top: 122%">
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="/profile/"><i class="bi bi-person-circle"></i> My Profile</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="/orders/"><i class="bi bi-box-seam"></i> Orders</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="/cart/"><i class="bi bi-box-seam"></i> Cart</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="/wishlist/"><i class="bi bi-heart"></i> Wishlist</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-bell"></i> Notifications</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <form action="{% url 'log_out' %}" method="POST">{% csrf_token %}
+              <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" style="color: #3bf6ff;"></i> Login Another Account</button>
+            </form>
+            <form action="{% url 'log_out' %}" method="POST">{% csrf_token %}
+              <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </form>
+          </ul>
+        </div>
+       {% else %}
+<div style="display: flex; gap: 10px;">
+  <button type="button" class="btn btn-primary lg-btnn d-flex align-items-center gap-2" onclick="window.location.href='/login/'">
+    <i class="bi bi-box-arrow-in-right"></i> 
+  </button>
+  <button class="btn btn-secondary lg-btnn d-flex align-items-center gap-2" onclick="window.location.href='/signin/'">
+    <i class="bi bi-person-plus"></i>
+  </button>
+</div>
+{% endif %}
+      </div>
+    </div>
+  </div>
 
-                    <li><hr class="dropdown-divider" /></li>
+  <!-- Mobile Search (below navbar) -->
+  <div class="mobile-search-container d-flex justify-content-center">
+    <input type="text" id="searchInputMobile" class="form-control mobile-search" placeholder="Search...">
+  </div>
+</nav>
 
-                    <form action="{% url 'log_out' %}" method="POST">
-                      {% csrf_token %}
-                      <button type="submit" class="dropdown-item">
-                        <i class="bi bi-box-arrow-right" style="color: #3bf6ff;">Login Another Account</i>
-                      </button>
-                    </form>
-                    <form action="{% url 'log_out' %}" method="POST">
-                      {% csrf_token %}
-                      <button type="submit" class="dropdown-item text-danger">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                      </button>
-                    </form>
-                  </ul>
-                </div>
-                {% else %}
-                <div style="display: flex">
-                  <button
-                    type="button"
-                    class="btn btn-primary lg-btnn"
-                    onclick="window.location.href='/login/'"
-                  >
-                    Login
-                  </button>
-                  <button
-                    class="btn btn-secondary lg-btnn"
-                    onclick="window.location.href='/signin/'"
-                  >
-                    Sign up
-                  </button>
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </nav>
+<!-- JavaScript -->
+<script>
+  const icon = document.getElementById('searchToggleIcon');
+  const mobileInput = document.getElementById('searchInputMobile');
+  const desktopInput = document.getElementById('searchInputDesktop');
+
+  // Handle icon click (show input)
+  icon.addEventListener('click', (e) => {
+    e.stopPropagation();
+    mobileInput.classList.add('active');
+    icon.style.display = 'none';
+  });
+
+  // Click outside input
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 662 && !e.target.closest('.mobile-search-container') && e.target !== icon) {
+      mobileInput.classList.remove('active');
+      icon.style.display = 'inline-block';
+    }
+  });
+
+  // On resize: reset views
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 662) {
+      icon.style.display = 'none';
+      mobileInput.classList.remove('active');
+      desktopInput.style.display = 'inline-block';
+    } else {
+      icon.style.display = 'inline-block';
+      desktopInput.style.display = 'none';
+    }
+  });
+
+  // On load: ensure initial state
+  window.addEventListener('load', () => {
+    if (window.innerWidth > 662) {
+      icon.style.display = 'none';
+      desktopInput.style.display = 'inline-block';
+    } else {
+      icon.style.display = 'inline-block';
+      desktopInput.style.display = 'none';
+    }
+  });
+</script>
+
+<!-- CSS -->
+<style>
+  .desktop-search {
+    display: inline-block;
+    width: 200px;
+    padding: 5px 10px;
+    font-size: 16px;
+  }
+
+  .search-icon {
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: none;
+    margin-left: 10px;
+  }
+
+  .mobile-search-container {
+    display: none;
+    padding: 5px 0;
+    background-color: #f8f9fa;
+  }
+
+  .mobile-search {
+    width: 70%;
+    display: none;
+    font-size: 16px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .mobile-search.active {
+    display: inline-block;
+  }
+
+  @media (max-width: 662px) {
+    .desktop-search {
+      display: none !important;
+    }
+
+    .search-icon {
+      display: inline-block !important;
+    }
+
+    .mobile-search-container {
+      width: 100%;
+      display: flex;
+    }
+  }
+</style>
+
 
       <div
         class="sub-container"
@@ -508,10 +438,10 @@
         transition: color 0.3s ease;
       }
       #logo-wrp {
-        align-items: center;
-        display: flex;
-        justify-content: space-between;
-        width: 20%;
+        align-items: center!important;
+        display: flex!important;
+        justify-content: space-between !important;
+        width: 100%!important;
         margin-right: 20px;
       }
       .nav-link:hover {
@@ -619,13 +549,6 @@
         background-color: #ffe5e8;
       }
 
-      /* === BUTTON WRAPPER === */
-      .btn-wrap {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-      }
       .lg-btnn {
         font-size: 13px;
         padding: 5px 12px;
@@ -674,28 +597,59 @@
           transform: translateY(0);
         }
       }
-
-
+      @media (max-width: 400px){
+          #logo-wrp{
+            gap: 10px!important;
+          margin: 0px !important;        
+        }
+        .lg-btnn {
+          margin: 0px!important;
+        }
+      }
       /*Responsive*/
 
-      @media (max-width: 991.98px) {
+      @media (max-width: 992px) {
 
         #logo-wrp{
-          width: 60%;
+          gap: 20px;
+          width: 100%;
         }
         .input{
           width: 45%;
         }
+        .custom-dropdown-menu{
+              position: absolute !important;
+        }
       }
-      @media (max-width: 786px) {
+      @media (max-width: 870px) {
+        #dropdownToggleBtn{
+          font-size: 30px !important;
+          margin:0 !important;
+        }
         .input{
           width:100% !important;
         }
-
+        .custom-dropdown-menu{
+              position: absolute !important;
+        }
         .cart-link{
           display: none !important;
         }
+        .category-section{
+          overflow-x: auto !important;
+        }
+        .group{
+          flex-wrap: nowrap !important;
+        }
+        .container{
+          padding: 0 !important;
+        }
       }
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
     </style>
   </body>
 </html>

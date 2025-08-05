@@ -10,7 +10,12 @@
     <div class="col-md-3 mb-4">
       <div class="card shadow-sm border-0 mb-4">
         <div class="card-body text-center py-4">
-          <img src="{% static 'user_avatar.svg' %}" width="64" height="64" class="mb-3 bg-light rounded-circle border" alt="User avatar">
+          {% if user.profile_photo_url %}
+            <img src="{{ user.profile_photo_url.url }}" width="64" height="64" class="mb-3 bg-light rounded-circle border" alt="User avatar">
+          {% else %}
+            <img src="{% static 'logo\user_logo.jpg' %}" width="64" height="64" class="mb-3 bg-light rounded-circle border" alt="Default avatar">
+          {% endif %}
+
           <div class="fw-bold fs-5 mb-1">Hello,<br>{{ user.get_full_name }}</div>
         </div>
       </div>
