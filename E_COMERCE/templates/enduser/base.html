@@ -104,8 +104,7 @@
                       class="bi bi-person-circle"></i> My Profile</a></li>
                 <li><a class="dropdown-item d-flex align-items-center gap-2" href="/orders/"><i
                       class="bi bi-box-seam"></i> Orders</a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="/cart/"><i
-                      class="bi bi-box-seam"></i> Cart</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="/cart/"><i class="bi bi-cart3 me-2"></i> Cart</a></li>
                 <li><a class="dropdown-item d-flex align-items-center gap-2" href="/wishlist/"><i
                       class="bi bi-heart"></i> Wishlist</a></li>
                 <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-gear"></i>
@@ -152,10 +151,10 @@
       </div>
     </nav>
     <sub-nav class="sub-navbar" id="SubNav" style="display: none;">
-      <div class="nav-item"><i class="bi bi-house"></i> Home</div>
-      <div class="nav-item"><i class="bi bi-truck"></i> Track Order</div>
-      <div class="nav-item"><i class="bi bi-cart"></i> Cart</div>
-      <div class="nav-item"><i class="bi bi-heart"></i> Wishlist</div>
+      <div class="nav-item" onclick="window.location.href='/'"><i class="bi bi-house"></i> Home</div>
+      <div class="nav-item" onclick="window.location.href='#'"><i class="bi bi-truck"></i> Track Order</div>
+      <div class="nav-item" onclick="window.location.href='/cart/'"><i class="bi bi-cart"></i> Cart</div>
+      <div class="nav-item" onclick="window.location.href='/wishlist/'"><i class="bi bi-heart"></i> Wishlist</div>
     </sub-nav>
     <!-- tooltip-->
     <script>
@@ -227,7 +226,6 @@ window.addEventListener('load', () => {
     <style>
       .desktop-search {
         display: inline-block;
-        width: 200px;
         padding: 5px 10px;
         font-size: 16px;
       }
@@ -686,6 +684,9 @@ window.addEventListener('load', () => {
         justify-content: space-around;
         background: #ff9c14;
         padding: 5px 20px;
+      }
+      .nav-item:active{
+        color: #ebdecb;
       }
       .row {
         margin: 0px;
