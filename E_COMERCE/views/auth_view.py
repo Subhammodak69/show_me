@@ -140,3 +140,48 @@ class AdminLoginView(View):
             return render(request, 'admin/admin_login.html', {
                 'error': 'Invalid credentials or not an admin user.'
             })
+        
+from django.http import JsonResponse
+from django.utils.timezone import now
+from datetime import timedelta
+from django.db.models.functions import TruncDay
+from django.db.models import Count
+
+from E_COMERCE.models import Order  # adjust if your model path is different
+
+def sales_chart_data(request):
+    today = now().date()
+    last_7_days = today - timedelta(days=6)
+
+    orders = (
+        Order.objects
+        .filter(created_at__date__gte=last_7_days)
+        .annotate(day=TruncDay('created_at'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('day')
+    )
+
+    labels = [o['day'].strftime('%a') for o in orders]
+    data = [o['count'] for o in orders]
+
+    return JsonResponse({'labels': labels, 'data': data})
+
+
+
+def visiting_users_data(request):
+    today = now().date()
+    last_7_days = today - timedelta(days=6)
+    
+    visits = (
+        User.objects.filter(created_at__date__gte=last_7_days)
+        .annotate(day=TruncDay('created_at'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('day')
+    )
+
+    labels = [v['day'].strftime('%b %d') for v in visits]
+    data = [v['count'] for v in visits]
+
+    return JsonResponse({'labels': labels, 'data': data})

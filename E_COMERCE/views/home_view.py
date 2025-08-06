@@ -3,7 +3,7 @@ from django.views import View
 from django.shortcuts import render
 from E_COMERCE.constants.decorators import AdminRequiredMixin,EnduserRequiredMixin
 from django.contrib.auth import login
-from E_COMERCE.services import user_service, product_service,wishlist_service,category_service
+from E_COMERCE.services import user_service, product_service,wishlist_service,category_service,order_service
 import random
 
 class HomeView(EnduserRequiredMixin, View):
@@ -56,11 +56,28 @@ class HomeView(EnduserRequiredMixin, View):
         )
 
 
-class AdminHomeView(AdminRequiredMixin,View):
+
+class AdminHomeView(AdminRequiredMixin, View):
     def get(self, request):
-        return render(request, 'admin/home.html', {
-            'user': request.user  
-        }) 
-    
+        total_users = user_service.get_total_user_count()
+        total_orders = order_service.get_total_order_count()
+        
+        # Simulated sales data (you can replace with real logic)
+        sales = 56789
+        store = 12345
+
+        recent_orders = (
+            order_service.get_recent_orders()
+        )
+
+        return render(request, 'admin/dashboard.html', {
+            'user': request.user,
+            'total_users': total_users,
+            'total_orders': total_orders,
+            'sales': sales,
+            'store': store,
+            'recent_orders': recent_orders
+        })
+
 
 

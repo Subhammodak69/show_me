@@ -77,3 +77,6 @@ def toggle_user_status(user_id, new_status):
 
 def get_all_user():
     return User.objects.all()
+
+def get_total_user_count():
+    return User.objects.count()

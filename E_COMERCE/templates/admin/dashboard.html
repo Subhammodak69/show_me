@@ -1,0 +1,186 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+
+{% block title %}Dashboard | Admin{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/dashboard-dark.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="dashboard-container" style="background:white;">
+
+  <!-- Stat Cards -->
+  <div class="card-row">
+    <div class="card-box purple">Total Users <h2>{{ total_users }}</h2></div>
+    <div class="card-box pink">Total Orders <h2>{{ total_orders }}</h2></div>
+    <div class="card-box orange">Sales <h2>{{ sales }}</h2></div>
+    <div class="card-box blue">Store <h2>{{ store }}</h2></div>
+  </div>
+
+  <!-- Main Charts Section -->
+  <div class="main-section">
+    <!-- Daily Sales Chart -->
+    <div class="chart-box">
+      <h3>Daily Sales</h3>
+      <canvas id="salesChart"></canvas>
+    </div>
+
+    <!-- Daily Visiting Users Chart -->
+    <div class="chart-box">
+      <h3>Daily Visiting Users</h3>
+      <canvas id="visitingUsersChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="activity-log mt-4">
+    <h3>Recent Orders</h3>
+    <ul>
+      {% for order in recent_orders %}
+      <li>{{ order.created_by.get_full_name }} placed order no: {{ order.id }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- Chart Scripts -->
+<script>
+  // Daily Visiting Users Chart
+  fetch('/admin/analytics/visiting-users-data/')
+    .then(response => response.json())
+    .then(data => {
+      const ctx = document.getElementById('visitingUsersChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Daily Visitors',
+            data: data.data,
+            borderWidth: 2,
+            borderColor: '#34d399',
+            backgroundColor: 'rgba(52, 211, 153, 0.2)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    });
+
+  // Line Chart for Daily Sales
+  fetch("{% url 'sales_chart_data' %}")
+    .then(res => res.json())
+    .then(data => {
+      new Chart(document.getElementById("salesChart"), {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Orders',
+            data: data.data,
+            fill: true,
+            borderColor: '#6a6aff',
+            backgroundColor: 'rgba(106, 106, 255, 0.2)'
+          }]
+        }
+      });
+    });
+</script>
+
+<!-- Styles -->
+<style>
+  body {
+    background-color: #121331;
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .dashboard-container {
+    padding: 20px;
+  }
+
+  .card-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+
+  .card-box {
+    flex: 1 1 22%;
+    margin: 10px;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+  }
+
+  .purple {
+    background: linear-gradient(45deg, #6a6aff, #a855f7);
+  }
+
+  .pink {
+    background: linear-gradient(45deg, #ec4899, #f43f5e);
+  }
+
+  .orange {
+    background: linear-gradient(45deg, #f97316, #fb923c);
+  }
+
+  .blue {
+    background: linear-gradient(45deg, #3b82f6, #60a5fa);
+  }
+
+  .main-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .chart-box {
+    flex: 1 1 48%;
+    background: #1f2937;
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .chart-box canvas {
+    width: 100% !important;
+    max-height: 250px;
+  }
+
+  .activity-log {
+    background: #1f2937;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 30px;
+  }
+
+  .activity-log ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .activity-log li {
+    padding: 6px 0;
+    border-bottom: 1px solid #374151;
+  }
+</style>
+{% endblock %}

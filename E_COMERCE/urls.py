@@ -4,6 +4,10 @@ from E_COMERCE import views
 urlpatterns = [
     #auth
     path('admin-login/', views.AdminLoginView.as_view(), name='admin_login'),
+    path('admin/dashboard/sales-data/', views.sales_chart_data, name='sales_chart_data'),
+    path('admin/analytics/visiting-users-data/', views.visiting_users_data, name='visiting_users_data'),
+
+
     path('login/', views.LoginView.as_view(), name='log_in'), 
     path('signin/', views.SigninView.as_view(), name='sign_up'), 
     path('send-otp/', views.SendOTPView.as_view(), name='send_otp'),

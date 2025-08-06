@@ -110,3 +110,10 @@ def toggle_order_active_status(pk, is_active):
     order.is_active = is_active
     order.save()
     return order.is_active
+
+
+def get_total_order_count():
+    return Order.objects.count()
+
+def get_recent_orders():
+    return Order.objects.select_related('created_by').order_by('-id')[:5]
