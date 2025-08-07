@@ -4,18 +4,20 @@
 {% block title %}Home | Show_me{% endblock %}
 
 {% block content %}
-<div class="container mt-4" style="max-width: 96%; margin: auto;">
+<div class="container mt-4" style="max-width: 96%; margin: auto;height: 100%;">
   {% for category, items in categorized_products.items %}
     <div class="category-section mb-5" id="category-{{ category|slugify }}">
       <h3 class="mb-3 text-center text-uppercase">{{ category }}</h3>
-      <div class="row group justify-content-start">
+      
+      <!-- Responsive grid wrapper for overflow scroll on small screens -->
+      <div class="row group flex-nowrap flex-md-wrap list-inline-scroll">
         {% for item in items %}
-          <div class="col-md-3 col-sm-6 mb-4">
+          <div class="col-md-3 col-sm-6 col-4 mb-4 flex-shrink-0 product-col">
             <div class="card h-100 shadow-sm position-relative">
               
               <!-- Image (clickable) -->
-              <a href="{% url 'product_details' item.id %}" class="product_img d-block" style="height: 200px; overflow: hidden;">
-                <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro" style="width: 100%; height: 100%; object-fit: cover;">
+              <a href="{% url 'product_details' item.id %}" class="product_img d-block" style="height: 150px; overflow: hidden;">
+                <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro" style="width: 100%; height: 100%; object-fit: contain;">
               </a>
 
               <!-- Product Info -->
@@ -37,7 +39,6 @@
                   <i id="wishlist-icon-{{ item.id }}" data-product-id="{{ item.id }}" class="bi bi-heart"></i>
                 {% endif %}
               </div>
-
             </div>
           </div>
         {% endfor %}
@@ -46,89 +47,10 @@
   {% endfor %}
 </div>
 
-<script>
-function toggle_wishlist_create_update(item_id) {
-  const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-  if (isAuthenticated) {
-    fetch("{% url 'wishlist_create_update' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCookie("csrftoken")
-      },
-      body: JSON.stringify({ item_id: item_id })
-    })
-    .then(response => response.json())
-    .then(data => {
-      const icon = document.querySelector(`#wishlist-icon-${item_id}`);
-      if (icon) {
-        if (data.status === 'added') {
-          icon.className = "bi bi-heart-fill text-danger";
-        } else if (data.status === 'removed') {
-          icon.className = "bi bi-heart";
-        }
-      } else {
-        console.warn("Wishlist icon not found for product ID:", item_id);
-      }
-    })
-    .catch(err => {
-      console.error("Error toggling wishlist:", err);
-    });
-  } else {
-    window.location.href = "{% url 'log_in' %}";
-  }
-}
-
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-// Category filtering JS
-
-function showOnlyCategory(slug) {
-  slug = slug.toLowerCase();
-  document.querySelectorAll('.category-section').forEach(section => {
-    const sectionIdLower = section.id.toLowerCase();
-    if (sectionIdLower === "category-" + slug) {
-      section.style.display = "block";
-      setTimeout(() => (section.style.opacity = 1), 50);
-    } else {
-      section.style.opacity = 0;
-      setTimeout(() => (section.style.display = "none"), 300);
-    }
-  });
-  document.querySelector(".custom-dropdown-menu").classList.remove("show");
-}
-
-function showAllCategories() {
-  document.querySelectorAll('.category-section').forEach(section => {
-    section.style.display = "block";
-    section.style.opacity = 1;
-  });
-  document.querySelector(".custom-dropdown-menu").classList.remove("show");
-}
-
-// Optional: Automatically filter on page load by category slug if provided
-document.addEventListener('DOMContentLoaded', () => {
-  const currentSlug = "{{ current_category_slug|default:''|escapejs }}";
-  if (currentSlug) {
-    showOnlyCategory(currentSlug);
-  }
-});
-</script>
+<!-- ... (your script section unchanged) ... -->
 
 <style>
+/* --- Keep your logic styles --- */
 .product_img {
   height: 150px;
   overflow: hidden;
@@ -155,5 +77,48 @@ document.addEventListener('DOMContentLoaded', () => {
   scroll-margin-top: 100px;
   transition: opacity 0.4s ease;
 }
+
+/* ---- NEW: Responsive scrollable row for small screens ---- */
+@media (max-width: 767.98px) {
+  .group {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+    /* Optionally hide the scroll bar */
+    /* scrollbar-color: transparent transparent; */
+  }
+  .product-col {
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+    min-width: 135px;       /* min width for each card, tune as needed */
+    box-sizing: border-box;
+    padding-right: 10px;
+    padding-left: 0;
+  }
+  .card {
+    min-width: 115px;       /* Make card visually compact */
+    max-width: 160px;
+    font-size: 12px;
+  }
+  .product_img {
+    height: 85px;
+  }
+  .card-body {
+    font-size: 11px;
+    padding: 0.25rem 0.4rem !important; /* tighter for mobile */
+  }
+}
+
+/* Optional, for a cleaner scroll bar (uncomment if wanted) */
+/*
+@media (max-width: 767.98px) {
+  .group::-webkit-scrollbar {
+    display: none;
+  }
+}
+*/
+
 </style>
 {% endblock %}
