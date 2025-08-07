@@ -4,24 +4,28 @@
 {% block title %}Order | Show_me{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-5 pt-4"style="padding: 20px;background: whitesmoke;">
-  <h2>Your Order Summary</h2>
-
-  <form id="direct-order-form" style="display: flex; justify-content: space-between;">
+<div class="container-fluid px-3 px-md-5 pt-4" style="background: whitesmoke;">
+  <h2 class="mb-3">Your Order Summary</h2>
+  
+  <form id="direct-order-form" 
+    class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-4"
+    style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
+    
     <!-- Product Item -->
-    <div class="cart-item border p-3 my-3 rounded text-center" style="width: 50%;">
-      <img src="{{ product_item.photo_url }}" width="150" class="mb-3 rounded" alt="Product Image">
-
-      <h5 class="fw-semibold">{{ product_item.product_name }}</h5>
-
-      <div class="d-flex justify-content-center gap-3 flex-wrap mt-3">
-
+    <div class="cart-item border p-3 rounded text-center w-100 w-md-50 mb-3 mb-md-0 d-flex flex-column align-items-center">
+      <img src="{{ product_item.photo_url }}" 
+           class="mb-3 rounded" alt="Product Image"
+           style="width: 100%; max-width: 170px; height: auto;">
+           
+      <h5 class="fw-semibold mb-3">{{ product_item.product_name }}</h5>
+      <div class="d-flex justify-content-center gap-3 flex-wrap mt-2">
+        
         <!-- Quantity -->
         <div>
           <label class="d-block">Quantity:</label>
           <input type="number" id="quantity" class="form-control w-auto text-center" value="1" min="1">
         </div>
-
+        
         <!-- Size -->
         <div>
           <label class="d-block">Size:</label>
@@ -31,7 +35,7 @@
             {% endfor %}
           </select>
         </div>
-
+        
         <!-- Color (if applicable) -->
         {% if product_item.available_colors %}
         <div>
@@ -47,8 +51,8 @@
     </div>
 
     <!-- User + Address Info -->
-    <div class="mt-4" style="width: 45%;">
-      <div class="border rounded p-4 my-4 bg-light">
+    <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0">
+      <div class="border rounded p-3 mb-3 bg-light">
         <h4 class="mb-3">User Details</h4>
         <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
@@ -59,8 +63,7 @@
           <p><strong>Address:</strong> {{ user.address }}</p>
         {% endif %}
       </div>
-
-      <label for="delivery-address"><strong>Delivery Address</strong></label>
+      <label for="delivery-address" class="mt-2"><strong>Delivery Address</strong></label>
       <textarea id="delivery-address" name="address" class="form-control mb-2"
         placeholder="Enter delivery address manually..." required></textarea>
 
@@ -68,17 +71,51 @@
         Use My Current Location
       </button>
 
-      <button type="submit" class="btn btn-primary d-block">Place Order</button>
+      <button type="submit" class="btn btn-primary d-block mt-auto">Place Order</button>
     </div>
   </form>
 </div>
 
-<!-- Location Script -->
+<!-- MOBILE OPTIMIZE: Stack + shrink image/cards -->
+<style>
+@media (max-width: 786px) {
+  #direct-order-form {
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    padding: 1rem 0.3rem !important;
+  }
+  .cart-item, .cart-item .card, .cart-item img {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .cart-item img {
+    max-width: 130px !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .border.p-3.mb-3.bg-light {
+    padding: 1rem !important;
+    font-size: 15px;
+  }
+  label, .form-label, .form-control, select, textarea, .btn {
+    font-size: 15px !important;
+  }
+}
+@media (max-width: 440px) {
+  .cart-item img {
+    max-width: 90px !important;
+  }
+  .cart-item h5 {
+    font-size: 1.08rem !important;
+  }
+}
+</style>
+
+<!-- Location Script (unchanged) -->
 <script>
 function getCurrentLocation() {
   const textarea = document.getElementById('delivery-address');
   textarea.placeholder = "Fetching location...";
-
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function (position) {
@@ -104,20 +141,17 @@ function getCurrentLocation() {
 }
 </script>
 
-<!-- Direct Order Submit Script -->
+<!-- Direct Order Submit Script (unchanged) -->
 <script>
 document.getElementById('direct-order-form').addEventListener('submit', function (e) {
   e.preventDefault();
-
   const data = {
-  product_item_id: {{ product_item.id }},
-  quantity: document.getElementById('quantity').value,
-  size: document.getElementById('size').value,
-  color: document.getElementById('color')?.value,
-  address: document.getElementById('delivery-address').value
-};
-
-
+    product_item_id: {{ product_item.id }},
+    quantity: document.getElementById('quantity').value,
+    size: document.getElementById('size').value,
+    color: document.getElementById('color')?.value,
+    address: document.getElementById('delivery-address').value
+  };
   fetch("", {
     method: "POST",
     headers: {
