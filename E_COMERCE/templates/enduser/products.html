@@ -47,7 +47,54 @@
   {% endfor %}
 </div>
 
-<!-- ... (your script section unchanged) ... -->
+<script>
+  function toggle_wishlist_create_update(item_id) {
+  const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+  if (isAuthenticated) {
+    fetch("{% url 'wishlist_create_update' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      body: JSON.stringify({ item_id: item_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+      const icon = document.querySelector(`#wishlist-icon-${item_id}`);
+      if (icon) {
+        if (data.status === 'added') {
+          icon.className = "bi bi-heart-fill text-danger";
+        } else if (data.status === 'removed') {
+          icon.className = "bi bi-heart";
+        }
+      } else {
+        console.warn("Wishlist icon not found for product ID:", item_id);
+      }
+    })
+    .catch(err => {
+      console.error("Error toggling wishlist:", err);
+    });
+  } else {
+    window.location.href = "{% url 'log_in' %}";
+  }
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
 
 <style>
 /* --- Keep your logic styles --- */

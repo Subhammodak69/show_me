@@ -70,15 +70,15 @@
 
           <!-- Right icons -->
           <div class="d-flex align-items-center" style="padding: 0px 10px;">
-            <div class="cart-link d-flex align-items-center text-white"
+            <div class="cart-link d-flex align-items-center text-white"onclick="window.location.href='/'"
               style="cursor: pointer; margin-right: 20px; gap: 10px">
               <i class="bi bi-house" style="font-size: 20px;"></i>
               <span style="font-size: 14px; white-space:nowrap;">Home</span>
             </div>
-            <div class="cart-link d-flex align-items-center text-white tq1"
+            <div class="cart-link d-flex align-items-center text-white tq1" onclick="window.location.href='/orders/'"
               style="cursor: pointer; margin-right: 20px; gap: 10px">
               <i class="bi bi-truck" style="font-size: 20px;"></i>
-              <span style="font-size: 14px; white-space:nowrap;">Track Order</span>
+              <span style="font-size: 14px; white-space:nowrap;">Orders</span>
             </div>
             <div class="cart-link d-flex align-items-center text-white" onclick="window.location.href='/cart/'"
               style="cursor: pointer; margin-right: 20px">
@@ -152,7 +152,7 @@
     </nav>
     <sub-nav class="sub-navbar" id="SubNav" style="display: none;">
       <div class="nav-item" onclick="window.location.href='/'"><i class="bi bi-house"></i> Home</div>
-      <div class="nav-item" onclick="window.location.href='#'"><i class="bi bi-truck"></i> Track Order</div>
+      <div class="nav-item" onclick="window.location.href='#'"><i class="bi bi-truck"></i> Orders</div>
       <div class="nav-item" onclick="window.location.href='/cart/'"><i class="bi bi-cart"></i> Cart</div>
       <div class="nav-item" onclick="window.location.href='/wishlist/'"><i class="bi bi-heart"></i> Wishlist</div>
     </sub-nav>
@@ -281,7 +281,7 @@ window.addEventListener('load', () => {
       {% block content %}{% endblock %}
     </div>
 
-    <footer class="bg-dark text-white pt-5 pb-4">
+    <footer class="bg-dark text-white pt-5 pb-4 mt-4">
       <div class="container text-md-left">
         <div class="row">
           <!-- Company Info -->

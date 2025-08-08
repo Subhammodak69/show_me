@@ -173,3 +173,15 @@ class AdminOrderToggleStatusView(LoginRequiredMixin, View):
             return JsonResponse({'success': False, 'error': str(e)})
         except Exception:
             return JsonResponse({'success': False, 'error': 'Something went wrong'})
+        
+
+
+#enduser
+
+class TrackOrderView(View):
+    def get(self, request, order_id):
+        context = order_service.get_order_tracking_info(order_id)
+        if not context:
+            # order not found, send minimal context for template
+            context = {'order': None}
+        return render(request, 'enduser/track.html', context)

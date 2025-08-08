@@ -1,6 +1,6 @@
 from E_COMERCE.models import Order, OrderItem,ProductItem,CartItem,User
-from E_COMERCE.constants.default_values import Status
 from django.shortcuts import get_object_or_404
+from datetime import timedelta
 
 def create_order_from_cart(user, address):
     cart_items = CartItem.objects.filter(cart__user=user, is_active=True)
@@ -117,3 +117,20 @@ def get_total_order_count():
 
 def get_recent_orders():
     return Order.objects.select_related('created_by').order_by('-id')[:5]
+
+def get_order_tracking_info(order_id):
+    """
+    Returns a dict with order, its items, expected delivery date, and display status.
+    Raises Http404 if not found.
+    """
+    order = get_object_or_404(Order.objects.select_related('created_by'), id=order_id)
+    order_items = order.orderitems.select_related('product_item__product').all()
+    expected_delivery = order.created_at + timedelta(days=5)
+    status_display = order.get_status_display() if hasattr(order, 'get_status_display') else order.status
+
+    return {
+        'order': order,
+        'order_items': order_items,
+        'expected_delivery': expected_delivery,
+        'status_display': status_display,
+    }
