@@ -15,6 +15,7 @@ def get_cart_details(user):
 
     cart_items_data = [
         {
+            'id':item.id,
             'product_item': item.product_item,
             'quantity': item.quantity,
             'size': item.size,
@@ -22,7 +23,7 @@ def get_cart_details(user):
             'display_size': Size(item.size).name,
             'display_color': Color(item.color).name
         }
-        for item in cart.items.select_related('product_item')
+        for item in cart.items.filter(is_active=True).select_related('product_item')
     ]
     
     return cart_items_data

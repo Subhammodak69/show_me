@@ -186,7 +186,11 @@ document.querySelectorAll('.quantity, .size, .color').forEach(el => {
 
 document.getElementById('order-form').addEventListener('submit', function (e) {
   e.preventDefault();
-  const formData = new FormData(this);
+
+  const form = this;
+  const formData = new FormData(form);
+
+  // If using regular form POST (not custom JSON), just send FormData and handle CSRF as per Django
   fetch("", {
     method: "POST",
     body: formData,
@@ -196,12 +200,14 @@ document.getElementById('order-form').addEventListener('submit', function (e) {
   })
   .then(res => res.json())
   .then(data => {
-    if (data.success) {
-      alert("Order placed successfully!");
-      window.location.href = "/orders/";
+    if (data.success && data.order_id) {
+      window.location.href = `/payment/create/${data.order_id}/`;
     } else {
-      alert("Error: " + data.error);
+      alert("Order not placed: " + (data.error || "Unknown error"));
     }
+  })
+  .catch(() => {
+    alert("Order request failed. Please try again.");
   });
 });
 </script>

@@ -28,4 +28,12 @@ class Color(Enum):
     BLUE = 2
     GREEN = 3
     BLACK = 4
+
+
+class PaymentStatus(Enum):
+    PENDING = 1
+    SUCCESS = 2
+    FAILED = 3
+    CANCELLED = 4
+
     

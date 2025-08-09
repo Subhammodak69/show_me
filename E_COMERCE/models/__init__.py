@@ -8,3 +8,4 @@ from .cart_model import *
 from .orderitem_model import *
 from .productitem_model import *
 from .cartitem_model import *
+from .payment_model import *

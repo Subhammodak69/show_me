@@ -162,12 +162,14 @@ document.getElementById('direct-order-form').addEventListener('submit', function
   })
   .then(res => res.json())
   .then(data => {
-    if (data.success) {
-      alert("Order placed successfully!");
-      window.location.href = "/orders/";
+    if (data.success && data.order_id) {
+      window.location.href = `/payment/create/${data.order_id}/`;
     } else {
-      alert("Error: " + data.error);
+      alert("Error: " + (data.error || "Unknown error"));
     }
+  })
+  .catch(() => {
+    alert("Network or server error. Please try again.");
   });
 });
 </script>

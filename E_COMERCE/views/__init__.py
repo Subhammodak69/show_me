@@ -11,3 +11,4 @@ from .user_view import *
 from .cartitem_view import *
 from .wishlist_view import *
 from .orderitem_view import *
+from .payment_view import *

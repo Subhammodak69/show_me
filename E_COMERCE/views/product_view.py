@@ -7,7 +7,6 @@ from E_COMERCE.constants.decorators import EnduserRequiredMixin
 
 
 class ProductDetailsView(EnduserRequiredMixin,View):
-    login_url = 'log_in'
     def get(self,request,item_id):
         product_item_data = productitem_service.get_product_items_data(item_id)
         related_products_data = productitem_service.get_product_item_related_product_items(product_item_data['product_id'])

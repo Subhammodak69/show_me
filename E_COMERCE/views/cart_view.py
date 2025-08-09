@@ -63,7 +63,6 @@ class AdminCartUpdateView(AdminRequiredMixin, View):
 class CartDetailsView(EnduserRequiredMixin, View):
     def get(self, request):
         cart_items = cart_service.get_cart_details(request.user)
-        print(cart_items)
 
         total_items = len(cart_items)
         original_price = sum(item['product_item'].price for item in cart_items)

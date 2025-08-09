@@ -106,4 +106,6 @@ urlpatterns = [
     path('admin/orderitems/toggle-status/<int:pk>/', views.AdminOrderItemToggleStatusView.as_view(), name='admin_orderitem_toggle_status'),
 
     path('track_order/<int:order_id>/',views.TrackOrderView.as_view(), name='track_order'),
+    path('payment/create/<int:order_id>/',views.PaymentCreateView.as_view(), name='payment_create'),
+    path('payment/delete/', views.PaymentDeleteView.as_view(), name='payment-delete'),
 ]

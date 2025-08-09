@@ -1,6 +1,7 @@
 from E_COMERCE.models import Order, OrderItem,ProductItem,CartItem,User
 from django.shortcuts import get_object_or_404
 from datetime import timedelta
+from django.core.exceptions import ObjectDoesNotExist
 
 def create_order_from_cart(user, address):
     cart_items = CartItem.objects.filter(cart__user=user, is_active=True)
@@ -134,3 +135,18 @@ def get_order_tracking_info(order_id):
         'expected_delivery': expected_delivery,
         'status_display': status_display,
     }
+
+
+def delete_order_and_items(order_id):
+    """
+    Deletes the order and its associated order items.
+    Returns True if deletion successful, raises exceptions otherwise.
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+        # Explicit delete of related orderitems (optional since cascade handles it)
+        OrderItem.objects.filter(order_id=order).delete()
+        order.delete()
+        return True
+    except Order.DoesNotExist:
+        raise ObjectDoesNotExist("Order not found.")
