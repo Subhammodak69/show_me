@@ -80,6 +80,10 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+RAZORPAY_KEY_ID = get_env_variable('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = get_env_variable('RAZORPAY_KEY_SECRET')
+MERCHANT_UPI_ID = get_env_variable('MERCHANT_UPI_ID')
+
 AUTH_USER_MODEL = 'E_COMERCE.User'
 
 STATIC_URL = '/static/'

@@ -1,328 +1,94 @@
-{% extends 'enduser/base.html' %}
+{% extends 'enduser/base.html'%}
 {% load static %}
 {% block title %}Payment | Show_me{% endblock %}
 {% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow border-0">
+                <div class="card-body text-center">
+                    <h3 class="mb-4 text-primary">💰 Make Payment via UPI</h3>
+                    <div id="first-div">
 
-<style>
-    body {
-        background: linear-gradient(110deg, #e7f0fd 0%, #f5f8fe 100%);
-        font-family: 'Segoe UI', Arial, sans-serif;
-    }
+                        <div class="mb-3">
+                            <input type="text" id="upi_id" class="form-control form-control-lg"
+                                placeholder="Enter UPI ID">
+                        </div>
 
-    .payment-container {
-        max-width: 430px;
-        margin: 50px auto;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 8px 36px 0 #00509e22;
-        padding: 36px 34px 32px 34px;
-    }
+                        <div class="mb-3">
+                            <input type="number" id="amount" class="form-control form-control-lg"
+                                placeholder="Enter Amount">
+                        </div>
 
-    h2 {
-        margin-bottom: 28px;
-        color: #073e9e;
-        font-weight: 800;
-        letter-spacing: 0.5px;
-    }
+                        <button class="btn btn-primary btn-lg w-100" onclick="generateQR()">Generate QR Code</button>
 
-    label {
-        color: #2c4577;
-        font-weight: 540;
-        font-size: 1.03rem;
-        margin-top: 17px;
-        margin-bottom: 5px;
-        display: block;
-    }
-
-    input {
-        width: 100%;
-        padding: 10px 14px;
-        border-radius: 8px;
-        border: 1.5px solid #d0d8ee;
-        background: #f7fafc;
-        font-size: 1.04rem;
-        transition: box-shadow .2s, border-color .2s;
-        margin-bottom: 10px;
-    }
-    input:focus {
-        border-color: #1669fc;
-        box-shadow: 0 0 0 2px #9cd1ff22;
-        outline: none;
-    }
-    input[readonly] {
-        background: #eef2f7;
-        color: #666;
-    }
-
-    button {
-        width: 100%;
-        padding: 11px 0;
-        border-radius: 8px;
-        font-size: 1.08rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background .18s, box-shadow .18s;
-        margin-top: 22px;
-        box-shadow: 0 2px 10px #0369fc11;
-        border: none;
-    }
-    .btn-primary {
-        background: linear-gradient(95deg, #1791fa 30%, #0369fc 100%);
-        color: #fff;
-    }
-    .btn-primary:hover, .btn-primary:focus {
-        background: #064cc4;
-        box-shadow: 0 2px 14px #0545ac28;
-        outline: none;
-    }
-    .btn-danger {
-        background: linear-gradient(90deg, #ea6868 50%, #ba2d2d 100%);
-        color: #fff !important;
-        margin-top: 10px;
-    }
-    .btn-danger:hover, .btn-danger:focus {
-        background: #891616;
-        box-shadow: 0 2px 10px #ba2d2d28;
-    }
-
-    .qr-box {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px 0;
-        margin-bottom: 16px;
-    }
-
-    #upi-qr img, #upi-qr canvas {
-        max-width: 122px;
-        max-height: 122px;
-        border-radius: 11px;
-        box-shadow: 0 1px 9px #03204e18;
-    }
-
-    #upi-instructions {
-        margin-top: 15px;
-        font-size: 1.07rem;
-        color: #2d3e59;
-        text-align: center;
-        font-weight: 480;
-    }
-
-    .status-center {
-        width: 90%;
-        max-width: 270px;
-        margin: 48px auto 0 auto;
-        background: #f3f7fd;
-        border-radius: 19px;
-        border: 1.7px solid #d8e5fa;
-        box-shadow: 0 2px 13px #00336609;
-        font-size: 1.13rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 32px 16px 24px 16px;
-    }
-    .status-success { color: #178a4b; font-size: 1.25rem; font-weight: bold;}
-    .status-pending { color: #b38224; font-size: 1.10rem; font-weight: bold;}
-    .status-fail { color: #c92d2d; font-weight: bold;}
-    .hidden { display: none !important;}
-    .visible { display: block !important;}
-
-    #payment-cancelled {
-        background: #fff7f7 !important;
-        border-color: #d98989 !important;
-        color: #c92d2d !important;
-        box-shadow: 0 4px 16px 0 #e5bcbc26 !important;
-    }
-    #payment-cancelled button {
-        background: #c92d2d;
-        color: #fff;
-    }
-
-    /* Subtle fade-in animation effect */
-    .payment-container > div { animation: fadeInUp 0.45s cubic-bezier(.43,.92,.53,1); }
-    @keyframes fadeInUp {
-        0% {opacity:0; transform:translateY(24px);}
-        90%{opacity:.8;}
-        100%{opacity:1; transform: translateY(0);}
-    }
-
-    @media (max-width:600px) {
-        .payment-container {padding: 18px 4vw;}
-        .status-center {width: 99vw; max-width: 90vw; height: auto;}
-    }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<div class="payment-container">
-    <!-- UPI Form: visible at start -->
-    <div id="upi-form-div" class="visible">
-        <h2>Pay Securely via UPI</h2>
-        <form id="upi-form" autocomplete="off">
-            <label>Your UPI ID (VPA):
-                <input type="text" name="upi_vpa" required pattern="[\w.\-]+@[\w]+" placeholder="yourname@bank" autocomplete="off">
-            </label>
-            <label>Amount:
-                <input type="number" name="amount" value="{{ order.total_price }}" readonly>
-            </label>
-            <button id="make-payment-btn" type="submit" class="btn-primary">Show UPI QR</button>
-            <button type="button" id="cancel-btn" class="btn-danger">Cancel</button>
-        </form>
-    </div>
-
-    <!-- Payment Cancelled Div -->
-    <div id="payment-cancelled" class="status-center hidden">
-        <div style="font-size:2rem;">🚫</div>
-        <div style="margin-top:15px; font-weight:650;">Payment Cancelled</div>
-        <div style="margin-top:9px; color:#444;">You have cancelled your payment.</div>
-        <button id="back-home-btn" style="margin-top:24px;">Back to Home</button>
-    </div>
-
-    <!-- QR Pay Div -->
-    <div id="upi-qr-div" class="qr-box hidden">
-        <h2 style="margin-top:0">Scan to Pay</h2>
-        <div id="upi-qr"></div>
-        <p id="upi-instructions"></p>
-        <button id="cancel-from-qr" class="btn-danger" style="max-width:160px;">Cancel Payment</button>
-    </div>
-
-    <!-- Status/message -->
-    <div id="payment-status" class="status-center hidden">
-        <div id="status-icon" style="font-size:2.4rem;"></div>
-        <div id="status-title" style="margin-top:14px;"></div>
-        <div id="status-message" style="margin-top:10px;"></div>
-        <!-- No "Make Another Payment" button -->
-        <button id="back-home-success" style="margin-top:20px;">Back to Home</button>
+                    </div>
+                    <div id="qr_section" class="mt-4" style="display:none;">
+                        <h5 class="text-success">Scan to Pay:</h5>
+                        <img id="qr_image" class="img-fluid border rounded p-2 shadow-sm" width="250">
+                        <button class="btn btn-danger mt-3" onclick="window.location.href='/'">
+                            Back To Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    const formDiv = document.getElementById('upi-form-div');
-    const qrDiv = document.getElementById('upi-qr-div');
-    const statusDiv = document.getElementById('payment-status');
-    const upiQr = document.getElementById('upi-qr');
-    const statusTitle = document.getElementById('status-title');
-    const statusMessage = document.getElementById('status-message');
-    const statusIcon = document.getElementById('status-icon');
-    const upiForm = document.getElementById('upi-form');
-    const upiInstructions = document.getElementById('upi-instructions');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const cancelDiv = document.getElementById('payment-cancelled');
-    const backHomeBtn = document.getElementById('back-home-btn');
-    const cancelFromQr = document.getElementById('cancel-from-qr');
-    const backHomeSuccess = document.getElementById('back-home-success');
+    // ---- CSRF helper ----
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Check if cookie string starts with the name we want
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-    let formData = {};
+   
 
-    function show(el) { el.classList.remove('hidden'); el.classList.add('visible'); }
-    function hide(el) { el.classList.add('hidden'); el.classList.remove('visible'); }
+    // ---- Generate QR ----
+    async function generateQR() {
+        let upi_id = document.getElementById("upi_id").value.trim();
+        let amount = document.getElementById("amount").value.trim();
 
-    // 1. Submit UPI ID: show QR
-    upiForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const upiVpa = upiForm.upi_vpa.value.trim();
-        const amount = upiForm.amount.value;
-        if (!upiVpa) {
-            alert("Please enter a valid UPI ID");
+        if (!upi_id || !amount) {
+            alert("Please enter both UPI ID and amount.");
             return;
         }
-        formData = { upiVpa, amount };
-        hide(formDiv);
-        show(qrDiv);
-        upiQr.innerHTML = "";
 
-        // Prepare UPI URI
-        const upiUri = `upi://pay?pa=show_me45@ybl&pn=Show_me&am=${encodeURIComponent(amount)}&cu=INR`;
+        try {
+            let res = await fetch("/generate-qr/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify({ upi_id, amount })
+            });
 
-        new QRCode(upiQr, {
-            text: upiUri,
-            width: 120,
-            height: 120,
-            colorDark: "#073e9e",
-            colorLight: "#fff"
-        });
-        upiInstructions.innerHTML = `Pay <b>₹${amount}</b> to <b>${upiVpa}</b><br>
-            <small>Scan with any UPI app. Once paid, the system will confirm automatically.</small>`;
-
-        // You should in real usage **poll from backend for payment status** here,
-        // or provide a "Check Status" button!
-        // For now, let's remove user payment assertion, and rely on backend check.
-
-        // Example: poll backend every 5 seconds to check status
-        pollForPayment();
-    });
-
-    let polling = false;
-    function pollForPayment() {
-        if (polling) return;
-        polling = true;
-        // Simulated interval polling (replace with your backend ajax)
-        const order_id = "{{ order.id }}";
-        const pollInterval = setInterval(() => {
-            fetch(`/payment/check_status/?order_id=${order_id}`) // expects JSON {status: ..., msg: ...}
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "SUCCESS") {
-                    clearInterval(pollInterval);
-                    showPaymentStatus("success", data.msg || "Payment was successful. Thank you!");
-                    polling = false;
-                }
-                else if (data.status === "FAIL") {
-                    clearInterval(pollInterval);
-                    showPaymentStatus("fail", data.msg || "Could not verify payment. Please try again!");
-                    polling = false;
-                }
-                // else keep polling, or handle PENDING etc.
-            })
-            .catch(()=>{});
-        }, 5000);
+            let data = await res.json();
+            if (data.qr_code) {
+                document.getElementById("qr_image").src = "data:image/png;base64," + data.qr_code;
+                document.getElementById("qr_section").style.display = "block";
+                document.getElementById('first-div').style.display = 'none';
+            } else {
+                alert(data.error || "Something went wrong");
+            }
+        } catch (error) {
+            console.error("QR generation failed:", error);
+            alert("Error generating QR code.");
+        }
     }
-
-    function showPaymentStatus(type, message) {
-        hide(qrDiv);
-        show(statusDiv);
-        statusIcon.innerHTML = type==="success" ? "✅" : "❌";
-        statusTitle.innerHTML = type==="success"
-            ? '<span class="status-success">Payment Successful</span>'
-            : '<span class="status-fail">Payment Failed</span>';
-        statusMessage.textContent = message;
-        statusDiv.style.borderColor = type==="success" ? "#178a4b" : "#c92d2d";
-    }
-
-    // Cancel from UPI Form
-    cancelBtn.addEventListener('click', function () {
-        cancelOrder();
-    });
-    // Cancel from QR view
-    cancelFromQr.addEventListener('click', function(){
-        cancelOrder();
-    });
-
-    function cancelOrder() {
-        const order_id = "{{ order.id }}";
-        // Send cancel AJAX to backend
-        fetch("/payment/delete/", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({ order_id: order_id })
-        })
-        .then(res => res.json())
-        .then(data => {
-            // Optionally show a message
-        });
-        hide(formDiv);
-        hide(qrDiv);
-        hide(statusDiv);
-        show(cancelDiv);
-    }
-    // Back to Home button in cancelled view
-    backHomeBtn.addEventListener('click', function () { window.location.href = '/'; });
-    // Back Home from success/fail view
-    backHomeSuccess.addEventListener('click', function () { window.location.href = '/'; });
-
 </script>
 {% endblock %}
