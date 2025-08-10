@@ -16,6 +16,8 @@ def get_wishlist_items(user_id):
                 'price':item.product_item.price,
                 'name': item.product_item.product.name,
                 'size':item.product_item.size,
+                'display_size':Size(item.product_item.size).name,
+                'display_color':Color(item.product_item.color).name,
                 'color':item.product_item.color,
                 'availibility':item.product_item.availibility,
                 'description':item.product_item.product.description,

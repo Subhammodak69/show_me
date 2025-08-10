@@ -21,7 +21,7 @@
         </div>
       </div>
       <div class="list-group shadow-sm">
-        <div class="list-group-item bg-light fw-semibold">
+        <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/orders/'">
           <i class="bi bi-bag-check-fill me-2 text-primary"></i> MY ORDERS
           <span class="float-end">&gt;</span>
         </div>
@@ -64,8 +64,8 @@
                 </div>
                 <div class="small mt-1 text-muted">{{ item.description|truncatewords:17 }}</div>
                 <div class="my-1">
-                  <span class="badge bg-light text-dark border me-2">{{ item.size }}</span>
-                  <span class="badge bg-light text-dark border">{{ item.color }}</span>
+                  <span class="badge bg-light text-dark border me-2">{{ item.display_size }}</span>
+                  <span class="badge bg-light text-dark border">{{ item.display_color }}</span>
                 </div>
                 <div class="mt-2">
                   <span class="fs-5 fw-bold text-dark">₹{{ item.price }}</span>

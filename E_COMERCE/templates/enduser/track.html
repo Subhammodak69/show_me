@@ -80,7 +80,7 @@
             <div>
             {% for item in order_items %}
                 <div style="display:flex; gap:18px;align-items:flex-start;padding:18px 0; border-bottom:1px solid #eee;flex-direction:column;">
-                    <img src="{{ item.product_item.photo_url }}" alt="product" style="margin: auto;width: 60%;object-fit:cover;border-radius:7px;">
+                    <img src="{{ item.product_item.photo_url }}" alt="product" style="margin: auto;width: 40%;object-fit:cover;border-radius:7px;">
                     <div style="margin: auto; width: 100%;padding: 10px 20px;">
                         <div style="font-weight:bold;font-size:17px;">{{ item.product_item.product.name }}</div>
                         <div style="color:#555;font-size:14px;">
