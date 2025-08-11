@@ -4,41 +4,36 @@
 {% block title %}Home | Show_me{% endblock %}
 
 {% block content %}
-<div class="container mt-4" style="max-width: 96%; margin: auto;height: 100%;">
+<div class="home-container">
   {% for category, items in categorized_products.items %}
     <div class="category-section mb-5" id="category-{{ category|slugify }}">
-      <h3 class="mb-3 text-center text-uppercase">{{ category }}</h3>
-      
-      <!-- Responsive grid wrapper for overflow scroll on small screens -->
-      <div class="row group flex-nowrap flex-md-wrap list-inline-scroll">
+      <div class="category-header">
+        <h3 class="mb-1 text-uppercase">{{ category }}</h3>
+        <hr class="category-divider">
+      </div>
+      <div class="product-row">
         {% for item in items %}
-          <div class="col-md-3 col-sm-6 col-4 mb-4 flex-shrink-0 product-col">
-            <div class="card h-100 shadow-sm position-relative">
-              
-              <!-- Image (clickable) -->
-              <a href="{% url 'product_details' item.id %}" class="product_img d-block" style="height: 150px; overflow: hidden;">
-                <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro" style="width: 100%; height: 100%; object-fit: contain;">
+          <div class="product-card">
+            <a href="{% url 'product_details' item.id %}" class="product_img">
+              <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro">
+            </a>
+            <div class="card-body product-info">
+              <a href="{% url 'product_details' item.id %}" class="text-decoration-none text-dark">
+                <h6 class="card-title product-title text-truncate">{{ item.product.name }}</h6>
               </a>
-
-              <!-- Product Info -->
-              <div class="card-body p-2">
-                <a href="{% url 'product_details' item.id %}" class="text-decoration-none text-dark">
-                  <h6 class="card-title text-truncate mb-1">{{ item.product.name }}</h6>
-                </a>
-                <p class="text-muted mb-0">Size: {{ item.size }}</p>
-                <p class="text-muted mb-0">Color: {{ item.color }}</p>
-                <p class="fw-bold mb-0">₹{{ item.price }}</p>
-              </div>
-
-              <!-- Wishlist Icon -->
-              <div class="position-absolute top-0 end-0 m-2" style="cursor: pointer;"
-                   onclick="event.stopPropagation(); toggle_wishlist_create_update({{ item.id }})">
-                {% if item.id in user_wishlist_items_ids %}
-                  <i id="wishlist-icon-{{ item.id }}" data-product-id="{{ item.id }}" class="bi bi-heart-fill text-danger"></i>
-                {% else %}
-                  <i id="wishlist-icon-{{ item.id }}" data-product-id="{{ item.id }}" class="bi bi-heart"></i>
-                {% endif %}
-              </div>
+              <p class="text-muted mb-0">Size: <b>{{ item.size }}</b></p>
+              <p class="text-muted mb-0">Color: 
+                <span style="color: {{ item.color|lower }};">{{ item.color }}</span>
+              </p>
+              <p class="fw-bold mb-0 price">₹{{ item.price }}</p>
+            </div>
+            <div class="wishlist-icon"
+              onclick="event.stopPropagation(); toggle_wishlist_create_update({{ item.id }})">
+              {% if item.id in user_wishlist_items_ids %}
+                <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart-fill text-danger"></i>
+              {% else %}
+                <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart"></i>
+              {% endif %}
             </div>
           </div>
         {% endfor %}
@@ -46,126 +41,165 @@
     </div>
   {% endfor %}
 </div>
-
 <script>
   function toggle_wishlist_create_update(item_id) {
-  const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
-  if (isAuthenticated) {
+    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    if (!isAuthenticated) {
+      window.location.href = "{% url 'log_in' %}";
+      return;
+    }
     fetch("{% url 'wishlist_create_update' %}", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": getCookie("csrftoken")
       },
-      body: JSON.stringify({ item_id: item_id })
+      body: JSON.stringify({ item_id })
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
       const icon = document.querySelector(`#wishlist-icon-${item_id}`);
       if (icon) {
         if (data.status === 'added') {
-          icon.className = "bi bi-heart-fill text-danger";
-        } else if (data.status === 'removed') {
+          icon.className = "bi bi-heart-fill text-danger wishlist-bounce";
+          setTimeout(() => icon.classList.remove("wishlist-bounce"), 500);
+        } else {
           icon.className = "bi bi-heart";
         }
-      } else {
-        console.warn("Wishlist icon not found for product ID:", item_id);
       }
-    })
-    .catch(err => {
-      console.error("Error toggling wishlist:", err);
     });
-  } else {
-    window.location.href = "{% url 'log_in' %}";
   }
-}
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
+  function getCookie(name) {
+    let cookieValue = null;
+    document.cookie.split(';').forEach(cookie => {
+      cookie = cookie.trim();
       if (cookie.startsWith(name + '=')) {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
       }
-    }
+    });
+    return cookieValue;
   }
-  return cookieValue;
-}
 </script>
 
 <style>
-/* --- Keep your logic styles --- */
-.product_img {
-  height: 150px;
-  overflow: hidden;
-  background-color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.img-pro {
+.home-container {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  padding: 5px 20px;
+  background: #a8fffa;
 }
 
-.card-body {
-  font-size: 12px;
-  white-space: nowrap;
+/* Category Header */
+.category-header h3 {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+.category-divider {
+  border-top: 2px solid #ddd;
+  width: 70px;
+  margin: 0.2rem 0 0.8rem;
+  opacity: 0.6;
+}
+
+/* Product row now behaves like a grid */
+.product-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Product Card */
+.product-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(95, 180, 230, 0.13);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover effect */
+.product-card:hover {
+  box-shadow: 0 10px 28px rgba(90, 140, 210, 0.18);
+  transform: translateY(-2px);
+}
+
+/* Image container */
+.product_img {
+  height: 200px;
+  background: linear-gradient(90deg,#edf3fb 30%, #fff 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   overflow: hidden;
-  height: 30%;
+}
+.img-pro {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+  transition: transform 0.25s ease;
+}
+.product-card:hover .img-pro {
+  transform: scale(1.08);
 }
 
-.category-section {
-  scroll-margin-top: 100px;
-  transition: opacity 0.4s ease;
+/* Info area */
+.product-info {
+  padding: 0.5rem 0.9rem;
+  font-size: 13.6px;
+}
+.product-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+.price {
+  color: #2c82f8;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
 
-/* ---- NEW: Responsive scrollable row for small screens ---- */
-@media (max-width: 767.98px) {
-  .group {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    padding-bottom: 4px;
-    /* Optionally hide the scroll bar */
-    /* scrollbar-color: transparent transparent; */
-  }
-  .product-col {
-    flex: 0 0 33.3333%;
-    max-width: 33.3333%;
-    min-width: 135px;       /* min width for each card, tune as needed */
-    box-sizing: border-box;
-    padding-right: 10px;
-    padding-left: 0;
-  }
-  .card {
-    min-width: 115px;       /* Make card visually compact */
-    max-width: 160px;
-    font-size: 12px;
-  }
-  .product_img {
-    height: 85px;
-  }
-  .card-body {
-    font-size: 11px;
-    padding: 0.25rem 0.4rem !important; /* tighter for mobile */
+/* Wishlist */
+.wishlist-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 1.4rem;
+  background: rgba(255,255,255,0.95);
+  padding: 5px;
+  border-radius: 50%;
+  box-shadow: 0 1px 7px rgba(50,80,200,.11);
+}
+@keyframes wishlistBounce {
+  0% { transform: scale(1);}
+  45% { transform: scale(1.32);}
+  60% { transform: scale(0.88);}
+  100% { transform: scale(1);}
+}
+.wishlist-bounce { animation: wishlistBounce 0.5s; }
+
+/* Responsive widths */
+@media (max-width: 570px) {
+  .product-card {
+    flex: 0 0 calc(50% - 8px); /* 2 per row */
   }
 }
-
-/* Optional, for a cleaner scroll bar (uncomment if wanted) */
-/*
-@media (max-width: 767.98px) {
-  .group::-webkit-scrollbar {
-    display: none;
+@media (min-width: 571px) and (max-width: 700px) {
+  .product-card {
+    flex: 0 0 calc(33% - 12px); /* 4 per row */
   }
 }
-*/
-
+@media (min-width: 701px) and (max-width: 991px) {
+  .product-card {
+    flex: 0 0 calc(25% - 12px); /* 4 per row */
+  }
+}
+@media (min-width: 992px) {
+  .product-card {
+    flex: 0 0 calc(16% - 13px); /* 5 per row */
+  }
+}
 </style>
+
 {% endblock %}
