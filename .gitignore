@@ -6,9 +6,10 @@ db.sqlite3
 # Environment
 .env
 
-# Migrations
+# Ignore all migration files
 **/migrations/*
 !**/migrations/__init__.py
+
 
 # VS Code
 .vscode/
