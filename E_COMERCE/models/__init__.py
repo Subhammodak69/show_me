@@ -9,3 +9,6 @@ from .orderitem_model import *
 from .productitem_model import *
 from .cartitem_model import *
 from .payment_model import *
+from .poster_model import *
+from .rating_model import *
+from .offer_model import *

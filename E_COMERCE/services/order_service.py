@@ -55,7 +55,7 @@ def create_direct_order(user, product_item_id, quantity, size, address):
 
 
 def get_user_orders(user):
-    """Return active orders for a user, with all needed related data prefetched."""
+    
     return (
         Order.objects.filter(created_by=user, is_active=True)
         .prefetch_related(

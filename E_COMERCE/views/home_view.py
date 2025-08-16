@@ -3,16 +3,16 @@ from django.views import View
 from django.shortcuts import render
 from E_COMERCE.constants.decorators import AdminRequiredMixin,EnduserRequiredMixin
 from django.contrib.auth import login
-from E_COMERCE.services import user_service, product_service,wishlist_service,category_service,order_service
+from E_COMERCE.services import user_service,poster_service,category_service,order_service,productitem_service
 import random
 
-class HomeView(EnduserRequiredMixin, View):
+
+class HomeView(View):
     def get(self, request):
         # ----- User Data -----
         if request.user.is_authenticated:
             user_id = request.user.id
             user = user_service.get_user(user_id)
-
             user_data = {
                 'user_id': user_id,
                 'is_authenticated': True,
@@ -22,38 +22,33 @@ class HomeView(EnduserRequiredMixin, View):
         else:
             user_data = {'is_authenticated': False}
 
-        # ----- Wishlist -----
-        user_wishlist_items_ids = wishlist_service.wishlist_item_ids(request.user.id)
+        # ----- Category Data -----
+        all_categories = category_service.get_all_category()  # Already a list
+        print("all categories", all_categories)
+        categories = random.sample(all_categories, min(len(all_categories), 12))
 
-        # ----- Products, Categories -----
-        products = product_service.get_all_product_items()  # List of ProductItem
-        categories = category_service.get_categories()      # List of Category
+        # ----- Poster Data -----
+        posters_qs = poster_service.get_all_posters()  # QuerySet
+        posters = list(posters_qs)  # Convert to list
+        print("posters", posters)
 
-        # ----- Categorize ProductItems Randomly -----
-        categorized_items = defaultdict(list)
+        # ----- Product/Best Deals Data -----
+        all_products_qs = productitem_service.get_active_products()  # QuerySet
+        all_products = list(all_products_qs)  # Convert to list
+        print("all_products", all_products)
+        best_deals = random.sample(all_products, min(len(all_products), 8))  # Use min(), not max()
 
-        for item in products:
-            product = item['product']
-            category = product.subcategory.category if product else None
-
-            if category and product.is_active and item['is_active']:
-                categorized_items[category.name].append(item)
-
-        # Shuffle items in each category
-        for cat_items in categorized_items.values():
-            random.shuffle(cat_items)
-
-        # Convert defaultdict to dict before passing to template
         return render(
             request,
-            'enduser/products.html',
+            'enduser/home.html',
             {
                 'user': user_data,
                 'categories': categories,
-                'categorized_products': dict(categorized_items),  # key: category name, value: list of ProductItem
-                'user_wishlist_items_ids': user_wishlist_items_ids,
+                'posters': posters,
+                'best_deals': best_deals
             }
         )
+
 
 
 

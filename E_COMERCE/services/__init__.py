@@ -8,4 +8,5 @@ from .sub_category_service import *
 from .productitem_service import *
 from .cartitem_service import *
 from .orderitem_service import *
+from .poster_service import *
 

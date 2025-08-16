@@ -2,7 +2,6 @@ from django.views import View
 from django.shortcuts import render
 from E_COMERCE.services import wishlist_service,user_service,product_service
 from django.http import JsonResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
 import json
 from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.decorators import EnduserRequiredMixin,AdminRequiredMixin
@@ -97,7 +96,7 @@ class AdminWishlistUpdateView(View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-class AdminWishlistToggleStatusView(LoginRequiredMixin, View):
+class AdminWishlistToggleStatusView(EnduserRequiredMixin, View):
     def post(self, request, pk):
         try:
             body = json.loads(request.body)

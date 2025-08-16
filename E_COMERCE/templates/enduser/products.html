@@ -5,8 +5,8 @@
 
 {% block content %}
 <div class="home-container">
-  {% for category, items in categorized_products.items %}
-    <div class="category-section mb-5" id="category-{{ category|slugify }}">
+  {% for item in products.items %}
+    <div class="category-section mb-5">
       <div class="category-header">
         <h3 class="mb-1 text-uppercase">{{ category }}</h3>
         <hr class="category-divider">

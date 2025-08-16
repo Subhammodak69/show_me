@@ -50,7 +50,11 @@ urlpatterns = [
 
 
 
-
+    #admin poster
+    path('admin/poster/',views.PosterListView.as_view(), name='admin_poster_list'),
+    path('admin/poster/create/',views.AdminPosterCreateView.as_view(), name='admin_poster_create'),
+    path('admin/poster/update/<int:poster_id>/',views.AdminPosterUpdateView.as_view(), name='admin_poster_update'),
+    path('admin/poster/toggle-status/<int:poster_id>/',views.AdminPosterToggleStatusView.as_view(), name='admin_poster_toggle_status'),
 
     #wishlist
     path('wishlist/',views.WishlistDetailsView.as_view(),name='user_wishlist'),

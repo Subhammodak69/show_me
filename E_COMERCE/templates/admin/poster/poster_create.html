@@ -1,0 +1,61 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Poster Create | Show_me{% endblock %}
+{% block content %}
+<div class="mb-3 text-center">
+    <h2 class="mb-4">Poster Create</h2>
+</div>
+<div class="container" style="padding: 40px; max-width: 600px; background: whitesmoke; border-radius: 10px;">
+    <form id="createPosterForm">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title">
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="photo" class="form-label">Photo</label>
+            <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
+        </div>
+        <div class="mb-3 row">
+            <div class="col">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="datetime-local" class="form-control" id="start_date" name="start_date">
+            </div>
+            <div class="col">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="datetime-local" class="form-control" id="end_date" name="end_date">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+</div>
+<script>
+    document.getElementById('createPosterForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = document.getElementById('createPosterForm');
+        const formData = new FormData(form);
+
+        const response = await fetch("{% url 'admin_poster_create' %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            window.location.href = "{% url 'admin_poster_list' %}";
+        } else {
+            alert("Error: " + result.error);
+        }
+    });
+
+</script>
+{% endblock %}

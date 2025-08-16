@@ -1,0 +1,89 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Poster List | Show_me{% endblock %}
+{% block content %}
+<div class="container mt-5">
+      <h2 class="mb-4">All Posters</h2>
+      <div class="mb-3 text-end">
+            <a href="{% url 'admin_poster_create' %}" class="btn btn-success">+ Add Poster</a>
+          </div>
+      <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+            <thead class="table-light">
+                  <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Title</th>
+                        <th>Photo</th>
+                        <th>Status</th>
+                        <th>Active Period</th>
+                        <th>Action</th>
+                      </tr>
+                </thead>
+            <tbody>
+                  {% for poster in posters %}
+                  <tr>
+                        <td>{{ poster.id }}</td>
+                        <td>{{ poster.created_by.get_full_name }}</td>
+                        <td>{{ poster.title }}</td>
+                        <td>
+                              <img src="{{ poster.photo_url }}" alt="Poster"
+                        style="width:80px;height:40px;object-fit:cover;">
+                            </td>
+                        <td>
+                              <span id="status-badge-{{ poster.id }}"
+                        class="badge {% if poster.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if poster.is_active %}Active{% else %}Inactive{% endif %}
+                                  </span>
+                            </td>
+                        <td>
+                              {% if poster.start_date %}{{ poster.start_date|date:"Y-m-d H:i" }}{% endif %}
+                              -
+                              {% if poster.end_date %}{{ poster.end_date|date:"Y-m-d H:i" }}{% endif %}
+                            </td>
+                        <td>
+                              <a href="{% url 'admin_poster_update' poster.id %}" class="btn btn-sm btn-warning me-1">
+                                    Update
+                                  </a>
+                              <button id="toggle-btn-{{ poster.id }}"
+                        class="btn btn-sm {% if poster.is_active %}btn-danger{% else %}btn-success{% endif %}"          
+                            onclick="togglePosterStatus({{ poster.id }}, {{ poster.is_active|yesno:'true,false' }})">
+                                    {% if poster.is_active %}Deactivate{% else %}Activate{% endif %}
+                                  </button>
+                            </td>
+                      </tr>
+                  {% empty %}
+                  <tr>
+                        <td colspan="7" class="text-center">No posters found.</td>
+                      </tr>
+                  {% endfor %}
+                </tbody>
+          </table>
+</div>
+
+<script>
+    async function togglePosterStatus(posterId, currentStatus) {
+        const response = await fetch(`/admin/poster/toggle-status/${posterId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ is_active: !currentStatus })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            const newStatus = result.new_status;
+            const badge = document.getElementById(`status-badge-${posterId}`);
+            badge.textContent = newStatus ? 'Active' : 'Inactive';
+            badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+            const button = document.getElementById(`toggle-btn-${posterId}`);
+            button.textContent = newStatus ? 'Deactivate' : 'Activate';
+            button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+            button.setAttribute('onclick', `togglePosterStatus(${posterId}, ${newStatus})`);
+        } else {
+            alert(result.error || 'Failed to update poster status.');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends 'enduser/base.html' %}
+{% block title %}Home | Show_me{% endblock %}
+{% load static %}
+{% block content %}
+
+<!-- Category Row -->
+<div class="cat category-row d-flex justify-content-between align-items-center bg-white px-2 py-3 shadow-sm rounded mb-3"
+    style="overflow-x:auto;width: 90%;">
+    {% for category in categories %}
+    <div class="category-item text-center mx-2" style="flex:0 0 85px;">
+        <img src="{{ category.icon }}" alt="" style="width:40px;height:40px;object-fit:contain;">
+        <div style="font-size:14px;margin-top:2px;">{{ category.name }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Main Flex Layout for carousel, deals and right-ad -->
+<div class="d-flex flex-row main" style="gap:20px;width: 90%;">
+    <div style="flex: 4;">
+        <!-- Main Carousel -->
+        <section class="carousel-container mb-4" style="position:relative;">
+            <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 320px;">
+                <div class="carousel-inner">
+                    {% for poster in posters %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ poster.photo_url }}" class="d-block w-100"style="object-fit:contain;height: 100%;">
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        </section>
+        <!-- Hot Deals / Product Scroll Row -->
+        <section class="mb-4" style=" width: 100%;">
+            <h5 class="fw-bold ms-1 mb-3">Best Deals on Smartphones</h5>
+            <div class="hot-items d-flex flex-row" style="overflow-x:auto;gap:14px;">
+                {% for item in hot_items %}
+                <div class="card p-2 text-center" style="min-width:170px;max-width:180px;">
+                    <img src="{{ item. }}" alt="{{ item.title }}" class="card-img-top mx-auto"
+                        style="width:100px;height:130px;object-fit:contain;">
+                    <div class="card-body px-0">
+                        <div class="card-title" style="font-size:15px;">{{ item.title }}</div>
+                        <div class="card-text text-muted" style="font-size:14px;">From ₹{{ item.price }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+     
+</div>
+
+
+<!-- Recommended CSS - put in your static CSS file -->
+<style>
+    .category-row {
+        white-space: nowrap;
+        overflow-x: auto;
+    }
+
+    .category-item img {
+        border-radius: 15%;
+        margin-bottom: 1px;
+    }
+
+    /* Hide scrollbars on category row: */
+    .category-row::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Carousel */
+    .carousel-container {
+        background: #fff;
+        text-align: center;
+    }
+
+    .carousel {
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .carousel-controls {
+        display: flex;
+        justify-content: space-between;
+        width: 82%;
+        position: absolute;
+        top: 32%;
+    }
+
+    .carousel-slide {
+        display: none;
+        height: 100%;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #1976d2;
+        background: #e3ebfc;
+    }
+
+    .carousel-slide.active {
+        display: flex;
+    }
+
+    .carousel-controls button {
+        cursor: pointer;
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
+        margin: 0 8px;
+        transition: background 0.2s;
+    }
+
+    .carousel-controls button:hover {
+        background: #1565c0;
+    }
+
+    /* Hot Items */
+    .hot-items {
+        background: #fff;
+        padding: 24px;
+        margin: 24px 0;
+    }
+
+    .hot-items h2 {
+        margin-bottom: 16px;
+        font-weight: bold;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .grid-item {
+        background: #f0f0f0;
+        border-radius: 8px;
+        padding: 28px 0;
+        text-align: center;
+        font-weight: 500;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+        #mainCarousel{
+            height: auto !important;
+        }
+        .cat{
+            width: 100% !important;
+        }
+        .main {
+            width:100% !important;
+        }
+        .grid-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<script>
+    // Simple Carousel Logic
+    const slides = document.querySelectorAll('.carousel-slide');
+    let currentSlide = 0;
+
+    function showSlide(idx) {
+        slides.forEach((s, i) => {
+            s.classList.toggle('active', i === idx);
+        });
+    }
+
+    document.getElementById('prev').onclick = () => {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(currentSlide);
+    };
+
+    document.getElementById('next').onclick = () => {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    };
+
+    // Optional: Auto-slide (every 3s)
+    setInterval(() => {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }, 3000);
+
+    // Initial display
+    showSlide(currentSlide);
+
+</script>
+{% endblock %}

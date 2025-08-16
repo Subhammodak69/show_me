@@ -2,14 +2,14 @@ from django.views import View
 from django.shortcuts import render
 from django.http import JsonResponse
 from E_COMERCE.services import cart_service,order_service,productitem_service
-from django.contrib.auth.mixins import LoginRequiredMixin
+from E_COMERCE.constants.decorators import EnduserRequiredMixin
 import json
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.default_values import Status
 from django.shortcuts import redirect
 
 
-class OrderListView(LoginRequiredMixin, View):
+class OrderListView(EnduserRequiredMixin, View):    
     def get(self, request):
         orders = order_service.get_user_orders(request.user)
         return render(request, 'enduser/order_list.html', {
@@ -18,7 +18,7 @@ class OrderListView(LoginRequiredMixin, View):
   
     
     
-class OrderCreateView(View):
+class OrderCreateView(EnduserRequiredMixin,View):
     def get(self, request):
         user = request.user
         cart_items = cart_service.get_user_cart_items(user.id)
@@ -47,7 +47,7 @@ class OrderCreateView(View):
 
 
 
-class DirectOrderView(LoginRequiredMixin, View):
+class DirectOrderView(EnduserRequiredMixin, View):
     def get(self, request, item_id):
         product_item = productitem_service.get_product_item_by_id(item_id)
 
@@ -75,7 +75,7 @@ class DirectOrderView(LoginRequiredMixin, View):
 
     
 
-class CartItemUpdateView(LoginRequiredMixin, View):
+class CartItemUpdateView(EnduserRequiredMixin, View):
     def post(self, request, pk):
         try:
             data = json.loads(request.body)
@@ -97,7 +97,7 @@ class CartItemUpdateView(LoginRequiredMixin, View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-class CartItemRemoveView(LoginRequiredMixin, View):
+class CartItemRemoveView(EnduserRequiredMixin, View):
     def post(self, request, pk):
         try:
             cart_service.remove_cart_item(user=request.user, item_id=pk)
@@ -118,7 +118,7 @@ class AdminOrderListView(AdminRequiredMixin,View):
         return render(request, 'admin/order/order_list.html', {'orders': orders})
 
 
-class AdminOrderCreateView(View):
+class AdminOrderCreateView(AdminRequiredMixin,View):
     def get(self, request):
         users = order_service.get_all_users()
         return render(request, 'admin/order/order_create.html', {
@@ -138,7 +138,7 @@ class AdminOrderCreateView(View):
         return redirect("admin_order_list")
 
 
-class AdminOrderUpdateView(View):
+class AdminOrderUpdateView(AdminRequiredMixin,View):
     def get(self, request, pk):
         order = order_service.get_order_by_id(pk)
         users = order_service.get_all_users()
@@ -160,7 +160,7 @@ class AdminOrderUpdateView(View):
         return redirect("admin_order_list")
     
 
-class AdminOrderToggleStatusView(LoginRequiredMixin, View):
+class AdminOrderToggleStatusView(AdminRequiredMixin, View):
     def post(self, request, pk):
         try:
             body = json.loads(request.body)
@@ -178,7 +178,7 @@ class AdminOrderToggleStatusView(LoginRequiredMixin, View):
 
 #enduser
 
-class TrackOrderView(View):
+class TrackOrderView( EnduserRequiredMixin,View):
     def get(self, request, order_id):
         context = order_service.get_order_tracking_info(order_id)
         if not context:

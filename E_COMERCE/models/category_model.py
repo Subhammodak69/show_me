@@ -5,6 +5,7 @@ from E_COMERCE.models import User
 class Category(models.Model):
     name = models.CharField(max_length=250, blank= False, null = False)
     description = models.TextField(blank=False, null=False)
+    photo_url = models.URLField(blank=False,null= False)
     created_by = models.ForeignKey(User,on_delete=models.CASCADE , related_name='categories')
     
     is_active = models.BooleanField(default=True)
