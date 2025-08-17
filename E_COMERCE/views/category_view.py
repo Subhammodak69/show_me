@@ -12,33 +12,38 @@ class CategoryListView(AdminRequiredMixin,View):
         return render(request, 'admin/category/category_list.html',{'category_data':category_data})
 
 
-class CategoryCreateView(AdminRequiredMixin,View):
+class CategoryCreateView(AdminRequiredMixin, View):
     def get(self, request):
         return render(request, 'admin/category/category_create.html')
-    
+
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            category = category_service.create_category(data,request.user)
+            data = request.POST
+            photo = request.FILES.get('photo')
+
+            category = category_service.create_category(data, photo, request.user)
             return JsonResponse({'message': 'Category created successfully!', 'id': category.id})
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
 
-class CategoryUpdateView(AdminRequiredMixin,View):
-
-    def put(self, request, category_id):
-        try:
-            data = json.loads(request.body)
-            category = category_service.update_category(category_id, data)
-            return JsonResponse({'message': 'Category updated successfully!', 'id': category.id})
-        
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
+class CategoryUpdateView(AdminRequiredMixin, View):
     def get(self, request, category_id):
         category = category_service.get_category_data(category_id)
-        return render(request, 'admin/category/category_update.html',{'category':category})
+        return render(request, 'admin/category/category_update.html', {'category': category})
+
+    def post(self, request, category_id):  # <-- Use POST here!
+        try:
+            data = request.POST
+            file = request.FILES.get('photo', None)
+            print(file)
+            category = category_service.update_category(category_id, data, file)
+            return JsonResponse({'message': 'Category updated successfully!', 'id': category.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    
   
 
 class ToggleCategoryStatusView(AdminRequiredMixin,View):

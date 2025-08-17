@@ -7,45 +7,68 @@
   <h2 class="mb-4">Category Update</h2>
 </div>
 <div class="container" style="padding: 40px;max-width: 600px;background: whitesmoke;border-radius: 10px;">
-<form id="updateCategoryForm">
-  {% csrf_token %}
-  <div class="mb-3">
-    <label for="name" class="form-label">Category Name</label>
-    <input type="text" class="form-control" id="name" name="name" value="{{ category.name }}" required>
-  </div>
+  <form id="updateCategoryForm">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="name" class="form-label">Category Name</label>
+      <input type="text" class="form-control" id="name" name="name" value="{{ category.name }}" required>
+    </div>
 
-  <div class="mb-3">
-    <label for="description" class="form-label">Description</label>
-    <textarea class="form-control" id="description" name="description" required>{{ category.description }}</textarea>
-  </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" name="description" required>{{ category.description }}</textarea>
+    </div>
+    <div class="mb-3">
+      <!-- Optional: Image preview -->
+      <img id="preview" class="my-3" src="{{ category.photo_url }}" height="100px" width="100px">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Change Image</label>
+      <input type="file" id="photo" name="photo" accept="image/*" class="form-control">
+    </div>
 
-  <button type="submit" class="btn btn-success">Update</button>
-</form>
+
+    <button type="submit" class="btn btn-success">Update</button>
+  </form>
 </div>
 
 <script>
-document.getElementById('updateCategoryForm').addEventListener('submit', async function(e) {
+  document.getElementById("photo").addEventListener("change", function () {
+    const file = this.files[0];
+    const preview = document.getElementById("preview");
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        preview.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+
+
+
+document.getElementById('updateCategoryForm').addEventListener('submit', async function (e) {
   e.preventDefault();
-  
+
+  const form = document.getElementById('updateCategoryForm');
+  const formData = new FormData(form);
+
   const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-  const data = {
-    name: document.getElementById('name').value,
-    description: document.getElementById('description').value,
-  };
-
   const response = await fetch("{% url 'category_update' category.id %}", {
-    method: "PUT",
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
       'X-CSRFToken': csrfToken
+      // Do NOT set 'Content-Type'; browser handles it when you use FormData
     },
-    body: JSON.stringify(data)
+    body: formData
   });
 
   const result = await response.json();
   window.location.href = "{% url 'category' %}";
 });
+
 </script>
 
 {% endblock %}
