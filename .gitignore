@@ -1,20 +1,26 @@
-# Django
+# Python cached files
 *.pyc
 __pycache__/
+
+# Database
 db.sqlite3
 
-# Environment
+# Environment variables
 .env
 
-# Ignore all migration files
+# Django migrations (ignore all migration files except __init__.py)
 **/migrations/*
 !**/migrations/__init__.py
 
-
-# VS Code
+# VS Code settings
 .vscode/
+
+# macOS system files
 .DS_Store
 
-# Static/media (optional)
-staticfiles/
+# Static and media files
+static/
 media/
+
+# Optional (if you use collectstatic)
+staticfiles/
