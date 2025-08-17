@@ -1,7 +1,7 @@
 from django.views import View
 from django.http import JsonResponse
 from django.shortcuts import render
-from E_COMERCE.constants.decorators import EnduserRequiredMixin
+from E_COMERCE.constants.decorators import AdminRequiredMixin
 from django.contrib.auth import get_user_model
 import json
 
@@ -10,7 +10,7 @@ from E_COMERCE.services import user_service  # You’ll need to create this serv
 User = get_user_model()
 
 
-class UserListView(EnduserRequiredMixin, View):
+class UserListView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 
     def get(self, request):
@@ -18,7 +18,7 @@ class UserListView(EnduserRequiredMixin, View):
         return render(request, 'admin/user/user_list.html', {'users': users})
 
 
-class UserCreateView(EnduserRequiredMixin, View):
+class UserCreateView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 
     def get(self, request):
@@ -42,7 +42,7 @@ class UserCreateView(EnduserRequiredMixin, View):
             return JsonResponse({'success': False, 'error': str(e)})
 
 
-class UserUpdateView(EnduserRequiredMixin, View):
+class UserUpdateView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 
     def get(self, request, user_id):
@@ -67,7 +67,7 @@ class UserUpdateView(EnduserRequiredMixin, View):
 
 
 
-class ToggleUserStatusView(EnduserRequiredMixin, View):
+class ToggleUserStatusView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 
     def post(self, request, user_id):
