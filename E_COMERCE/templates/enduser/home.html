@@ -4,11 +4,11 @@
 {% block content %}
 
 <!-- Category Row -->
-<div class="cat category-row d-flex justify-content-between align-items-center bg-white px-2 py-3 shadow-sm rounded mb-3"
+<div class="cat category-row d-flex justify-content-between align-items-center bg-white px-2 py-1 shadow-sm rounded mb-3"
     style="overflow-x:auto;width: 90%;">
     {% for category in categories %}
     <div class="category-item text-center mx-2" style="flex:0 0 85px;">
-        <img src="{{ category.icon }}" alt="" style="width:40px;height:40px;object-fit:contain;">
+        <img src="{{ category.photo_url }}" alt="" style="width:60px;height:60px;object-fit:contain;">
         <div style="font-size:14px;margin-top:2px;">{{ category.name }}</div>
     </div>
     {% endfor %}
@@ -20,10 +20,11 @@
         <!-- Main Carousel -->
         <section class="carousel-container mb-4" style="position:relative;">
             <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 320px;">
-                <div class="carousel-inner">
+                <div class="carousel-inner" style="height: 100%;">
                     {% for poster in posters %}
-                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <img src="{{ poster.photo_url }}" class="d-block w-100"style="object-fit:contain;height: 100%;">
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}" style="height: 100%;">
+                        <img src="{{ poster.photo_url }}" class="d-block w-100"
+                            style="height: 100%;  ">
                     </div>
                     {% endfor %}
                 </div>
@@ -34,6 +35,7 @@
                     <span class="carousel-control-next-icon"></span>
                 </button>
             </div>
+
         </section>
         <!-- Hot Deals / Product Scroll Row -->
         <section class="mb-4" style=" width: 100%;">
@@ -52,7 +54,7 @@
             </div>
         </section>
     </div>
-     
+
 </div>
 
 
@@ -83,7 +85,6 @@
         height: 100%;
         position: relative;
         overflow: hidden;
-        border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         display: flex;
         align-items: center;
@@ -159,15 +160,18 @@
 
     /* Responsive */
     @media (max-width: 800px) {
-        #mainCarousel{
+        #mainCarousel {
             height: auto !important;
         }
-        .cat{
+
+        .cat {
             width: 100% !important;
         }
+
         .main {
-            width:100% !important;
+            width: 100% !important;
         }
+
         .grid-container {
             grid-template-columns: repeat(2, 1fr);
         }

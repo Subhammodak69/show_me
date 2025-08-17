@@ -46,10 +46,6 @@ document.getElementById('updatePosterForm').addEventListener('submit', async fun
     const form = document.getElementById('updatePosterForm');
     const formData = new FormData(form);
 
-    // Set checkbox manually if it's unchecked (FormData omits unchecked checkboxes)
-    if (!document.getElementById('is_active').checked) {
-        formData.set('is_active', '');
-    }
 
     const response = await fetch("{% url 'admin_poster_update' poster.id %}", {
         method: "POST",

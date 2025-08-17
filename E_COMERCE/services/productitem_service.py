@@ -50,36 +50,51 @@ def get_product_items_data(item_id):
     }
     return item_data
 
-def create_productitem(data, file):
+
+
+def create_productitem(request, file):
     try:
-        product = Product.objects.get(id=data['product'])
+        product_id = request.POST.get('product')
+        size = int(request.POST.get('size'))
+        color = int(request.POST.get('colour'))
+        price = int(request.POST.get('price'))
+        availibility = int(request.POST.get('availibility'))
+
+        # Debug prints
+        print("Data received:", product_id, size, color, price, availibility)
+
+        product = Product.objects.get(id=product_id, is_active=True)
 
         # Save the uploaded image
-        if not file:
-            raise Exception("Photo file is missing.")
-        
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
         relative_path = f"product_images/{filename}"
         absolute_path = os.path.join(settings.BASE_DIR, 'static', relative_path)
 
+        os.makedirs(os.path.dirname(absolute_path), exist_ok=True)  # ensure dir exists
+
         with open(absolute_path, 'wb+') as destination:
             for chunk in file.chunks():
                 destination.write(chunk)
 
-        # Create product item
+        # Create product item instance
         item = ProductItem.objects.create(
             product=product,
-            size=data['size'],
-            color=data['color'],
-            price=data['price'],
-            availibility=data['availibility'],
+            size=size,
+            color=color,
+            price=price,
+            availibility=availibility,
             photo_url=f"/static/{relative_path}",
         )
+
+        print("Created product item:", item)
         return item
 
+    except Product.DoesNotExist:
+        raise Exception("Invalid or inactive product selected.")
     except Exception as e:
         raise Exception(f"Failed to create product item: {str(e)}")
+
 
 
 def update_productitem(item_id, data, file=None):

@@ -13,7 +13,6 @@ class ProductItemListView(AdminRequiredMixin, View):
 
 
 class ProductItemCreateView(AdminRequiredMixin, View):
-
     def get(self, request):
         products = productitem_service.get_active_products()
         sizes = productitem_service.get_size_choices_dict()
@@ -21,25 +20,20 @@ class ProductItemCreateView(AdminRequiredMixin, View):
         return render(request, 'admin/productitem/productitem_create.html', {
             'products': products,
             'sizes': sizes,
-            'colours':colours,
+            'colours': colours,
         })
 
     def post(self, request):
         try:
-            data = {
-                'product': request.POST.get('product'),
-                'size': request.POST.get('size'),
-                'color': request.POST.get('colour'),
-                'price': int(request.POST.get('price')),
-                'availibility': int(request.POST.get('availibility')),
-            }
             file = request.FILES.get('photo')
+            if not file:
+                return JsonResponse({'success': False, 'error': 'Photo file is missing.'}, status=400)
 
-            item = productitem_service.create_productitem(data, file)
+            item = productitem_service.create_productitem(request, file)
             return JsonResponse({'success': True, 'id': item.id})
-
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
 
 
 
