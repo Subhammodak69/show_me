@@ -4,6 +4,9 @@ import os
 from uuid import uuid4
 from django.conf import settings
 
+def get_product_items_by_category(category_id):
+    return ProductItem.objects.filter(product__subcategory__category__id= category_id, is_active =True)
+
 def get_product_item_related_product_items(product_id):
     items = list( ProductItem.objects.filter(product__id = product_id,is_active = True))
     data = []
@@ -61,7 +64,6 @@ def create_productitem(request, file):
         availibility = int(request.POST.get('availibility'))
 
         # Debug prints
-        print("Data received:", product_id, size, color, price, availibility)
 
         product = Product.objects.get(id=product_id, is_active=True)
 
@@ -87,7 +89,6 @@ def create_productitem(request, file):
             photo_url=f"/static/{relative_path}",
         )
 
-        print("Created product item:", item)
         return item
 
     except Product.DoesNotExist:
@@ -130,7 +131,6 @@ def get_all_productitems():
     items = ProductItem.objects.select_related('product').all().order_by('id')
 
     for item in items:
-        # These display values are now safely accessible in the template
         item.size = Size(item.size).name
         item.color = Color(item.color).name
 

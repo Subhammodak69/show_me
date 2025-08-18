@@ -24,20 +24,17 @@ class HomeView(View):
 
         # ----- Category Data -----
         all_categories = category_service.get_all_category()  # Already a list
-        print("all categories", all_categories)
         categories = random.sample(all_categories, min(len(all_categories), 12))
 
         # ----- Poster Data -----
         posters_qs = poster_service.get_all_posters()  # QuerySet
         posters = list(posters_qs)  # Convert to list
-        print("posters", posters)
 
         # ----- Product/Best Deals Data -----
-        all_products_qs = productitem_service.get_active_products()  # QuerySet
+        all_products_qs = productitem_service.get_all_productitems()
         all_products = list(all_products_qs)  # Convert to list
-        print("all_products", all_products)
         best_deals = random.sample(all_products, min(len(all_products), 8))  # Use min(), not max()
-
+        print(best_deals)
         return render(
             request,
             'enduser/home.html',

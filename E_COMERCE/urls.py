@@ -66,6 +66,7 @@ urlpatterns = [
     path('cart/create/',views.CartCreateView.as_view(),name='cart_create'),
     path('cart/update/<int:cart_id>/',views.CartUpdateView.as_view(),name='cart_update'),
     path('cart/delete/<int:cart_id>/',views.CartDeleteView.as_view(),name='cart_delete'),
+    path('category/products/<int:category_id>/',views.CategoryProductsListView.as_view(),name='category_product_list'),
     
     #admin cart
     path('admin/cart/',views.AdminCartListView.as_view(), name='admin_cart_list'),

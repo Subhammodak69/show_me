@@ -40,7 +40,6 @@ class PaymentCreateView(EnduserRequiredMixin,View):
 class OrderDeleteView(EnduserRequiredMixin, View):
     def post(self, request, order_id):
         try:
-            print("dsbhvdsh")
             if not order_id:
                 return JsonResponse({'success': False, 'error': 'Order ID required'}, status=400)
 

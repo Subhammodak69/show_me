@@ -37,7 +37,6 @@ class CategoryUpdateView(AdminRequiredMixin, View):
         try:
             data = request.POST
             file = request.FILES.get('photo', None)
-            print(file)
             category = category_service.update_category(category_id, data, file)
             return JsonResponse({'message': 'Category updated successfully!', 'id': category.id})
         except Exception as e:

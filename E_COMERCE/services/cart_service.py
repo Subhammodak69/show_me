@@ -156,7 +156,6 @@ def get_user_cart_items(user_id):
         cart__user_id=user_id,
         is_active=True
     )
-    print(cart_items)
 
     result = []
     for item in cart_items:

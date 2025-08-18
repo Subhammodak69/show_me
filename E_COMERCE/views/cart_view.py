@@ -82,7 +82,7 @@ class CartDetailsView(EnduserRequiredMixin, View):
         
     
 
-class CartCreateView(View):
+class CartCreateView(EnduserRequiredMixin,View):
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -98,7 +98,7 @@ class CartCreateView(View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
-class CartUpdateView(View):
+class CartUpdateView(EnduserRequiredMixin,View):
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -112,7 +112,7 @@ class CartUpdateView(View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
-class CartDeleteView(View):
+class CartDeleteView(AdminRequiredMixin,View):
     def post(self, request):
         try:
             data = json.loads(request.body)

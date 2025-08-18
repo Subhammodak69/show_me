@@ -50,7 +50,6 @@ class WishlistCreateUpdateView(EnduserRequiredMixin,View):
 class AdminWishlistListView(View):
     def get(self, request):
         wishlist_data = wishlist_service.get_all_wishlists()
-        print(wishlist_data)
         return render(request, 'admin/wishlist/wishlist_list.html', {
             'wishlist_data': wishlist_data
         })

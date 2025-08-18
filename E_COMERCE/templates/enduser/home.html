@@ -7,7 +7,7 @@
 <div class="cat category-row d-flex justify-content-between align-items-center bg-white px-2 py-1 shadow-sm rounded mb-3"
     style="overflow-x:auto;width: 90%;">
     {% for category in categories %}
-    <div class="category-item text-center mx-2" style="flex:0 0 85px;">
+    <div class="category-item text-center mx-2" style="flex:0 0 85px;" onclick="window.location.href='{% url 'category_product_list' category.id %}'" style="cursor:pointer;">
         <img src="{{ category.photo_url }}" alt="" style="width:60px;height:60px;object-fit:contain;">
         <div style="font-size:14px;margin-top:2px;">{{ category.name }}</div>
     </div>
@@ -15,8 +15,8 @@
 </div>
 
 <!-- Main Flex Layout for carousel, deals and right-ad -->
-<div class="d-flex flex-row main" style="gap:20px;width: 90%;">
-    <div style="flex: 4;">
+<div class="d-flex justify-content-center flex-row main" style="gap:20px;width: 90%;">
+    <div class="w-100" style="flex: 4;">
         <!-- Main Carousel -->
         <section class="carousel-container mb-4" style="position:relative;">
             <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 320px;">
@@ -41,12 +41,12 @@
         <section class="mb-4" style=" width: 100%;">
             <h5 class="fw-bold ms-1 mb-3">Best Deals on Smartphones</h5>
             <div class="hot-items d-flex flex-row" style="overflow-x:auto;gap:14px;">
-                {% for item in hot_items %}
+                {% for item in best_deals %}
                 <div class="card p-2 text-center" style="min-width:170px;max-width:180px;">
-                    <img src="{{ item. }}" alt="{{ item.title }}" class="card-img-top mx-auto"
+                    <img src="{{ item.photo_url }}" alt="{{ item.title }}" class="card-img-top mx-auto"
                         style="width:100px;height:130px;object-fit:contain;">
                     <div class="card-body px-0">
-                        <div class="card-title" style="font-size:15px;">{{ item.title }}</div>
+                        <div class="card-title" style="font-size:15px;" onclick="window.location.href='{% url 'product_details' item.id %}'" style="cursor: pointer;">{{ item.product.name }}</div>
                         <div class="card-text text-muted" style="font-size:14px;">From ₹{{ item.price }}</div>
                     </div>
                 </div>
@@ -158,10 +158,15 @@
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     }
 
-    /* Responsive */
-    @media (max-width: 800px) {
+
+
+    @media (min-height: 350px) and (max-width: 662px) {
         #mainCarousel {
-            height: auto !important;
+            width: 100%;
+            height: 200px !important;
+        }
+        .carousel-container{
+            width: 100%;
         }
 
         .cat {

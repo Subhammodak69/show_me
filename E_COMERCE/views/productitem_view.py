@@ -2,7 +2,14 @@ from django.views import View
 from django.http import JsonResponse
 from django.shortcuts import render
 from E_COMERCE.constants.decorators import AdminRequiredMixin
-from E_COMERCE.services import productitem_service
+from E_COMERCE.services import productitem_service,wishlist_service
+
+
+class CategoryProductsListView(View):
+    def get(sel,request,category_id):
+        product_items = productitem_service.get_product_items_by_category(category_id)
+        user_wishlist_items_ids = wishlist_service.wishlist_item_ids(request.user.id)
+        return render(request,'enduser/products.html',{'product_items':product_items,'user_wishlist_items_ids':user_wishlist_items_ids})
 
 
 class ProductItemListView(AdminRequiredMixin, View):

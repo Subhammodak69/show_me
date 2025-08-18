@@ -3,10 +3,10 @@
 {% block title %}{{ product_item_data.product_name }} | Show_me{% endblock %}
 
 {% block content %}
-<div class="container my-5"style="padding:10px !important;height: 100%;">
+<div class="container my-5" style="padding:10px !important;height: 100%;">
   {% if product_item_data %}
   <div class="row">
-    <!-- Main Product Image + Related Items (stacked vertically) -->
+    <!-- Main Product Image + Related Items -->
     <div class="col-md-5">
       <div class="border rounded shadow-sm p-2 mb-3" style="height: 450px;">
         <img src="{{ product_item_data.photo }}" alt="{{ product_item_data.product_name }}" class="img-fluid rounded" style="height: 100%; object-fit: contain;">
@@ -15,7 +15,8 @@
 
     <!-- Product Info -->
     <div class="col-md-7" style="background: whitesmoke;">
-         {% if related_products_data %}
+
+      {% if related_products_data %}
       <div>
         <h6 class="text-muted mb-2">Other Available Items</h6>
         <div class="d-flex flex-wrap gap-2">
@@ -27,6 +28,7 @@
         </div>
       </div>
       {% endif %}
+
       <h3>{{ product_item_data.product_name }}</h3>
       <p class="text-muted">
         {{ product_item_data.product_category_name }} <br>
@@ -51,17 +53,17 @@
 
       <p><strong>Color:</strong> {{ product_item_data.display_color }}</p>
 
+      <!-- 👇 Updated Buttons with login check -->
       <div class="d-flex gap-3 mt-3">
-        <button class="btn btn-warning" onclick="addToCart({{ product_item_data.id }}, {{ product_item_data.size }}, {{ product_item_data.color }})">
-          <i class="bi bi-cart-plus"></i>Add to Cart
+        <button class="btn btn-warning" 
+          onclick="{% if user.is_authenticated %}addToCart({{ product_item_data.id }}, '{{ product_item_data.size }}', '{{ product_item_data.color }}'){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
+          <i class="bi bi-cart-plus"></i> Add to Cart
         </button>
-
 
         <button class="btn btn-danger"
-           onclick="window.location.href='{% url 'direct_order' item_id=product_item_data.id %}'">
+          onclick="{% if user.is_authenticated %}window.location.href='{% url 'direct_order' item_id=product_item_data.id %}'{% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
           Buy Now
         </button>
-
       </div>
 
       <div class="mt-4">
@@ -100,7 +102,7 @@
     return cookieValue;
   }
 
-  function addToCart(productItemId,size,color) {
+  function addToCart(productItemId, size, color) {
     const csrftoken = getCookie('csrftoken');
 
     fetch('/cart/create/', {
@@ -129,9 +131,5 @@
       alert("Something went wrong!");
     });
   }
-
 </script>
-
-
 {% endblock %}
-

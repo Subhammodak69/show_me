@@ -4,46 +4,36 @@
 {% block title %}Home | Show_me{% endblock %}
 
 {% block content %}
-<div class="home-container">
-  {% for item in products.items %}
-    <div class="category-section mb-5">
-      <div class="category-header">
-        <h3 class="mb-1 text-uppercase">{{ category }}</h3>
-        <hr class="category-divider">
-      </div>
-      <div class="product-row">
-        {% for item in items %}
-          <div class="product-card">
-            <a href="{% url 'product_details' item.id %}" class="product_img">
-              <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro">
-            </a>
-            <div class="card-body product-info">
-              <a href="{% url 'product_details' item.id %}" class="text-decoration-none text-dark">
-                <h6 class="card-title product-title text-truncate">{{ item.product.name }}</h6>
-              </a>
-              <p class="text-muted mb-0">Size: <b>{{ item.size }}</b></p>
-              <p class="text-muted mb-0">Color: 
-                <span style="color: {{ item.color|lower }};">{{ item.color }}</span>
-              </p>
-              <p class="fw-bold mb-0 price">₹{{ item.price }}</p>
-            </div>
-            <div class="wishlist-icon"
-              onclick="event.stopPropagation(); toggle_wishlist_create_update({{ item.id }})">
-              {% if item.id in user_wishlist_items_ids %}
-                <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart-fill text-danger"></i>
-              {% else %}
-                <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart"></i>
-              {% endif %}
-            </div>
-          </div>
-        {% endfor %}
-      </div>
+<div class="home-container" style="gap: 20px;display: flex;">
+  {% for item in product_items %}
+  <div class="product-card">
+    <a href="{% url 'product_details' item.id %}" class="product_img">
+      <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro">
+    </a>
+    <div class="card-body product-info">
+      <a href="{% url 'product_details' item.id %}" class="text-decoration-none text-dark">
+        <h6 class="card-title product-title text-truncate">{{ item.product.name }}</h6>
+      </a>
+      <p class="text-muted mb-0">Size: <b>{{ item.size }}</b></p>
+      <p class="text-muted mb-0">Color:
+        <span style="color: {{ item.color|lower }};">{{ item.color }}</span>
+      </p>
+      <p class="fw-bold mb-0 price">₹{{ item.price }}</p>
     </div>
+    <div class="wishlist-icon" onclick="event.stopPropagation(); toggle_wishlist_create_update({{ item.id }})">
+      {% if item.id in user_wishlist_items_ids %}
+      <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart-fill text-danger"></i>
+      {% else %}
+      <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart"></i>
+      {% endif %}
+    </div>
+  </div>
+
   {% endfor %}
 </div>
 <script>
   function toggle_wishlist_create_update(item_id) {
-    const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";
     if (!isAuthenticated) {
       window.location.href = "{% url 'log_in' %}";
       return;
@@ -58,12 +48,16 @@
     })
     .then(res => res.json())
     .then(data => {
+      if (data.status === 'redirect' && data.login_url) {
+        window.location.href = data.login_url;
+        return;
+      }
       const icon = document.querySelector(`#wishlist-icon-${item_id}`);
       if (icon) {
         if (data.status === 'added') {
           icon.className = "bi bi-heart-fill text-danger wishlist-bounce";
           setTimeout(() => icon.classList.remove("wishlist-bounce"), 500);
-        } else {
+        } else if (data.status === 'removed') {
           icon.className = "bi bi-heart";
         }
       }
@@ -82,124 +76,152 @@
   }
 </script>
 
+
 <style>
-.home-container {
-  width: 100%;
-  padding: 5px 20px;
-  background: #a8fffa;
-}
-
-/* Category Header */
-.category-header h3 {
-  font-weight: 700;
-  font-size: 1.2rem;
-}
-.category-divider {
-  border-top: 2px solid #ddd;
-  width: 70px;
-  margin: 0.2rem 0 0.8rem;
-  opacity: 0.6;
-}
-
-/* Product row now behaves like a grid */
-.product-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-/* Product Card */
-.product-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(95, 180, 230, 0.13);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Hover effect */
-.product-card:hover {
-  box-shadow: 0 10px 28px rgba(90, 140, 210, 0.18);
-  transform: translateY(-2px);
-}
-
-/* Image container */
-.product_img {
-  height: 200px;
-  background: linear-gradient(90deg,#edf3fb 30%, #fff 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-.img-pro {
-  max-width: 95%;
-  max-height: 95%;
-  object-fit: contain;
-  transition: transform 0.25s ease;
-}
-.product-card:hover .img-pro {
-  transform: scale(1.08);
-}
-
-/* Info area */
-.product-info {
-  padding: 0.5rem 0.9rem;
-  font-size: 13.6px;
-}
-.product-title {
-  font-weight: 600;
-  font-size: 1rem;
-  margin-bottom: 2px;
-}
-.price {
-  color: #2c82f8;
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-/* Wishlist */
-.wishlist-icon {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 1.4rem;
-  background: rgba(255,255,255,0.95);
-  padding: 5px;
-  border-radius: 50%;
-  box-shadow: 0 1px 7px rgba(50,80,200,.11);
-}
-@keyframes wishlistBounce {
-  0% { transform: scale(1);}
-  45% { transform: scale(1.32);}
-  60% { transform: scale(0.88);}
-  100% { transform: scale(1);}
-}
-.wishlist-bounce { animation: wishlistBounce 0.5s; }
-
-/* Responsive widths */
-@media (max-width: 570px) {
-  .product-card {
-    flex: 0 0 calc(50% - 8px); /* 2 per row */
+  .home-container {
+    width: 100%;
+    padding: 5px 20px;
+    background: #a8fffa;
   }
-}
-@media (min-width: 571px) and (max-width: 700px) {
-  .product-card {
-    flex: 0 0 calc(33% - 12px); /* 4 per row */
+
+  /* Category Header */
+  .category-header h3 {
+    font-weight: 700;
+    font-size: 1.2rem;
   }
-}
-@media (min-width: 701px) and (max-width: 991px) {
-  .product-card {
-    flex: 0 0 calc(25% - 12px); /* 4 per row */
+
+  .category-divider {
+    border-top: 2px solid #ddd;
+    width: 70px;
+    margin: 0.2rem 0 0.8rem;
+    opacity: 0.6;
   }
-}
-@media (min-width: 992px) {
-  .product-card {
-    flex: 0 0 calc(16% - 13px); /* 5 per row */
+
+  /* Product row now behaves like a grid */
+  .product-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
   }
-}
+
+  /* Product Card */
+  .product-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(95, 180, 230, 0.13);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* Hover effect */
+  .product-card:hover {
+    box-shadow: 0 10px 28px rgba(90, 140, 210, 0.18);
+    transform: translateY(-2px);
+  }
+
+  /* Image container */
+  .product_img {
+    height: 200px;
+    background: linear-gradient(90deg, #edf3fb 30%, #fff 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .img-pro {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    transition: transform 0.25s ease;
+  }
+
+  .product-card:hover .img-pro {
+    transform: scale(1.08);
+  }
+
+  /* Info area */
+  .product-info {
+    padding: 0.5rem 0.9rem;
+    font-size: 13.6px;
+  }
+
+  .product-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 2px;
+  }
+
+  .price {
+    color: #2c82f8;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  /* Wishlist */
+  .wishlist-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 1.4rem;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 5px;
+    border-radius: 50%;
+    box-shadow: 0 1px 7px rgba(50, 80, 200, .11);
+  }
+
+  @keyframes wishlistBounce {
+    0% {
+      transform: scale(1);
+    }
+
+    45% {
+      transform: scale(1.32);
+    }
+
+    60% {
+      transform: scale(0.88);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .wishlist-bounce {
+    animation: wishlistBounce 0.5s;
+  }
+
+  /* Responsive widths */
+  @media (max-width: 570px) {
+    .product-card {
+      flex: 0 0 calc(50% - 8px);
+      /* 2 per row */
+    }
+  }
+
+  @media (min-width: 571px) and (max-width: 700px) {
+    .product-card {
+      flex: 0 0 calc(33% - 12px);
+      /* 4 per row */
+    }
+  }
+
+  @media (min-width: 701px) and (max-width: 991px) {
+    .product-card {
+      flex: 0 0 calc(25% - 12px);
+      /* 4 per row */
+    }
+  }
+
+  @media (min-width: 992px) {
+    .product-card {
+      flex: 0 0 calc(16% - 13px);
+      /* 5 per row */
+    }
+  }
 </style>
 
 {% endblock %}

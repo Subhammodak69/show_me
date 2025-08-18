@@ -9,7 +9,6 @@ from E_COMERCE.constants.decorators import AdminRequiredMixin
 class PosterListView(AdminRequiredMixin,View):
     def get(self,request):
         posters = poster_service.get_all_posters()
-        print(posters)
         return render(request,'admin/poster/poster_list.html',{'posters':posters})
 
 class AdminPosterCreateView(AdminRequiredMixin, View):
