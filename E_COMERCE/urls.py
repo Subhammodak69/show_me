@@ -114,5 +114,7 @@ urlpatterns = [
     path('track_order/<int:order_id>/',views.TrackOrderView.as_view(), name='track_order'),
     path('payment/create/<int:order_id>/',views.PaymentCreateView.as_view(), name='payment_create'),
     path('order/delete/<int:order_id>/', views.OrderDeleteView.as_view(), name='order-delete'),
-    path("generate-qr/", views.generate_upi_qr, name="generate_upi_qr"),
+    path('generate-qr/', views.generate_upi_qr, name='generate_upi_qr'),
+    path('razorpay/webhook/', views.razorpay_webhook, name='razorpay_webhook'),
+    path('payment/status/', views.payment_status, name='payment_status'),
 ]

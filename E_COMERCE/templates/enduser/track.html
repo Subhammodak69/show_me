@@ -16,13 +16,13 @@
             <span style="font-size:14px;color:#555;">
                 Status: 
                 {% if status_display %}
-                    <b style="color: {% if status_display == 'Delivered' %}green{% elif status_display == 'Cancelled' %}#d9534f{% else %}#2176fd{% endif %};">{{ status_display }}</b>
+                    <b style="color: {% if status_display == 'DELIVERED' %}green{% elif status_display == 'CANCELLED' %}#d9534f{% else %}#2176fd{% endif %};">{{ status_display }}</b>
                 {% else %}
                     <b>Pending</b>
                 {% endif %}
             </span>
             <br>
-            {% if expected_delivery and status_display != 'Delivered' and status_display != 'Cancelled' %}
+            {% if expected_delivery and status_display != 'DELIVERED' and status_display != 'CANCELLED' %}
                 <span style="font-size:13px;color:#888;">Expected delivery: {{ expected_delivery|date:"M d, Y" }}</span>
             {% endif %}
         </div>

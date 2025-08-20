@@ -2,6 +2,7 @@ from E_COMERCE.models import Order, OrderItem,ProductItem,CartItem,User
 from django.shortcuts import get_object_or_404
 from datetime import timedelta
 from django.core.exceptions import ObjectDoesNotExist
+from E_COMERCE.constants.default_values import Status
 
 def create_order_from_cart(user, address):
     cart_items = CartItem.objects.filter(cart__user=user, is_active=True)
@@ -127,7 +128,8 @@ def get_order_tracking_info(order_id):
     order = get_object_or_404(Order.objects.select_related('created_by'), id=order_id)
     order_items = order.orderitems.select_related('product_item__product').all()
     expected_delivery = order.created_at + timedelta(days=5)
-    status_display = order.get_status_display() if hasattr(order, 'get_status_display') else order.status
+    status_display = Status(order.status).name
+    print(status_display)
 
     return {
         'order': order,
@@ -150,3 +152,6 @@ def delete_order_and_items(order_id):
         return True
     except Order.DoesNotExist:
         raise ObjectDoesNotExist("Order not found.")
+    
+def get_sales():
+    return Order.objects.filter(status = Status.DELIVERED.value)

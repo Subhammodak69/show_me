@@ -1,4 +1,6 @@
 from E_COMERCE.models import Payment,Order
+from E_COMERCE.constants.default_values import PaymentStatus
+
 
 
 
@@ -8,16 +10,22 @@ def get_order_by_id(order_id):
     except Order.DoesNotExist:
         return None
 
-def create_payment(order, data):
-    """
-    data: dict from frontend.
-    Must have at least transaction_reference (UPI ref/txn ID) and status (from PaymentStatus)
-    """
+def create_payment(order, amount, razorpay_order_id):
     payment = Payment.objects.create(
         order=order,
-        amount=order.total_price,
-        status=data.get("status"),  # integer, use PaymentStatus enum
-        transaction_reference=data.get("transaction_reference"),
-        # add more fields as your model requires
+        amount=amount,
+        payment_gateway_order_id=razorpay_order_id,
+        status=PaymentStatus.PENDING.value,
     )
     return payment
+
+def update_payment_status(razorpay_order_id, status, transaction_reference=None, utr=None):
+    payment = Payment.objects.get(payment_gateway_order_id=razorpay_order_id)
+    payment.status = status
+    if transaction_reference:
+        payment.transaction_reference = transaction_reference
+    if utr:
+        payment.utr = utr
+    payment.save()
+    return payment
+

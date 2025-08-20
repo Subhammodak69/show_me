@@ -1,6 +1,5 @@
 import json
 from django.views import View
-from django.http import JsonResponse, Http404
 from django.shortcuts import render
 from E_COMERCE.services import payment_service,order_service
 from django.core.exceptions import ObjectDoesNotExist
@@ -10,7 +9,13 @@ import qrcode
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from E_COMERCE.constants.decorators import EnduserRequiredMixin
+import json, razorpay
+from django.http import JsonResponse, HttpResponse, Http404
+from E_COMERCE.constants.default_values import PaymentStatus
 
+
+
+razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 class PaymentCreateView(EnduserRequiredMixin,View):
     def get(self, request, order_id):
@@ -26,15 +31,126 @@ class PaymentCreateView(EnduserRequiredMixin,View):
                 return JsonResponse({"error": "Order not found or inactive."}, status=404)
 
             data = json.loads(request.body)
-            # Frontend should send at least {status, transaction_reference}
-            payment = payment_service.create_payment(order, data)
+            amount = data.get('amount')
+            upi_id = data.get('upi_id')   # This line is important
+            if not amount or not upi_id:
+                return JsonResponse({"error": "Amount and UPI ID required"}, status=400)
+
+            # Razorpay order creation (ensure valid credentials and required params)
+            razorpay_order = razorpay_client.order.create({
+                "amount": int(float(amount) * 100),
+                "currency": "INR",
+                "payment_capture": 1,
+                # You may optionally add notes or metadata
+            })
+
+            payment = payment_service.create_payment(order, amount, razorpay_order['id'])
+            # Optionally store upi_id in the Payment object or logs, if business-legal/safe
             return JsonResponse({
-                "message": "Payment created successfully!",
+                "message": "Payment initiated!",
                 "payment_id": payment.id,
-                "status": payment.status,
+                "razorpay_order_id": razorpay_order['id'],
+                "amount": amount,
             })
         except Exception as e:
+            print("Error in payment POST:", str(e))  # Add this for easier debugging
             return JsonResponse({"error": str(e)}, status=400)
+
+
+from urllib.parse import quote  # For URL encoding
+
+def generate_upi_qr(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            upi_id = data.get("upi_id", "")            # Used as payer name
+            amount = data.get("amount")
+            order_id = data.get("order_id", "")
+            # You can validate upi_id here if you want (e.g., regex), or just use as name
+
+            # Validation: require a real amount and a valid receiver UPI
+            if not amount:
+                return JsonResponse({"error": "Amount is required"}, status=400)
+            
+            receiver_upi_id = getattr(settings, "MERCHANT_UPI_ID", None)
+            if not receiver_upi_id:
+                return JsonResponse({"error": "No receiver UPI ID configured"}, status=500)
+            
+            # UPI expects all parameter values URL-encoded!
+            pa = quote(str(receiver_upi_id))
+            pn = quote(str(upi_id)) if upi_id else "Valued%20Customer"
+            am = quote(str(amount))
+            cu = "INR"
+            tn = quote(f"Order {order_id}") if order_id else ""
+
+            upi_url = f"upi://pay?pa={pa}&pn={pn}&am={am}&cu={cu}"
+            if tn:
+                upi_url += f"&tn={tn}"
+
+            # Generate QR code:
+            qr = qrcode.QRCode(version=1, box_size=10, border=5)
+            qr.add_data(upi_url)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+            # (Optional) Log for debugging -- remove in production
+            print("Generated UPI URL:", upi_url)
+
+            return JsonResponse({"qr_code": qr_base64, "upi_url": upi_url})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+from E_COMERCE.models import Payment
+
+def payment_status(request):
+    razorpay_order_id = request.GET.get("razorpay_order_id")
+    if not razorpay_order_id:
+        return JsonResponse({"error": "Missing order id"}, status=400)
+    try:
+        payment = Payment.objects.get(payment_gateway_order_id=razorpay_order_id)
+        if payment.status == PaymentStatus.SUCCESS.value:
+            status = "SUCCESS"
+        elif payment.status == PaymentStatus.FAILED.value:
+            status = "FAILED"
+        else:
+            status = "PENDING"
+        return JsonResponse({"status": status})
+    except Payment.DoesNotExist:
+        return JsonResponse({"error": "No such payment"}, status=404)
+
+
+
+@csrf_exempt
+def razorpay_webhook(request):
+    try:
+        payload = json.loads(request.body)
+        # Validate webhook with signature (recommended: see Razorpay docs)
+        payment_entity = payload['payload']['payment']['entity']
+        razorpay_order_id = payment_entity.get('order_id')
+        status = payment_entity.get('status') # 'captured', 'failed', etc.
+        transaction_reference = payment_entity.get('id')
+        utr = payment_entity.get('acquirer_data', {}).get('upi_transaction_id')
+
+        # Map Razorpay status to your PaymentStatus enum
+        if status == "captured":
+            payment_status = PaymentStatus.SUCCESS.value
+        elif status == "failed":
+            payment_status = PaymentStatus.FAILED.value
+        else:
+            payment_status = PaymentStatus.PENDING.value
+
+        payment_service.update_payment_status(
+            razorpay_order_id, payment_status, transaction_reference, utr
+        )
+    except Exception as e:
+        return HttpResponse(str(e), status=400)
+    return HttpResponse("OK", status=200)
+
         
         
 class OrderDeleteView(EnduserRequiredMixin, View):
@@ -55,37 +171,3 @@ class OrderDeleteView(EnduserRequiredMixin, View):
 
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-def generate_upi_qr(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            sender_upi_id = data.get("upi_id")  # This is the sender (customer)
-            amount = data.get("amount")
-
-            if not sender_upi_id or not amount:
-                return JsonResponse({"error": "Sender UPI ID and amount are required"}, status=400)
-
-            # Receiver is fixed from settings
-            receiver_upi_id = settings.MERCHANT_UPI_ID
-
-            # UPI payment URL format: receiver is `pa`, sender is in `pn` (payer name field)
-            upi_url = f"upi://pay?pa={receiver_upi_id}&pn={sender_upi_id}&am={amount}&cu=INR"
-
-            # Generate QR Code
-            qr = qrcode.QRCode(version=1, box_size=10, border=5)
-            qr.add_data(upi_url)
-            qr.make(fit=True)
-            img = qr.make_image(fill_color="black", back_color="white")
-
-            # Convert to base64 for sending in JSON
-            buffer = BytesIO()
-            img.save(buffer, format="PNG")
-            qr_base64 = base64.b64encode(buffer.getvalue()).decode()
-
-            return JsonResponse({"qr_code": qr_base64})
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return JsonResponse({"error": "Invalid request method"}, status=405)

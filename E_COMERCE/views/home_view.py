@@ -1,7 +1,7 @@
 from django.views import View
 from django.shortcuts import render
 from E_COMERCE.constants.decorators import AdminRequiredMixin
-from E_COMERCE.services import user_service,poster_service,order_service,productitem_service
+from E_COMERCE.services import user_service,poster_service,order_service,productitem_service,category_service
 import random
 
 
@@ -19,7 +19,7 @@ class HomeView(View):
             }
         else:
             user_data = {'is_authenticated': False}
-
+        categories = category_service.get_categories()
         # ----- Poster Data -----
         posters_qs = poster_service.get_all_posters()  # QuerySet
         posters = list(posters_qs)  # Convert to list
@@ -33,6 +33,7 @@ class HomeView(View):
             'enduser/home.html',
             {
                 'user': user_data,
+                'categories':categories,
                 'posters': posters,
                 'best_deals': best_deals
             }
@@ -47,7 +48,7 @@ class AdminHomeView(AdminRequiredMixin, View):
         total_orders = order_service.get_total_order_count()
         
         # Simulated sales data (you can replace with real logic)
-        sales = 56789
+        sales = order_service.get_sales().count()
         store = 12345
 
         recent_orders = (
