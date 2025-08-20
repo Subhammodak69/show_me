@@ -12,11 +12,11 @@
     </a>
     <div class="card-body product-info">
       <a href="{% url 'product_details' item.id %}" class="text-decoration-none text-dark">
-        <h6 class="card-title product-title text-truncate">{{ item.product.name }}</h6>
+        <h6 class="card-title product-title text-truncate">{{ item.product_name }}</h6>
       </a>
-      <p class="text-muted mb-0">Size: <b>{{ item.size }}</b></p>
+      <p class="text-muted mb-0">Size: <b>{{item.display_size}}</b></p>
       <p class="text-muted mb-0">Color:
-        <span style="color: {{ item.color|lower }};">{{ item.color }}</span>
+        <span style="color: {{ item.color|lower }};">{{ item.display_color }}</span>
       </p>
       <p class="fw-bold mb-0 price">₹{{ item.price }}</p>
     </div>

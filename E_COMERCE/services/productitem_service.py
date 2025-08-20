@@ -5,7 +5,23 @@ from uuid import uuid4
 from django.conf import settings
 
 def get_product_items_by_category(category_id):
-    return ProductItem.objects.filter(product__subcategory__category__id= category_id, is_active =True)
+    items = ProductItem.objects.filter(product__subcategory__category__id= category_id, is_active =True)
+    data = []
+    if items:
+        data = [
+            {
+                'id':item.id,
+                'photo_url':item.photo_url,
+                'size':item.size,
+                'color':item.color,
+                'display_size':Size(item.size).name,
+                'display_color':Color(item.color).name,
+                'product_name': item.product.name,
+                'price': item.price,
+            }
+            for item in items
+        ]
+    return data
 
 def get_product_item_related_product_items(product_id):
     items = list( ProductItem.objects.filter(product__id = product_id,is_active = True))

@@ -18,7 +18,9 @@ db.sqlite3
 # macOS system files
 .DS_Store
 
-
+# Static and media files
+static/
+media/
 
 # Optional (if you use collectstatic)
 staticfiles/
