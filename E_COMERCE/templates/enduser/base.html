@@ -28,34 +28,60 @@
           <div class="d-flex align-items-center" style="gap: 40px;width: 100%;">
             <!-- Dropdown menu -->
             <ul class="navbar-nav mb-2 mb-lg-0">
-              <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="dropdownToggleBtn" data-bs-toggle="tooltip" data-bs-placement="bottom"
-                  title="Category" style="padding: 0px !important; font-size: 25px; margin-left: 20px">
-                  <i class="bi bi-list"></i>
+  <li class="nav-item dropdown">
+    <a class="nav-link" href="#" id="dropdownToggleBtn" data-bs-toggle="tooltip" data-bs-placement="bottom"
+      title="Category" style="padding: 0px !important; font-size: 25px; margin-left: 20px">
+      <i class="bi bi-list"></i>
+    </a>
+    <ul class="dropdown-menu custom-dropdown-menu overflow-auto"
+        style="top: 126%; max-height: 80vh">
+      <li>
+        <h6 class="dropdown-header">Categories</h6>
+      </li>
+      <!-- Categories will be inserted here -->
+      <span id="category-list"></span>
+      <li>
+        <hr class="dropdown-divider" />
+      </li>
+      <li>
+        <a class="dropdown-item text-info" href="javascript:void(0);" >Show All</a>
+      </li>
+    </ul>
+  </li>
+</ul>
 
-                </a>
 
-                <ul class="dropdown-menu custom-dropdown-menu overflow-auto" style="top: 126%; max-height: 80vh">
-                  <li>
-                    <h6 class="dropdown-header">Categories</h6>
-                  </li>
-                  {% for category in categories %}
-                  <li>
-                    <a class="dropdown-item" href="javascript:void(0);"
-                      onclick="showOnlyCategory('{{ category.name|slugify }}')">{{ category.name }}</a>
-                  </li>
-                  {% endfor %}
-                  <li>
-                    <hr class="dropdown-divider" />
-                  </li>
-                  <li>
-                    <a class="dropdown-item text-info" href="javascript:void(0);" onclick="showAllCategories()">Show
-                      All</a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+  fetch('/api/all/category/')
+    .then(response => response.json())
+    .then(data => {
+      // data should be an array of categories, with .id and .name
+      const categoryList = document.getElementById('category-list');
+      categoryList.innerHTML = ''; // clear if necessary
 
+      data.forEach(category => {
+        // Build each list item
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'dropdown-item';
+        a.href = `/category/products/${category.id}/`; // or use your url pattern
+        a.textContent = category.name;
+        // If you prefer JS redirection instead of normal link:
+        // a.href = "javascript:void(0);"
+        // a.onclick = () => window.location.href = `/category/${category.id}/`;
+
+        li.appendChild(a);
+        categoryList.appendChild(li);
+      });
+    })
+    .catch(error => {
+      // Handle error (optional)
+      console.error('Error fetching categories:', error);
+    });
+});
+
+</script>
             <div class="navbar-brand" style="font-size: 30px; color: #21d6f9 !important"
               onclick="window.location.href='/'">
               <em><b>Show Me</b></em>
@@ -365,10 +391,6 @@ window.addEventListener('load', () => {
         event.stopPropagation();
       });
 
-      // Prevent close when clicking inside dropdown
-      dropdownMenu.addEventListener("click", function (event) {
-        event.stopPropagation();
-      });
 
       // Prevent close when clicking nav-item container
       navDropdown.addEventListener("click", function (event) {
@@ -380,51 +402,7 @@ window.addEventListener('load', () => {
         dropdownMenu.classList.remove("show");
       });
 
-      // Highlight active category link if backend sends slug
-      const currentSlug = "{{ current_category_slug|default:''|escapejs }}";
-      if (currentSlug) {
-        document.querySelectorAll(".dropdown-menu a.dropdown-item").forEach((a) => {
-          if (
-            a.textContent
-              .trim()
-              .toLowerCase()
-              .replace(/\s+/g, "-") === currentSlug.toLowerCase()
-          ) {
-            a.classList.add("active");
-          } else {
-            a.classList.remove("active");
-          }
-        });
-        // Optionally trigger filtered display on load
-        if (typeof showOnlyCategory === "function") {
-          showOnlyCategory(currentSlug);
-        }
-      }
     });
-
-    function showAllCategories() {
-      document.querySelectorAll(".category-section").forEach((section) => {
-        section.style.display = "block";
-        section.style.opacity = 1;
-      });
-      document.querySelector(".custom-dropdown-menu").classList.remove("show");
-    }
-    function showOnlyCategory(slug) {
-      document.querySelectorAll(".category-section").forEach((section) => {
-        if (section.id === "category-" + slug) {
-          section.style.display = "block";
-          setTimeout(() => {
-            section.style.opacity = 1;
-          }, 50);
-        } else {
-          section.style.opacity = 0;
-          setTimeout(() => {
-            section.style.display = "none";
-          }, 300);
-        }
-      });
-      document.querySelector(".custom-dropdown-menu").classList.remove("show");
-    }
   </script>
 
   <style>

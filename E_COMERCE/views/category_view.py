@@ -66,3 +66,11 @@ class ToggleCategoryStatusView(AdminRequiredMixin,View):
 
         except Exception as e:
             return JsonResponse({'success': False, 'error': 'Something went wrong'}, status=500)
+        
+
+
+class CategoryApiListView(View):
+    def get(self, request):
+        categories = category_service.get_categories()  # Should return a queryset or list of dicts
+        data = list(categories.values('id', 'name'))  # Adjust fields as needed
+        return JsonResponse(data, safe=False)

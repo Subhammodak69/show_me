@@ -1,9 +1,7 @@
-from collections import defaultdict
 from django.views import View
 from django.shortcuts import render
-from E_COMERCE.constants.decorators import AdminRequiredMixin,EnduserRequiredMixin
-from django.contrib.auth import login
-from E_COMERCE.services import user_service,poster_service,category_service,order_service,productitem_service
+from E_COMERCE.constants.decorators import AdminRequiredMixin
+from E_COMERCE.services import user_service,poster_service,order_service,productitem_service
 import random
 
 
@@ -22,10 +20,6 @@ class HomeView(View):
         else:
             user_data = {'is_authenticated': False}
 
-        # ----- Category Data -----
-        all_categories = category_service.get_all_category()  # Already a list
-        categories = random.sample(all_categories, min(len(all_categories), 12))
-
         # ----- Poster Data -----
         posters_qs = poster_service.get_all_posters()  # QuerySet
         posters = list(posters_qs)  # Convert to list
@@ -34,13 +28,11 @@ class HomeView(View):
         all_products_qs = productitem_service.get_all_productitems()
         all_products = list(all_products_qs)  # Convert to list
         best_deals = random.sample(all_products, min(len(all_products), 8))  # Use min(), not max()
-        print(best_deals)
         return render(
             request,
             'enduser/home.html',
             {
                 'user': user_data,
-                'categories': categories,
                 'posters': posters,
                 'best_deals': best_deals
             }
