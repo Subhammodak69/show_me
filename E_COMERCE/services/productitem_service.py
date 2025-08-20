@@ -4,6 +4,10 @@ import os
 from uuid import uuid4
 from django.conf import settings
 
+
+def get_total_is_not_active_items():
+    return ProductItem.objects.filter(is_active = False)
+
 def get_product_items_by_category(category_id):
     items = ProductItem.objects.filter(product__subcategory__category__id= category_id, is_active =True)
     data = []

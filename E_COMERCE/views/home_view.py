@@ -49,8 +49,9 @@ class AdminHomeView(AdminRequiredMixin, View):
         
         # Simulated sales data (you can replace with real logic)
         sales = order_service.get_sales().count()
-        store = 12345
-
+        total_product_items = productitem_service.get_all_productitems().count()
+        total_is_not_active_items = productitem_service.get_total_is_not_active_items().count()
+        store = (total_product_items)-(total_is_not_active_items)
         recent_orders = (
             order_service.get_recent_orders()
         )
