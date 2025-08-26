@@ -3,7 +3,32 @@ from E_COMERCE.constants.default_values import Size,Color
 import os
 from uuid import uuid4
 from django.conf import settings
+from collections import defaultdict
 
+
+
+def get_all_productitems_by_category():
+    """
+    Returns a dict mapping Category instances to a list of their active ProductItems.
+    Only active categories, subcategories, products, and product items are included.
+    """
+    # Prefetch productitems through product -> subcategory -> category
+    productitems = ProductItem.objects.filter(
+        is_active=True,
+        product__is_active=True,
+        product__subcategory__is_active=True,
+        product__subcategory__category__is_active=True
+    ).select_related(
+        'product__subcategory__category'
+    ).order_by('product__subcategory__category__name')
+
+    category_to_products = defaultdict(list)
+    
+    for item in productitems:
+        category = item.product.subcategory.category
+        category_to_products[category].append(item)
+    
+    return category_to_products
 
 def get_total_is_not_active_items():
     return ProductItem.objects.filter(is_active = False)

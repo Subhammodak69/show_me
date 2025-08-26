@@ -20,25 +20,33 @@ class HomeView(View):
         else:
             user_data = {'is_authenticated': False}
         categories = category_service.get_categories()
+
         # ----- Poster Data -----
-        posters_qs = poster_service.get_all_posters()  # QuerySet
-        posters = list(posters_qs)  # Convert to list
+        posters_qs = poster_service.get_all_posters()
+        posters = list(posters_qs)  # convert to list
 
         # ----- Product/Best Deals Data -----
-        all_products_qs = productitem_service.get_all_productitems()
-        all_products = list(all_products_qs)  # Convert to list
-        best_deals = random.sample(all_products, min(len(all_products), 8))  # Use min(), not max()
+        products_by_category = productitem_service.get_all_productitems_by_category()
+
+        # Flatten for best deals or other logic if needed
+        all_products = [item for products in products_by_category.values() for item in products]
+
+        best_deals = random.sample(all_products, min(len(all_products), 10))
+
+        shuffled_products = all_products[:]
+        random.shuffle(shuffled_products)
+
         return render(
             request,
             'enduser/home.html',
             {
                 'user': user_data,
-                'categories':categories,
+                'categories': categories,
                 'posters': posters,
-                'best_deals': best_deals
+                'best_deals': best_deals,
+                'products_by_category': products_by_category.items(),  # pass for template grouping
             }
         )
-
 
 
 

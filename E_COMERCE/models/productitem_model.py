@@ -13,6 +13,7 @@ class ProductItem(models.Model):
         choices=[(c.name,c.value) for c in Color],
         blank=False,null=False
         )
+    brand_name = models.CharField(max_length=200, null=True, blank=True)
     price = models.IntegerField(blank= False,null=False)
     photo_url = models.URLField(blank=False , null=False)
     is_active = models.BooleanField(default=True)

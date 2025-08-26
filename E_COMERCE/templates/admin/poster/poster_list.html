@@ -3,61 +3,61 @@
 {% block title %}Poster List | Show_me{% endblock %}
 {% block content %}
 <div class="container mt-5">
-      <h2 class="mb-4">All Posters</h2>
-      <div class="mb-3 text-end">
-            <a href="{% url 'admin_poster_create' %}" class="btn btn-success">+ Add Poster</a>
-          </div>
-      <table class="table table-bordered table-hover shadow-sm bg-white rounded">
-            <thead class="table-light">
-                  <tr>
-                        <th>ID</th>
-                        <th>User</th>
-                        <th>Title</th>
-                        <th>Photo</th>
-                        <th>Status</th>
-                        <th>Active Period</th>
-                        <th>Action</th>
-                      </tr>
-                </thead>
-            <tbody>
-                  {% for poster in posters %}
-                  <tr>
-                        <td>{{ poster.id }}</td>
-                        <td>{{ poster.created_by.get_full_name }}</td>
-                        <td>{{ poster.title }}</td>
-                        <td>
-                              <img src="{{ poster.photo_url }}" alt="Poster"
+      <h2 class="mb-4">All Posters</h2>
+      <div class="mb-3 text-end">
+            <a href="{% url 'admin_poster_create' %}" class="btn btn-success">+ Add Poster</a>
+          </div>
+      <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+            <thead class="table-light">
+                  <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Title</th>
+                        <th>Photo</th>
+                        <th>Status</th>
+                        <th>Active Period</th>
+                        <th>Action</th>
+                      </tr>
+                </thead>
+            <tbody>
+                  {% for poster in posters %}
+                  <tr>
+                        <td>{{ poster.id }}</td>
+                        <td>{{ poster.created_by.get_full_name }}</td>
+                        <td>{{ poster.title }}</td>
+                        <td>
+                              <img src="{{ poster.photo_url }}" alt="Poster"
                         style="width:80px;height:40px;object-fit:cover;">
-                            </td>
-                        <td>
-                              <span id="status-badge-{{ poster.id }}"
+                            </td>
+                        <td>
+                              <span id="status-badge-{{ poster.id }}"
                         class="badge {% if poster.is_active %}bg-success{% else %}bg-danger{% endif %}">
-                                    {% if poster.is_active %}Active{% else %}Inactive{% endif %}
-                                  </span>
-                            </td>
-                        <td>
-                              {% if poster.start_date %}{{ poster.start_date|date:"Y-m-d H:i" }}{% endif %}
-                              -
-                              {% if poster.end_date %}{{ poster.end_date|date:"Y-m-d H:i" }}{% endif %}
-                            </td>
-                        <td>
-                              <a href="{% url 'admin_poster_update' poster.id %}" class="btn btn-sm btn-warning me-1">
-                                    Update
-                                  </a>
-                              <button id="toggle-btn-{{ poster.id }}"
-                        class="btn btn-sm {% if poster.is_active %}btn-danger{% else %}btn-success{% endif %}"          
-                            onclick="togglePosterStatus({{ poster.id }}, {{ poster.is_active|yesno:'true,false' }})">
-                                    {% if poster.is_active %}Deactivate{% else %}Activate{% endif %}
-                                  </button>
-                            </td>
-                      </tr>
-                  {% empty %}
-                  <tr>
-                        <td colspan="7" class="text-center">No posters found.</td>
-                      </tr>
-                  {% endfor %}
-                </tbody>
-          </table>
+                                    {% if poster.is_active %}Active{% else %}Inactive{% endif %}
+                                  </span>
+                            </td>
+                        <td>
+                    {% if poster.start_date %}{{ poster.start_date|date:"Y-m-d H:i" }}{% endif %}
+                  -
+                    {% if poster.end_date %}{{ poster.end_date|date:"Y-m-d H:i" }}{% endif %}
+            </td>
+        <td >
+                    <a href="{% url 'admin_poster_update' poster.id %}" class="btn btn-sm btn-warning me-1">
+                        Update
+                     </a>
+                 <button id="toggle-btn-{{ poster.id }}"
+                        class="btn btn-sm {% if poster.is_active %}btn-danger{% else %}btn-success{% endif %}"          
+                            onclick="togglePosterStatus({{ poster.id }}, {{ poster.is_active|yesno:'true,false' }})">
+                                    {% if poster.is_active %}Deactivate{% else %}Activate{% endif %}
+                                  </button>
+                            </td>
+                      </tr>
+                  {% empty %}
+                  <tr>
+                        <td colspan="7" class="text-center">No posters found.</td>
+                      </tr>
+                  {% endfor %}
+                </tbody>
+          </table>
 </div>
 
 <script>

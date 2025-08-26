@@ -1,0 +1,93 @@
+{% extends 'admin/home.html'%}
+{% load static %}
+{% block title %}Offer List | Show_me {% endblock %}
+{% block content %}
+
+<div class="container mt-5">
+  <h2 class="mb-4">All Offers</h2>
+  <div class="mb-3 text-end">
+    <a href="{% url 'offer_create' %}" class="btn btn-success">+ Add Offer</a>
+  </div>
+
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Product</th>
+        <th>Discount</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for offer in offers %}
+      <tr>
+        <td>{{ offer.id }}</td>
+        <td>{{ offer.title }}</td>
+        <td>{{ offer.description|truncatechars:50 }}</td>
+        {% if offer.product %}
+          <td>{{ offer.product.name }}</td>
+        {% else %}
+          <td>&mdash;</td>  {# Shows a dash if no product #}
+        {% endif %}
+        <td>{{ offer.discount_value }}</td>
+        <td>{{ offer.start_date }}</td>
+        <td>{{ offer.end_date }}</td>
+        <td>
+          <span id="status-badge-{{ offer.id }}" class="badge {% if offer.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if offer.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'offer_update' offer.id %}" class="btn btn-sm btn-warning me-1">Update</a>
+
+          <button id="toggle-btn-{{ offer.id }}"
+                  class="btn btn-sm {% if offer.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="toggleOfferStatus({{ offer.id }}, {{ offer.is_active|yesno:'true,false' }})">
+            {% if offer.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" class="text-center">No offers found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function toggleOfferStatus(offerId, currentStatus) {
+  const response = await fetch(`/admin/offer/toggle-status/${offerId}/`, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token }}",
+    },
+    body: JSON.stringify({ is_active: !currentStatus })
+  });
+
+  const result = await response.json();
+  if(result.success){
+    const newStatus = result.new_status;
+
+    const badge = document.getElementById(`status-badge-${offerId}`);
+    badge.textContent = newStatus ? "Active" : "Inactive";
+    badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+    const button = document.getElementById(`toggle-btn-${offerId}`);
+    button.textContent = newStatus ? "Deactivate" : "Activate";
+    button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+    button.setAttribute("onclick", `toggleOfferStatus(${offerId}, ${newStatus})`);
+  } else {
+    alert(result.error || "Failed to update status.");
+  }
+}
+</script>
+
+{% endblock %}

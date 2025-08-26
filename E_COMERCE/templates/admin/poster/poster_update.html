@@ -3,64 +3,64 @@
 {% block title %}Poster Update | Show_me{% endblock %}
 {% block content %}
 <div class="mb-3 text-center">
-    <h2 class="mb-4">Poster Update</h2>
+    <h2 class="mb-4">Poster Update</h2>
 </div>
 <div class="container" style="padding: 40px; max-width: 600px; background: whitesmoke; border-radius: 10px;">
-    <form id="updatePosterForm" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control" id="title" name="title" value="{{ poster.title }}">
-        </div>
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="2">{{ poster.description }}</textarea>
-        </div>
-        <div class="mb-3">
-            <label for="photo" class="form-label">Photo</label>
-            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
-            {% if poster.photo_url %}
-                <div class="mt-2">
-                    <span class="text-muted" style="font-size:13px;">Current image:</span><br>
-                    <img src="{{ poster.photo_url }}" alt="Current Poster Photo" style="width: 160px; height:auto; border-radius:5px;">
-                </div>
-            {% endif %}
-        </div>
-        <div class="mb-3 row">
-            <div class="col">
-                <label for="start_date" class="form-label">Start Date</label>
-                <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="{{ poster.start_date|date:'Y-m-d\\TH:i' }}">
-            </div>
-            <div class="col">
-                <label for="end_date" class="form-label">End Date</label>
-                <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="{{ poster.end_date|date:'Y-m-d\\TH:i' }}">
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a href="{% url 'admin_poster_list' %}" class="btn btn-secondary ms-2">Cancel</a>
-    </form>
+    <form id="updatePosterForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ poster.title }}">
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="2">{{ poster.description }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="photo" class="form-label">Photo</label>
+            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+            {% if poster.photo_url %}
+                <div class="mt-2">
+                    <span class="text-muted" style="font-size:13px;">Current image:</span><br>
+                    <img src="{{ poster.photo_url }}" alt="Current Poster Photo" style="width: 160px; height:auto; border-radius:5px;">
+                </div>
+            {% endif %}
+        </div>
+        <div class="mb-3 row">
+            <div class="col">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="{{ poster.start_date|date:'Y-m-d\\TH:i' }}">
+            </div>
+            <div class="col">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="{{ poster.end_date|date:'Y-m-d\\TH:i' }}">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{% url 'admin_poster_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
 </div>
 <script>
 document.getElementById('updatePosterForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const form = document.getElementById('updatePosterForm');
-    const formData = new FormData(form);
+    e.preventDefault();
+    const form = document.getElementById('updatePosterForm');
+    const formData = new FormData(form);
 
 
-    const response = await fetch("{% url 'admin_poster_update' poster.id %}", {
-        method: "POST",
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: formData
-    });
+    const response = await fetch("{% url 'admin_poster_update' poster.id %}", {
+        method: "POST",
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    });
 
-    const result = await response.json();
-    if (result.success) {
-        window.location.href = "{% url 'admin_poster_list' %}";
-    } else {
-        alert("Error: " + result.error);
-    }
+    const result = await response.json();
+    if (result.success) {
+        window.location.href = "{% url 'admin_poster_list' %}";
+    } else {
+        alert("Error: " + result.error);
+    }
 });
 </script>
 {% endblock %}

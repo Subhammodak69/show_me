@@ -9,4 +9,5 @@ from .productitem_service import *
 from .cartitem_service import *
 from .orderitem_service import *
 from .poster_service import *
+from .offer_service import *
 

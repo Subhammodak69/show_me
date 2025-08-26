@@ -1,0 +1,77 @@
+{% extends 'admin/home.html'%}
+{% load static %}
+{% block title %}Offer Create | Show_me {% endblock %}
+{% block content %}
+
+<div class="mb-3 text-center">
+  <h2 class="mb-4">Create Offer</h2>
+</div>
+<div class="container" style="padding: 40px;max-width: 700px;background: whitesmoke;border-radius: 10px;">
+<form id="createOfferForm">
+  {% csrf_token %}
+  
+  <div class="mb-3">
+    <label for="title" class="form-label">Offer Title</label>
+    <input type="text" class="form-control" id="title" name="title" required>
+  </div>
+  
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea class="form-control" id="description" name="description"></textarea>
+  </div>
+  
+  <div class="mb-3">
+    <label for="product" class="form-label">Select Product</label>
+    <select id="product" name="product" class="form-select">
+      <option value="">-- None --</option>
+      {% for product in products %}
+      <option value="{{ product.id }}">{{ product.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  <div class="mb-3">
+    <label for="discount_value" class="form-label">Discount Value</label>
+    <input type="number" class="form-control" id="discount_value" name="discount_value" step="0.01" required>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="start_date" class="form-label">Start Date</label>
+      <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="end_date" class="form-label">End Date</label>
+      <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Create</button>
+</form>
+</div>
+
+<script>
+document.getElementById('createOfferForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const formData = new FormData(this);
+
+  const response = await fetch("{% url 'offer_create' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken
+    },
+    body: formData
+  });
+
+  const result = await response.json();
+  if(result.success){
+    window.location.href = "{% url 'offer_list' %}";
+  } else {
+    alert(result.error || "Error creating offer!");
+  }
+});
+</script>
+
+{% endblock %}

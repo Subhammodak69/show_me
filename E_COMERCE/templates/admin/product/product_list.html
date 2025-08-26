@@ -16,6 +16,7 @@
         <th>ID</th>
         <th>Name</th>
         <th>Subcategory</th>
+        <th>Description</th>
         <th>Created At</th>
         <th>Status</th>
         <th>Actions</th>
@@ -27,13 +28,14 @@
         <td>{{ product.id }}</td>
         <td>{{ product.name }}</td>
         <td>{{ product.subcategory.name }}</td>
+        <td>{{ product.description }}</td>
         <td>{{ product.created_at }}</td>
         <td>
           <span id="status-badge-{{ product.id }}" class="badge {% if product.is_active %}bg-success{% else %}bg-danger{% endif %}">
             {% if product.is_active %}Active{% else %}Inactive{% endif %}
           </span>
         </td>
-        <td>
+        <td class="d-flex">
           <!-- Update Button -->
           <a href="{% url 'Product_update' product.id %}" class="btn btn-sm btn-warning me-1">
         Update
