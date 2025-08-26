@@ -3,11 +3,15 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from E_COMERCE.constants.default_values import Role
 
+
 def email_exists(email):
     return User.objects.filter(email=email).exists()
 
+def email_user_exists(email):
+    return User.objects.filter(email=email).first()
+
 def user_exists(email):
-    return User.objects.filter(email = email).exists()
+    return User.objects.filter(email = email , role= Role.ENDUSER.value).exists()
 
 
 def user_is_authenticate(email, password):

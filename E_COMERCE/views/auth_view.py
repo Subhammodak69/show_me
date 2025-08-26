@@ -1,7 +1,9 @@
 from django.views import View
 from django.shortcuts import render,redirect
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate,login,logout,get_user_model
+from django.contrib.auth.hashers import make_password
 import random
+from show_me.settings import EMAIL_HOST_USER
 from django.core.mail import send_mail
 from E_COMERCE.models import User
 from django.http import JsonResponse
@@ -9,10 +11,13 @@ from django.utils import timezone
 import json
 from E_COMERCE.services import user_service
 from E_COMERCE.constants.default_values import Role
+from E_COMERCE.constants.decorators import redirect_authenticated_user_to_home
+from django.utils.decorators import method_decorator
 
 # Temporary OTP storage (or use session/cache/DB)
 OTP_STORE = {}
 
+@method_decorator(redirect_authenticated_user_to_home, name='dispatch')
 class LoginView(View):
     def get(self, request):
         return render(request, 'auth/login.html')
@@ -43,7 +48,7 @@ class LoginView(View):
     
 
 
-
+@method_decorator(redirect_authenticated_user_to_home, name='dispatch')
 class SigninView(View):
     def get(self, request):
         return render(request, 'auth/signin.html')
@@ -71,7 +76,7 @@ class SigninView(View):
         # 3. Create user
         user_exists = user_service.email_exists(email)
         if user_exists:
-            return JsonResponse({'success': False, 'message': 'User already exists. Please login.'})
+            return JsonResponse({'success': False, 'message': 'User already exists. Please login. Redirecting..........'})
 
         user = User.objects.create_user(
             username=email,
@@ -84,14 +89,104 @@ class SigninView(View):
         return JsonResponse({'success': True, 'message': 'Registration successful! You can now login.'})
 
 
+
+
+User = get_user_model()
+
+class ForgetPasswordView(View):
+    def get(self, request):
+        return render(request, 'auth/forget_password.html')
+
+    def post(self, request):
+        data = json.loads(request.body)
+        action = data.get('action')
+
+        if action == 'send_otp':
+            email = data.get('email')
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Email not registered.'})
+
+            otp = random.randint(100000, 999999)
+            print(otp)
+            expires_at = timezone.now() + timedelta(minutes=5)
+
+            OTP_STORE[email] = {'otp': otp, 'expires_at': expires_at}
+
+            subject = 'Your Password Reset OTP'
+            message = f'Your OTP to reset password is: {otp}. It is valid for 5 minutes.'
+            from_email = EMAIL_HOST_USER
+
+            try:
+                send_mail(subject, message, from_email, [email])
+                return JsonResponse({'success': True, 'message': 'OTP sent to your email.'})
+            except Exception as e:
+                return JsonResponse({'success': False, 'message': 'Failed to send OTP email.'})
+
+        elif action == 'verify_otp':
+            email = data.get('email')
+            otp = data.get('otp')
+
+            otp_record = OTP_STORE.get(email)
+            if not otp_record:
+                return JsonResponse({'success': False, 'message': 'No OTP requested for this email.'})
+
+            if timezone.now() > otp_record['expires_at']:
+                del OTP_STORE[email]
+                return JsonResponse({'success': False, 'message': 'OTP expired. Please request again.'})
+
+            if str(otp) != str(otp_record['otp']):
+                return JsonResponse({'success': False, 'message': 'Invalid OTP.'})
+
+            return JsonResponse({'success': True, 'message': 'OTP verified. You can reset your password.'})
+
+        elif action == 'set_password':
+            email = data.get('email')
+            otp = data.get('otp')
+            new_password = data.get('new_password')
+
+            otp_record = OTP_STORE.get(email)
+            if not otp_record or timezone.now() > otp_record['expires_at'] or str(otp) != str(otp_record['otp']):
+                return JsonResponse({'success': False, 'message': 'Invalid or expired OTP.'})
+
+            try:
+                user = User.objects.get(email=email)
+                user.password = make_password(new_password)
+                user.save()
+                del OTP_STORE[email]
+
+                # Authenticate and login user automatically after password reset
+                auth_user = authenticate(request, username=user.username, password=new_password)
+                if auth_user:
+                    login(request, auth_user)
+                return JsonResponse({'success': True, 'message': 'Password reset successful. redirecting...........'})
+            except User.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'User not found.'})
+
+        else:
+            return JsonResponse({'success': False, 'message': 'Invalid action.'})
+
+
 class SendOTPView(View):
     def post(self, request):
         data = json.loads(request.body)
         email = data.get('email')
-        user = user_service.email_exists(email)
-
+        user = user_service.email_user_exists(email)
+        print(user)
         if user:
-            return JsonResponse({'success': False, 'message': 'Email already exists. Please login.', 'redirect': '/login/'})
+            if user.role == Role.ADMIN.value and user.email == email:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Email already exists as Admin. Redirecting........',
+                    'redirect': '/admin/'
+                })
+            return JsonResponse({
+                'success': False,
+                'message': 'Email already exists. Redirecting........',
+                'redirect': '/login/'
+            })
 
         otp = random.randint(100000, 999999)
         expires_at = timezone.now() + timezone.timedelta(minutes=2)
@@ -101,7 +196,7 @@ class SendOTPView(View):
 
         subject = 'Your OTP Code'
         message = f'Your One-Time Password (OTP) is: {otp}'
-        from_email = 'emart86669@gmail.com'
+        from_email = EMAIL_HOST_USER
 
         try:
             send_mail(subject, message, from_email, [email])

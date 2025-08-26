@@ -33,9 +33,15 @@
         </div>
       </form>
 
+       <div class="text-center mt-4 small">
+      <a href="/forget-password/">  Forget Password </a>
+      </div>
+
       <div class="text-center mt-4 small">
         Don't have an account? <a href="/signin/" class="fw-semibold">Sign Up</a>
       </div>
+
+     
     </div>
   </div>
 </div>
@@ -85,5 +91,40 @@ loginForm.addEventListener("submit", async function (e) {
         messageBox.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
     }
 });
+
+
+//refresh page
+function reloadPageIfBackNavigation() {
+    // For pageshow event with persisted flag (bfcache)
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+
+    // For browsers that support navigation API
+    if (window.performance && window.performance.getEntriesByType) {
+        const navEntries = window.performance.getEntriesByType('navigation');
+        if (navEntries.length > 0 && navEntries[0].type === 'back_forward') {
+            window.location.reload();
+        }
+    } else if (window.performance && window.performance.navigation) {
+        // For older browsers using deprecated API
+        if (window.performance.navigation.type === 2) {  // TYPE_BACK_FORWARD = 2
+            window.location.reload();
+        }
+    }
+}
+
+// Call on page load to setup listeners/checks
+reloadPageIfBackNavigation();
+
+
+
 </script>
 {% endblock %}
+
+
+
+
+

@@ -12,7 +12,7 @@ urlpatterns = [
     path('signin/', views.SigninView.as_view(), name='sign_up'), 
     path('send-otp/', views.SendOTPView.as_view(), name='send_otp'),
     path('logout/', views.LogoutView.as_view(), name='log_out'),
-    
+    path('forget-password/', views.ForgetPasswordView.as_view(), name='forget_password'),
 
     #user
     path('admin/users/', views.UserListView.as_view(), name='user_list'),
