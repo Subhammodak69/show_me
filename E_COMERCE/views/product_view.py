@@ -4,7 +4,8 @@ from E_COMERCE.services import product_service,category_service,sub_category_ser
 from django.http import JsonResponse
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.decorators import EnduserRequiredMixin
-
+from E_COMERCE.models import ProductItem
+from django.db.models import Q
 
 class ProductDetailsView(View):
     def get(self,request,item_id):
@@ -13,6 +14,29 @@ class ProductDetailsView(View):
 
         return render(request, 'enduser/product_details.html',{'product_item_data':product_item_data,'related_products_data':related_products_data})
     
+    
+def category_product_search(request):
+    query = request.GET.get("q", "").strip()
+    productitems = []
+    if query == "":
+        productitems = []
+        
+    else:
+        productitems = ProductItem.objects.filter(
+            product__name__icontains=query,
+            is_active=True
+        )
+    print(f"Found {productitems.count()} items")  # log result count
+
+    results = [{
+        "id": item.id,
+        "product_name": item.product.name,
+        "price": item.price,
+        "photo_url": item.photo_url,
+    } for item in productitems]
+
+    return JsonResponse(results, safe=False)
+
 
 class ProductListView(AdminRequiredMixin,View):
     def get(self, request):

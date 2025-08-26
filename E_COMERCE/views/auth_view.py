@@ -169,6 +169,7 @@ class ForgetPasswordView(View):
             return JsonResponse({'success': False, 'message': 'Invalid action.'})
 
 
+
 class SendOTPView(View):
     def post(self, request):
         data = json.loads(request.body)

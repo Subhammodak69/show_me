@@ -9,7 +9,7 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="{% static 'logo/favicon.jpg' %}" />
-
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
   <!-- Bootstrap CSS & JS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous" />
@@ -377,6 +377,66 @@ window.addEventListener('load', () => {
       </div>
     </footer>
   </div>
+<script>
+
+//searchbar code 
+
+$(document).ready(function() {
+  let $searchInput = $('#searchInputDesktop'); // or #searchInputMobile
+  let $resultsList = $('<ul id="searchResults" style="left: 20%; top: 100%; position: absolute; background: white; border: 1px solid rgb(204, 204, 204); width: 60%; max-height: 200px; overflow-y: auto; z-index: 1000;"></ul>');
+  $searchInput.after($resultsList);
+  $resultsList.hide();
+
+  let debounceTimer;
+
+  $searchInput.on('input', function() {
+    clearTimeout(debounceTimer);
+    let query = $(this).val().trim();
+    if (query.length < 2) { 
+      $resultsList.empty().hide();
+      return;
+    }
+
+    debounceTimer = setTimeout(function() {
+      $.ajax({
+        url: `/category/products/search/?q=${encodeURIComponent(query)}`,
+        method: 'GET',
+        success: function(data) {
+          $resultsList.empty();
+          if (data.length === 0) {
+            $resultsList.append('<li>No results found</li>');
+          } else {
+            data.forEach(function(item) {
+              let $li = $('<li style="padding: 5px; cursor: pointer;"></li>');
+              $li.text(item.product_name); // use product_name as per your backend JSON
+              $li.on('click', function() {
+                // Redirect to product item detail page using product item's id
+                window.location.href = `/product/details/${item.id}/`; // keep your URL
+              });
+              $resultsList.append($li);
+            });
+          }
+          $resultsList.show();
+        },
+        error: function() {
+          $resultsList.empty().append('<li>Error fetching results</li>').show();
+        }
+      });
+    }, 300);
+  });
+
+  // Hide results on click outside
+  $(document).on('click', function(e) {
+    if (!$(e.target).closest($searchInput).length && !$(e.target).closest($resultsList).length) {
+      $resultsList.hide();
+    }
+  });
+});
+
+</script>
+
+
+
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
