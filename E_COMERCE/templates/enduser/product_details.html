@@ -3,7 +3,7 @@
 {% block title %}{{ product_item_data.product_name }} | Show_me{% endblock %}
 
 {% block content %}
-<div class="container my-5" style="padding:10px !important;height: 100%;">
+<div class="container" style="height: 100%;">
   {% if product_item_data %}
   <div class="row">
     <!-- Main Product Image + Related Items -->
@@ -77,9 +77,11 @@
       <div class="mt-4">
         <h6 class="fw-bold">Available Offers</h6>
         <ul class="list-unstyled">
-          <li>💳 5% Cashback on Axis Bank Credit/Debit Cards</li>
-          <li>🏦 Flat ₹500 off on HDFC Credit EMI</li>
-          <li>🔖 Special Price: Get extra 35% off</li>
+          {% if product_item_data.offer > 0 %}
+          <li class="text-success">The offered amount is rs.{{product_item_data.offer}}</li>
+          {% else %}
+          <p class="text-danger"> Offer not found yet.</p>
+          {% endif %}
         </ul>
       </div>
     </div>

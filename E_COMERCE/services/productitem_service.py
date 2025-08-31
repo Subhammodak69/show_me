@@ -1,4 +1,4 @@
-from E_COMERCE.models import Product, ProductItem
+from E_COMERCE.models import Product, ProductItem,Offer
 from E_COMERCE.constants.default_values import Size,Color
 import os
 from uuid import uuid4
@@ -76,6 +76,12 @@ def get_colour_choices_dict():
 
 def get_product_items_data(item_id):
     product_item = ProductItem.objects.filter(id=item_id, is_active=True).select_related('product', 'product__subcategory__category').first()
+    discount= Offer.objects.filter(product = item_id, is_active =True).first()
+    discount_amount = 0
+    
+    if discount:
+        discount_amount = discount.discount_value
+        
 
     if not product_item:
         return {}
@@ -84,7 +90,7 @@ def get_product_items_data(item_id):
     item_data = {
         'id': product_item.id,
         'photo': product_item.photo_url,
-        'price': product_item.price,
+        'price': (product_item.price)-(discount_amount),
         'size': product_item.size,
         'display_size': Size(product_item.size).name,
         'color': product_item.color,
@@ -95,6 +101,7 @@ def get_product_items_data(item_id):
         'product_name':product_item.product.name,
         'product_subcategory_name':product_item.product.subcategory.name,
         'product_category_name':product_item.product.subcategory.category.name,
+        'offer':discount_amount,
     }
     return item_data
 
@@ -210,14 +217,18 @@ def get_product_item_by_id(item_id):
         .filter(id=item_id, is_active=True)
         .first()
     )
-
+    offer = Offer.objects.filter(product = item.product,is_active=True).first()
+    discount_amount = 0
+    if offer:
+        discount_amount = offer.discount_value
+        
     if not item:
         return None
 
     return {
         "id": item.id,
         "product_name": item.product.name,
-        "price": item.price,
+        "price": (item.price),
         "photo_url": item.photo_url,
         "size": item.size,
         "size_name": get_size_name(item.size),
@@ -230,7 +241,9 @@ def get_product_item_by_id(item_id):
         "available_colors": [
             {"value": c.value, "name": c.name}
             for c in Color
-        ] if item.color is not None else []
+        ] if item.color is not None else [],
+        'discount_amount':discount_amount,
+        'total':(item.price)-(discount_amount),
     }
 
 
