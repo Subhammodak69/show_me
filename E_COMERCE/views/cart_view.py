@@ -64,20 +64,27 @@ class CartDetailsView(EnduserRequiredMixin, View):
     def get(self, request):
         cart_items = cart_service.get_cart_details(request.user)
 
-        total_items = len(cart_items)
-        original_price = sum(item['product_item'].price for item in cart_items)
-        discount = round(original_price * 0.25) if original_price else 0
-        platform_fee = 4 if original_price else 0
-        total = original_price - discount + platform_fee
+        total_items = sum(item['quantity'] for item in cart_items)
+        original_price = sum(item['product_item'].price * item['quantity'] for item in cart_items)
+
+        # Calculate total discount from each item's discount multiplied by quantity
+        total_discount = sum(
+            (cart_service.get_discount_by_id(item['product_item']) or 0) * item['quantity']
+            for item in cart_items
+        )
+
+        platform_fee = 0
+        total = original_price - total_discount + platform_fee
 
         return render(request, 'enduser/cart.html', {
             'cart_items': cart_items,
             'total_items': total_items,
             'price': original_price,
-            'discount': discount,
+            'discount': total_discount,
             'platform_fee': platform_fee,
             'total': total
         })
+
 
         
     

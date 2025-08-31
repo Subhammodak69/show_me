@@ -1,4 +1,4 @@
-from E_COMERCE.models import Cart, CartItem, ProductItem,User
+from E_COMERCE.models import Cart, CartItem, ProductItem,User,Offer
 from django.shortcuts import get_object_or_404
 from E_COMERCE.constants.default_values import Size, Color
 
@@ -20,14 +20,24 @@ def get_cart_details(user):
             'quantity': item.quantity,
             'size': item.size,
             'color': item.color,
+            'discount':get_discount_by_id(item.product_item),
             'display_size': Size(item.size).name,
             'display_color': Color(item.color).name
         }
         for item in cart.items.filter(is_active=True).select_related('product_item')
     ]
     
+    
     return cart_items_data
 
+def get_discount_by_id(item_id):
+    print(item_id.product)
+    discount = Offer.objects.filter(product = item_id.product, is_active = True).first()
+    discount_amount = 0
+    if discount:
+        discount_amount = discount.discount_value
+        
+    return discount_amount
 
 def add_item_to_cart(user, product_item_id, size, color, quantity):
     cart = get_or_create_cart(user)
