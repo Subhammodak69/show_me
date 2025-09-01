@@ -31,7 +31,6 @@ def get_cart_details(user):
     return cart_items_data
 
 def get_discount_by_id(item_id):
-    print(item_id.product)
     discount = Offer.objects.filter(product = item_id.product, is_active = True).first()
     discount_amount = 0
     if discount:
@@ -188,7 +187,8 @@ def get_user_cart_items(user_id):
             'available_colors': [
                 {'value': c.value, 'name': c.name}
                 for c in Color
-            ]
+            ],
+            'discount':get_discount_by_id(item.product_item)
         })
     
     return result

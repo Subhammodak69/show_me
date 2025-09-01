@@ -4,10 +4,10 @@
 {% block title %}Cart | Show_me{% endblock %}
 
 {% block content %}
-<div class="container" style="padding:10px !important;height: 100%;">
+<div class="container" style="height: 100%;">
   <div class="row">
     <!-- Left: Cart Items -->
-    <div class="col-md-8">
+    <div class="col-md-8"style="padding:0px!important;">
       <div class="mb-3 p-3 border rounded bg-white">
         <h5 class="mb-3">From Saved Addresses</h5>
         {% if cart_items %}
@@ -50,12 +50,12 @@
     </div>
 
     <!-- Right: Price Summary -->
-    <div class="col-md-4">
+    <div class="col-md-4" style="padding:0px!important;">
       <div class="border rounded bg-white p-3">
         <h6 class="fw-bold mb-3 text-muted">PRICE DETAILS</h6>
         <div class="d-flex justify-content-between mb-2">
           <span>Price ({{ total_items }} item{% if total_items > 1 %}s{% endif %})</span>
-          <span>₹{{ price }}</span>
+          <span>₹{{ price|floatformat:2 }}</span>
         </div>
         <div class="d-flex justify-content-between mb-2">
           <span>Discount</span>

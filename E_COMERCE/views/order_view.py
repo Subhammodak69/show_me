@@ -22,15 +22,18 @@ class OrderCreateView(EnduserRequiredMixin,View):
     def get(self, request):
         user = request.user
         cart_items = cart_service.get_user_cart_items(user.id)
-        total_price = sum(item['total_price'] for item in cart_items)
-        savings = cart_service.calculate_total_savings(user.id)
+        price = sum(item['total_price'] for item in cart_items)
+        total_discount = sum((item.get('discount') or 0) for item in cart_items) # NEW LINE
+        total = price-total_discount
 
         return render(request, 'enduser/order_summary.html', {
             'cart_items': cart_items,
-            'price': total_price,
-            'savings': savings,
-            'user': user
+            'price': price,
+            'discount': total_discount,  # UPDATED KEY
+            'user': user,
+            'total':total,
         })
+
 
     def post(self, request):
         address = request.POST.get("address")

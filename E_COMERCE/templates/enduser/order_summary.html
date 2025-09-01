@@ -4,7 +4,7 @@
 {% block title %}Cart | Show_me{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-md-5 pt-4" style="height: 100%; margin-bottom: 20px;">
+<div class="container-fluid" style="height: 100%;padding:0px !important; margin-bottom: 20px;">
   <h2 class="mb-3">Your Order Summary</h2>
 
   <form id="order-form" class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-4" style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
@@ -53,6 +53,24 @@
         </div>
       {% endfor %}
     </div>
+
+    <div class="border rounded p-3 mb-3 bg-light">
+        <h4>Payable Amount</h4>
+        <div class="d-flex align-items-center w-100 justify-content-between">
+          <div>Product item-- </div>
+          <div class="text-secondary">{{price|floatformat:2}}</div>
+        </div>
+        <div class="d-flex align-items-center w-100 justify-content-between">
+          <div>Discount Amount-- </div>
+          <div class="text-danger">-{{discount}}</div>
+        </div>
+        <br>
+        <hr>
+        <div class="d-flex align-items-center w-100 justify-content-between">
+          <div>Total-- </div>
+          <div class="text-success">{{total|floatformat:2}}</div>
+        </div>
+      </div>
 
     <!-- User + Address Info -->
     <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0">
