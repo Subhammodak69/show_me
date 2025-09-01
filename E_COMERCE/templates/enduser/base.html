@@ -197,6 +197,7 @@
 const mobileInput = document.getElementById('searchInputMobile');
 const desktopInput = document.getElementById('searchInputDesktop');
 
+
 // Handle icon click (toggle input)
 icon.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -287,7 +288,16 @@ window.addEventListener('load', () => {
         .desktop-search {
           display: none !important;
         }
-
+        #searchResults{
+          left:5% !important;
+            position: absolute;
+            background: white;
+            border: 1px solid rgb(204, 204, 204);
+            width: 90%!important;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
         .search-icon {
           display: inline-block !important;
         }
@@ -382,7 +392,8 @@ window.addEventListener('load', () => {
 //searchbar code 
 
 $(document).ready(function() {
-  let $searchInput = $('#searchInputDesktop'); // or #searchInputMobile
+  let $searchInput = $('#searchInputDesktop, #searchInputMobile');
+
   let $resultsList = $('<ul id="searchResults" style="left: 20%; top: 100%; position: absolute; background: white; border: 1px solid rgb(204, 204, 204); width: 60%; max-height: 200px; overflow-y: auto; z-index: 1000;"></ul>');
   $searchInput.after($resultsList);
   $resultsList.hide();
