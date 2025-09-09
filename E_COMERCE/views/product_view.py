@@ -1,43 +1,19 @@
 from django.views import View
 from django.shortcuts import render
-from E_COMERCE.services import product_service,category_service,sub_category_service,productitem_service
+from E_COMERCE.services import product_service,category_service,sub_category_service,productitem_service,rating_service
 from django.http import JsonResponse
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.decorators import EnduserRequiredMixin
-from E_COMERCE.models import ProductItem
-from django.db.models import Q
+
 
 class ProductDetailsView(View):
     def get(self,request,item_id):
         product_item_data = productitem_service.get_product_items_data(item_id)
         related_products_data = productitem_service.get_product_item_related_product_items(product_item_data['product_id'])
-
-        return render(request, 'enduser/product_details.html',{'product_item_data':product_item_data,'related_products_data':related_products_data})
+        ratings_data = rating_service.get_all_ratings_by_product_item_id(item_id)
+        return render(request, 'enduser/product_details.html',{'product_item_data':product_item_data,'related_products_data':related_products_data,'ratings': ratings_data})
     
     
-def category_product_search(request):
-    query = request.GET.get("q", "").strip()
-    productitems = []
-    if query == "":
-        productitems = []
-        
-    else:
-        productitems = ProductItem.objects.filter(
-            product__name__icontains=query,
-            is_active=True
-        )
-    print(f"Found {productitems.count()} items")  # log result count
-
-    results = [{
-        "id": item.id,
-        "product_name": item.product.name,
-        "price": item.price,
-        "photo_url": item.photo_url,
-    } for item in productitems]
-
-    return JsonResponse(results, safe=False)
-
-
 class ProductListView(AdminRequiredMixin,View):
     def get(self, request):
         products = product_service.get_all_products()

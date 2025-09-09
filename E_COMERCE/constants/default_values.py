@@ -35,6 +35,20 @@ class PaymentStatus(Enum):
     SUCCESS = 2
     FAILED = 3
     CANCELLED = 4
+    
+class PayMethods(Enum):
+    CARD = 1
+    UPI = 2
+    NETBANKING = 3
+    
+class Banks(Enum):
+    STATE_BANK_OF_INDIA = 1
+    BANDHAN_BANK = 2
+    BARODA_BANK = 3
+    AIRTEL_PAYMENTS_BANK = 4
+    CENTRAL_BANK_OF_INDIA = 5
+    
+    
 
 
     

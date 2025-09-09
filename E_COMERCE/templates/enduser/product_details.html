@@ -9,16 +9,14 @@
     <!-- Main Product Image + Related Items -->
     <div class="col-md-5">
       <div class="border rounded shadow-sm p-2 mb-3" style="height: 450px;">
-        <img src="{{ product_item_data.photo }}" alt="{{ product_item_data.product_name }}" class="img-fluid rounded" style="width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: antiquewhite;">
+        <img src="{{ product_item_data.photo }}" alt="{{ product_item_data.product_name }}" 
+             class="img-fluid rounded" 
+             style="width: 100%; height: 100%; object-fit: contain; background: antiquewhite;">
       </div>
     </div>
 
     <!-- Product Info -->
-    <div class="col-md-7" style="background: whitesmoke;">
-
+    <div class="col-md-7 rounded" style="background: #f5f5f591;padding:20px;">
       {% if related_products_data %}
       <div>
         <h6 class="text-muted mb-2">Other Available Items</h6>
@@ -56,7 +54,6 @@
 
       <p><strong>Color:</strong> {{ product_item_data.display_color }}</p>
 
-      <!-- 👇 Updated Buttons with login check -->
       <div class="d-flex gap-3 mt-3">
         <button class="btn btn-warning" 
           onclick="{% if user.is_authenticated %}addToCart({{ product_item_data.id }}, '{{ product_item_data.size }}', '{{ product_item_data.color }}'){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
@@ -84,6 +81,87 @@
           {% endif %}
         </ul>
       </div>
+      
+      <!-- Ratings & Reviews -->
+      <div class="mt-4">
+        <div class="d-flex justify-content-between">
+          <h4>Reviews</h4>
+          <button class="btn btn-primary" onclick="openreviewmodal()">Give your's Reviews</button>
+        </div>
+
+        <!-- Review Modal -->
+        <div class="review-modal" id="reviewModal" style="display:none;">
+          <div>
+            <form id="reviewForm" onsubmit="event.preventDefault(); create_review();">
+              <input type="hidden" id="product_id" value="{{ product_item_data.product_id }}" />
+
+              <div id="starRating">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="1">&#9733;</span>
+              </div>
+              <input type="hidden" id="rating" name="rating" />
+
+              <div class="px-2">
+                <div class="d-flex justify-content-between" style="position: relative;">
+                  <textarea id="review" style="border:none; background:rgb(206, 206, 206); padding:10px; width:100%;" placeholder="Write your review" required></textarea>
+
+                  <!-- Hidden file input to select photo -->
+                  <input type="file" id="photoInput" accept="image/*" style="display:none;" />
+
+                  <!-- Photo icon - click triggers file input -->
+                  <i id="photoIcon" style="right: 10px; bottom: 22%; position: absolute; font-size: 20px; cursor: pointer;" class="bi-card-image"></i>
+                </div>
+
+                <!-- Preview container -->
+                <div id="photoPreviewContainer" style="margin-top: 10px; display:none;">
+                  <img id="photoPreview" src="" alt="Photo Preview" style="max-width: 100%; max-height: 70px; border-radius: 4px;" />
+                </div>
+
+                <button class="btn btn-primary mt-2" type="submit">Submit Review</button>
+              </div>
+            </form>
+          </div>
+        </div>
+          <hr>
+
+        <!-- Reviews List -->
+        {% if ratings %}
+  <div class="reviews-container space-y-4">
+    <div id="reviews-show"></div>
+    {% for rating in ratings %}
+      <div>
+        <div class="d-flex justify-content-between items-center justify-between">
+          <div class=" d-flex gap-2 font-bold">
+            <p style="font-weight: bold; margin:0px!important;">
+            {{ rating.created_by_fullname|default:"Anonymous" }}
+            </p>
+            <div>
+          {{ rating.created_at|date:"M d, Y H:i" }}
+            </div>
+          </div>
+         {% for i in rating.rating_range %}
+  ⭐
+{% endfor %}
+{% for i in rating.empty_range %}
+  ☆
+{% endfor %}
+
+        </div>
+        <p class="text-gray-700 mb-2 m-auto" style="width:96%;">{{ rating.review }}</p>
+        {% if rating.photo %}
+          <img src="{{ rating.photo }}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-red-600 font-semibold">No reviews found yet.</p>
+{% endif %}
+
+      </div>
     </div>
   </div>
   {% else %}
@@ -91,7 +169,76 @@
   {% endif %}
 </div>
 
+<style>
+  #starRating {
+    font-size: 2rem;
+    cursor: pointer;
+  }
+  .star {
+    color: lightgray;
+    user-select: none;
+    display: inline-block;
+    margin-right: 5px;
+  }
+  .star.selected {
+    color: gold;
+  }
+</style>
+
 <script>
+  // Open review modal function
+  function openreviewmodal() {
+    document.getElementById('reviewModal').style.display = 'block';
+  }
+
+  // Star rating toggle & sum logic
+  const stars = document.querySelectorAll('#starRating .star');
+  const ratingInput = document.getElementById('rating');
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      star.classList.toggle('selected');
+      updateRating();
+    });
+  });
+
+  function updateRating() {
+    let total = 0;
+    stars.forEach(star => {
+      if (star.classList.contains('selected')) {
+        total += parseInt(star.getAttribute('data-value'));
+      }
+    });
+    ratingInput.value = total;
+    console.log('Current total rating:', total);
+  }
+
+  // Photo upload & preview
+  const photoIcon = document.getElementById('photoIcon');
+  const photoInput = document.getElementById('photoInput');
+  const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+  const photoPreview = document.getElementById('photoPreview');
+
+  photoIcon.addEventListener('click', () => {
+    photoInput.click();
+  });
+
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        photoPreview.src = e.target.result;
+        photoPreviewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      photoPreview.src = '';
+      photoPreviewContainer.style.display = 'none';
+    }
+  });
+
+  // Fetch CSRF cookie helper
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -107,6 +254,134 @@
     return cookieValue;
   }
 
+  // Submit review via AJAX with photo base64
+  function create_review() {
+    const csrftoken = getCookie('csrftoken');
+
+    const product_id = document.getElementById('product_id').value;
+    const rating = document.getElementById('rating').value;
+    const review = document.getElementById('review').value;
+
+    if (photoInput.files.length > 0) {
+      const file = photoInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const photo_url = e.target.result;
+        sendReviewData(product_id, photo_url, rating, review, csrftoken);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      sendReviewData(product_id, '', rating, review, csrftoken);
+    }
+  }
+
+function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
+  fetch('/review/create/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify({
+      product_id: product_id,
+      photo_url: photo_url,
+      rating: rating,
+      review: review,
+    }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log('Review submitted successfully!');
+      console.log(data.data);
+
+      // Reset form fields FIRST
+      const reviewForm = document.getElementById('reviewForm');
+      if (reviewForm) reviewForm.reset();
+      
+      const ratingField = document.getElementById('rating');
+      if (ratingField) ratingField.value = '';
+      
+      const photoPreview = document.getElementById('photoPreview');
+      if (photoPreview) photoPreview.src = '';
+      
+      const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+      if (photoPreviewContainer) photoPreviewContainer.style.display = 'none';
+
+      // Close the review modal
+      const reviewModal = document.getElementById('reviewModal');
+      if (reviewModal) reviewModal.style.display = 'none';
+
+      // Extract data from response
+      const reviewData = data.data;
+      const createdByFullname = reviewData.created_by_fullname || 'Anonymous';
+      const createdAt = new Date(reviewData.created_at).toLocaleString('en-US', {
+        month: 'short', 
+        day: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit'
+      });
+      const reviewText = reviewData.review;
+      const photoUrl = reviewData.photo;
+
+      // Generate stars using rating_range and empty_range arrays from backend
+      let starsHtml = '';
+      
+      // Add filled stars
+      if (Array.isArray(reviewData.rating_range)) {
+        reviewData.rating_range.forEach(() => {
+          starsHtml += '⭐';
+        });
+      }
+
+      // Add empty stars
+      if (Array.isArray(reviewData.empty_range)) {
+        reviewData.empty_range.forEach(() => {
+          starsHtml += '☆';
+        });
+      }
+
+      // Create new review element
+      const reviewsContainer = document.getElementById('reviews-show');
+      
+      if (reviewsContainer) {
+        const newReviewDiv = document.createElement('div');
+        newReviewDiv.innerHTML = `
+          <div>
+            <div class="d-flex justify-content-between items-center">
+              <div class="d-flex gap-2 font-bold">
+                <p style="font-weight: bold; margin:0px!important;">${createdByFullname}</p>
+                <div>${createdAt}</div>
+              </div>
+              <div>${starsHtml}</div>
+            </div>
+            <p class="text-gray-700 mb-2 m-auto" style="width:96%;">${reviewText}</p>
+            ${photoUrl ? `<img src="${photoUrl}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />` : ''}
+          </div>
+        `;
+
+        // Insert at the top of reviews container
+        reviewsContainer.insertBefore(newReviewDiv, reviewsContainer.firstChild);
+        
+        console.log('Review added to DOM successfully');
+      } else {
+        console.error('Reviews container not found');
+      }
+
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  })
+  .catch(error => {
+    console.error('Fetch error:', error);
+    alert('Fetch error: ' + error);
+  });
+}
+
+
+
+  // Add to Cart function (unchanged)
   function addToCart(productItemId, size, color) {
     const csrftoken = getCookie('csrftoken');
 
@@ -120,8 +395,8 @@
         product_item_id: productItemId,
         size: size,
         color: color,
-        quantity: 1
-      })
+        quantity: 1,
+      }),
     })
     .then(response => response.json())
     .then(data => {
@@ -133,7 +408,7 @@
     })
     .catch(error => {
       console.error('Error:', error);
-      alert("Something went wrong!");
+      alert('Something went wrong!');
     });
   }
 </script>

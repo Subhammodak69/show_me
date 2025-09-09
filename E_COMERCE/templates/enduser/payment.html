@@ -1,145 +1,282 @@
-{% extends 'enduser/base.html'%}
+{% extends 'enduser/base.html' %}
 {% load static %}
 {% block title %}Payment | Show_me{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4"style="width:40%;">
-            <div class="card shadow border-0 p-4">
-                <div class="card-body text-center">
-                    <h3 class="mb-4 text-primary">💰 Make Payment via UPI</h3>
-                    <div id="first-div">
+<style>
+  /* Container */
+  .payment-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh;
+    margin: 2rem auto;
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+  }
 
-                        <div class="mb-3">
-                            <input type="text" id="upi_id" class="form-control form-control-lg"
-                                placeholder="Enter your UPI ID" required>
-                        </div>
-                        <div class="mb-3">
-                            <input type="number" value={{order.total_price}} id="amount" class="form-control form-control-lg"
-                                placeholder="Enter Amount" required disabled>
-                        </div>
+  /* Left image panel */
+  .payment-image {
+    display: none;
+    background: url("{% static 'images/payment-illustration.jpg' %}") center/cover no-repeat;
+  }
 
-                        <button class="btn btn-primary btn-lg w-100" onclick="initiatePayment()">Generate QR Code</button>
-                    </div>
-                    <div id="qr_section" class="mt-4" style="display:none;">
-                        <h5 class="text-success">Scan to Pay:</h5>
-                        <img id="qr_image" class="img-fluid border rounded p-2 shadow-sm" width="250">
-                        <div class="mt-3" id="payment-status">
-                            <span class="text-secondary">Waiting for payment...</span>
-                        </div>
-                        <button class="btn btn-danger mt-3" onclick="window.location.href='/'">
-                            Back To Home
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+  /* Right form panel */
+  .payment-form {
+    flex: 1;
+    padding: 2rem;
+  }
+
+  /* Responsive columns for large screens */
+  @media (max-width: 480px) {
+    .payment-container {
+      width: 99% !important;
+    }
+  }
+  @media (min-width: 768px) {
+    .payment-container {
+      flex-direction: row;
+    }
+    .payment-image {
+      flex: 1;
+      display: block;
+    }
+    .payment-form {
+      flex: 1;
+      padding: 3rem;
+      background: white;
+    }
+  }
+
+  /* Form styling */
+  .payment-form h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+  .payment-form label {
+    font-weight: 500;
+    margin-top: 1rem;
+  }
+  .payment-form select,
+  .payment-form input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  .payment-form .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .payment-form .btn-primary {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1.1rem;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .payment-form .btn-primary:hover {
+    background-color: #0056b3;
+  }
+
+  /* Modal display hidden by default */
+  #modalbody {
+    display: none;
+  }
+
+  /* Image style fix */
+  .payment-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
+
+<div id="modalbody">
+  <div id="cautionModal" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000;">
+    <div style="background:white; padding:2rem; border-radius:8px; max-width:400px; text-align:center;">
+      <p style="margin-bottom:1.5rem; font-weight:600;">
+        If you did not pay now or back then, your order has not been processed. Do you want to go to home?
+      </p>
+      <div>
+        <button id="noBtn" style="margin-right:1rem; padding:0.5rem 1.5rem; border:none; background:#ccc; border-radius:4px; cursor:pointer;">
+          No
+        </button>
+        <button id="yesBtn" style="padding:0.5rem 1.5rem; border:none; background:#007bff; color:white; border-radius:4px; cursor:pointer;">
+          Yes
+        </button>
+      </div>
     </div>
+  </div>
+</div>
+
+<div class="payment-container" style="width:80%;">
+  <div class="payment-image">
+    <img src="{% static 'logo/Payment_pic.jpg' %}" alt="Payment Image" />
+  </div>
+  <div class="payment-form">
+    <h2>Complete Your Payment</h2>
+    <form id="paymentForm">
+      <!-- Payment Method Selector -->
+      <div class="form-section">
+        <label for="method">Choose Payment Method</label>
+        <select id="method" name="method" required>
+          <option value="">-- select --</option>
+          {% for method in methods %}
+            <option value="{{ method.value }}">{{ method.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-section">
+        <label for="amount">Amount</label>
+        <input type="text" id="amount" name="amount" value="{{ order.total_price }}" readonly>
+      </div>
+
+      <input type="hidden" id="order_id" name="order_id" value="{{ order.id }}">
+
+      <!-- Dynamic Fields -->
+      <div class="form-section" id="cardFields" style="display:none;">
+        <label for="cardNumber">Card Number</label>
+        <input type="text" id="cardNumber" name="cardNumber" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" />
+        <label for="expiry">Expiry Date</label>
+        <input type="month" id="expiry" name="expiry" />
+        <label for="cvv">CVV</label>
+        <input type="password" id="cvv" name="cvv" maxlength="4" />
+      </div>
+
+      <div class="form-section" id="upiFields" style="display:none;">
+        <label for="upiId">UPI ID</label>
+        <input type="text" id="upiId" name="upiId" placeholder="example@bank" />
+      </div>
+
+      <div class="form-section" id="netbankingFields" style="display:none;">
+        <label for="bank">Select Bank</label>
+        <select id="bank" name="bank">
+          <option value="">-- select your bank --</option>
+          {% for bank in banks %}
+            <option value="{{ bank.value }}">{{ bank.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-primary">Make Payment</button>
+    </form>
+
+    <button class="mt-4 btn btn-warning" onclick="open_modal()">Go Back to Home</button>
+  </div>
 </div>
 
 <script>
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
+  // Show/hide fields based on numeric enum value
+  document.getElementById('method').addEventListener('change', function() {
+    ['cardFields','upiFields','netbankingFields'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    switch (this.value) {
+      case '1':  // CARD
+        document.getElementById('cardFields').style.display = 'block';
+        break;
+      case '2':  // UPI
+        document.getElementById('upiFields').style.display = 'block';
+        break;
+      case '3':  // NETBANKING
+        document.getElementById('netbankingFields').style.display = 'block';
+        break;
     }
-    const csrftoken = getCookie('csrftoken');
-    let razorpay_order_id = null;
-    let pollInterval = null;
+  });
 
-    async function initiatePayment() {
-        let upi_id = document.getElementById("upi_id").value.trim();
-        let amount = document.getElementById("amount").value.trim();
+  // Modal logic
+  function open_modal() {
+    document.getElementById("modalbody").style.display = "block";
+    document.getElementById('noBtn').onclick = () => {
+      document.getElementById("modalbody").style.display = "none";
+    };
+    document.getElementById('yesBtn').onclick = () => {
+      window.location.href = "/";
+    };
+  }
 
-        if (!upi_id || !amount) {
-            alert("Please enter both UPI ID and amount.");
-            return;
-        }
+  // AJAX payment submission
+  document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    createPayment();
+  });
 
-        // Step 1: Initiate payment and get Razorpay order
-        try {
-            let res = await fetch(`/payment/create/{{order.id}}/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken
-                },
-                body: JSON.stringify({ amount, upi_id })
-            });
-            let data = await res.json();
-            if (data.razorpay_order_id) {
-                razorpay_order_id = data.razorpay_order_id;
-                generateQR(amount, razorpay_order_id, upi_id);
-            } else {
-                alert(data.error || "Issue generating payment order.");
-            }
-        } catch (error) {
-            alert("Error initiating payment order.");
-            console.error(error);
-        }
+  async function createPayment() {
+    const method = document.getElementById('method').value;
+    if (!method) {
+      return alert('Please select a payment method.');
     }
-
-    // Step 2: Generate UPI QR for the created payment order
-    async function generateQR(amount, razorpay_order_id, upi_id) {
-        try {
-            let res = await fetch("/generate-qr/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken
-                },
-                body: JSON.stringify({
-                    amount,
-                    order_id: "{{ order_id }}",
-                    razorpay_order_id,
-                    upi_id
-                })
-            });
-            let data = await res.json();
-            if (data.qr_code) {
-                document.getElementById("qr_image").src = "data:image/png;base64," + data.qr_code;
-                document.getElementById("qr_section").style.display = "block";
-                document.getElementById('first-div').style.display = 'none';
-                // Start polling for payment status
-                pollInterval = setInterval(checkPaymentStatus, 4000);
-            } else {
-                alert(data.error || "Issue generating QR.");
-            }
-        } catch (error) {
-            alert("Error generating QR code.");
-            console.error(error);
-        }
+    const data = {
+      method,
+      amount: document.getElementById('amount').value,
+      order_id: document.getElementById('order_id').value
+    };
+    if (method === '1') {
+      const cardNumber = document.getElementById('cardNumber').value.trim();
+      const expiry = document.getElementById('expiry').value;
+      const cvv = document.getElementById('cvv').value.trim();
+      if (!cardNumber || !expiry || !cvv) {
+        return alert('Please fill all card details.');
+      }
+      Object.assign(data, { cardNumber, expiry, cvv });
+    }
+    if (method === '2') {
+      const upiId = document.getElementById('upiId').value.trim();
+      if (!upiId) {
+        return alert('Please enter your UPI ID.');
+      }
+      data.upiId = upiId;
+    }
+    if (method === '3') {
+      const bank = document.getElementById('bank').value;
+      if (!bank) {
+        return alert('Please select your bank.');
+      }
+      data.bank = bank;
     }
 
-    // Step 3: Poll for Payment Status
-    async function checkPaymentStatus() {
-        if (!razorpay_order_id) return;
-        try {
-            let res = await fetch(`/payment/status/?razorpay_order_id=${razorpay_order_id}`, {
-                method: "GET",
-                headers: { "X-CSRFToken": csrftoken },
-            });
-            let data = await res.json();
-            let statusSpan = document.getElementById("payment-status");
-            if (data.status === "SUCCESS") {
-                statusSpan.innerHTML = '<span class="text-success fw-bold">Payment Successful!</span>';
-                clearInterval(pollInterval);
-            } else if (data.status === "FAILED") {
-                statusSpan.innerHTML = '<span class="text-danger">Payment Failed. Please try again.</span>';
-                clearInterval(pollInterval);
-            }
-        } catch (error) {
-            console.error("Error checking payment status:", error);
-        }
+    try {
+      const response = await fetch(`/payment/create/${data.order_id}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (result.success) {
+        alert('Payment successful!');
+        window.location.href = '/order/success/';
+      } else {
+        alert('Payment failed: ' + (result.message || 'Unknown error'));
+      }
+    } catch (error) {
+      alert('An error occurred: ' + error.message);
     }
+  }
+
+  // CSRF helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie) {
+      document.cookie.split(';').forEach(cookie => {
+        const trimmed = cookie.trim();
+        if (trimmed.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(trimmed.slice(name.length + 1));
+        }
+      });
+    }
+    return cookieValue;
+  }
 </script>
 {% endblock %}

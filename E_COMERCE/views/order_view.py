@@ -1,12 +1,12 @@
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import JsonResponse
 from E_COMERCE.services import cart_service,order_service,productitem_service
 from E_COMERCE.constants.decorators import EnduserRequiredMixin
 import json
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.default_values import Status
-from django.shortcuts import redirect
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class OrderListView(EnduserRequiredMixin, View):    
@@ -108,6 +108,26 @@ class CartItemRemoveView(EnduserRequiredMixin, View):
         except ValueError as e:
             return JsonResponse({'error': str(e)}, status=404)
         
+        
+        
+class OrderDeleteView(EnduserRequiredMixin, View):
+    def post(self, request, order_id):
+        try:
+            if not order_id:
+                return JsonResponse({'success': False, 'error': 'Order ID required'}, status=400)
+
+            order_service.delete_order_and_items(order_id)
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Order and its items deleted successfully.'
+            })
+
+        except ObjectDoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Order not found.'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 

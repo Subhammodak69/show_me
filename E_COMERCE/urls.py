@@ -1,5 +1,5 @@
 from django.urls import path
-from E_COMERCE import views
+from E_COMERCE import views,services
 
 urlpatterns = [
     #auth
@@ -26,8 +26,9 @@ urlpatterns = [
     path('admin/product/create/',views.ProductCreateView.as_view(),name='product_create'),
     path('admin/product/update/<int:product_id>/',views.ProductUpdateView.as_view(),name='Product_update'),
     path('product/details/<int:item_id>/',views.ProductDetailsView.as_view(),name = 'product_details'),
+    path('review/create/',views.RatingCreateView.as_view(),name = 'rating_create'),
     path('product/toggle-status/<int:product_id>/', views.ProductToggleStatusView.as_view(), name='product_toggle'),
-    path('category/products/search/', views.category_product_search, name='category_product_search'),
+    path('category/products/search/', services.category_product_search, name='category_product_search'),
     
     #category
     path('admin/',views.AdminHomeView.as_view(),name='admin'),
@@ -120,7 +121,4 @@ urlpatterns = [
     path('track_order/<int:order_id>/',views.TrackOrderView.as_view(), name='track_order'),
     path('payment/create/<int:order_id>/',views.PaymentCreateView.as_view(), name='payment_create'),
     path('order/delete/<int:order_id>/', views.OrderDeleteView.as_view(), name='order-delete'),
-    path('generate-qr/', views.generate_upi_qr, name='generate_upi_qr'),
-    path('razorpay/webhook/', views.razorpay_webhook, name='razorpay_webhook'),
-    path('payment/status/', views.payment_status, name='payment_status'),
 ]

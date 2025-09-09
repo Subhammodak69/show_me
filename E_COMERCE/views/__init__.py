@@ -14,3 +14,4 @@ from .orderitem_view import *
 from .payment_view import *
 from .poster_view import *
 from .offer_view import *
+from .rating_view import *

@@ -1,6 +1,7 @@
 from E_COMERCE.models import Product,ProductItem
 from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.default_values import Size,Color
+from django.http import JsonResponse
 
 def get_all_products():
     return Product.objects.select_related('subcategory').all()
@@ -68,3 +69,27 @@ def get_product_items_by_product(product_id):
         })
     
     return response
+
+
+
+def category_product_search(request):
+    query = request.GET.get("q", "").strip()
+    productitems = []
+    if query == "":
+        productitems = []
+        
+    else:
+        productitems = ProductItem.objects.filter(
+            product__name__icontains=query,
+            is_active=True
+        )
+    print(f"Found {productitems.count()} items")  # log result count
+
+    results = [{
+        "id": item.id,
+        "product_name": item.product.name,
+        "price": item.price,
+        "photo_url": item.photo_url,
+    } for item in productitems]
+
+    return JsonResponse(results, safe=False)
