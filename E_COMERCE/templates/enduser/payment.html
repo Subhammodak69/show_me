@@ -86,8 +86,27 @@
   }
 
   /* Modal display hidden by default */
-  #modalbody {
+  #modalbody,
+  #successModal {
     display: none;
+  }
+  #modalbody,
+  #successModal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgb(0 0 0 / 78%);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #modalbody > div,
+  #successModal > div {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    text-align: center;
   }
 
   /* Image style fix */
@@ -95,24 +114,72 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-</style>
 
+  }
+
+   /* Loader overlay */
+  #loaderOverlay {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(39, 37, 37, 0.49);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  #loaderOverlay .spinner {
+    margin:auto;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #007bff;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+</style>
+<!-- Loader -->
+<div class="loading" style="display:none;">
+  <div id="loaderOverlay">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- Caution Modal -->
 <div id="modalbody">
-  <div id="cautionModal" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000;">
-    <div style="background:white; padding:2rem; border-radius:8px; max-width:400px; text-align:center;">
-      <p style="margin-bottom:1.5rem; font-weight:600;">
-        If you did not pay now or back then, your order has not been processed. Do you want to go to home?
-      </p>
-      <div>
-        <button id="noBtn" style="margin-right:1rem; padding:0.5rem 1.5rem; border:none; background:#ccc; border-radius:4px; cursor:pointer;">
-          No
-        </button>
-        <button id="yesBtn" style="padding:0.5rem 1.5rem; border:none; background:#007bff; color:white; border-radius:4px; cursor:pointer;">
-          Yes
-        </button>
-      </div>
-    </div>
+  <div>
+    <p style="margin-bottom:1.5rem; font-weight:600;">
+      If you did not pay now or back then, your order has not been processed.<br>
+      Do you want to go to Home?
+    </p>
+    <button id="noBtn" style="margin-right:1rem; padding:0.5rem 1.5rem; border:none; background:#ccc; border-radius:4px; cursor:pointer;">
+      No
+    </button>
+    <button id="yesBtn" style="padding:0.5rem 1.5rem; border:none; background:#007bff; color:white; border-radius:4px; cursor:pointer;">
+      Yes
+    </button>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal">
+  <div>
+    <h3 style="margin-bottom:1rem; color:#28a745;">🎉 Congratulations!</h3>
+    <p id="successMessage" style="margin-bottom:1.5rem; font-weight:500;"></p>
+    <ul style="text-align:left; margin-bottom:1.5rem;">
+      <li><strong>Status:</strong> <span id="payStatus"></span></li>
+      <li><strong>Time:</strong> <span id="payTime"></span></li>
+      <li><strong>Method:</strong> <span id="payMethod"></span></li>
+      <li><strong>Amount:</strong> ₹<span id="payAmount"></span></li>
+    </ul>
+    <button id="homeBtn" style="padding:0.5rem 1.5rem; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">
+      Back to Home
+    </button>
   </div>
 </div>
 
@@ -123,7 +190,6 @@
   <div class="payment-form">
     <h2>Complete Your Payment</h2>
     <form id="paymentForm">
-      <!-- Payment Method Selector -->
       <div class="form-section">
         <label for="method">Choose Payment Method</label>
         <select id="method" name="method" required>
@@ -133,15 +199,12 @@
           {% endfor %}
         </select>
       </div>
-
       <div class="form-section">
         <label for="amount">Amount</label>
         <input type="text" id="amount" name="amount" value="{{ order.total_price }}" readonly>
       </div>
-
       <input type="hidden" id="order_id" name="order_id" value="{{ order.id }}">
 
-      <!-- Dynamic Fields -->
       <div class="form-section" id="cardFields" style="display:none;">
         <label for="cardNumber">Card Number</label>
         <input type="text" id="cardNumber" name="cardNumber" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" />
@@ -166,45 +229,34 @@
         </select>
       </div>
 
-      <!-- Submit -->
       <button type="submit" class="btn-primary">Make Payment</button>
     </form>
-
     <button class="mt-4 btn btn-warning" onclick="open_modal()">Go Back to Home</button>
   </div>
 </div>
 
 <script>
-  // Show/hide fields based on numeric enum value
+  // Field toggling
   document.getElementById('method').addEventListener('change', function() {
     ['cardFields','upiFields','netbankingFields'].forEach(id => {
       document.getElementById(id).style.display = 'none';
     });
     switch (this.value) {
-      case '1':  // CARD
-        document.getElementById('cardFields').style.display = 'block';
-        break;
-      case '2':  // UPI
-        document.getElementById('upiFields').style.display = 'block';
-        break;
-      case '3':  // NETBANKING
-        document.getElementById('netbankingFields').style.display = 'block';
-        break;
+      case '1': document.getElementById('cardFields').style.display = 'block'; break;
+      case '2': document.getElementById('upiFields').style.display = 'block'; break;
+      case '3': document.getElementById('netbankingFields').style.display = 'block'; break;
     }
   });
 
-  // Modal logic
+  // Caution modal
   function open_modal() {
-    document.getElementById("modalbody").style.display = "block";
-    document.getElementById('noBtn').onclick = () => {
-      document.getElementById("modalbody").style.display = "none";
-    };
-    document.getElementById('yesBtn').onclick = () => {
-      window.location.href = "/";
-    };
+    const m = document.getElementById("modalbody");
+    m.style.display = "flex";
+    document.getElementById('noBtn').onclick = () => m.style.display = "none";
+    document.getElementById('yesBtn').onclick = () => window.location.href = '/';
   }
 
-  // AJAX payment submission
+  // AJAX form submit
   document.getElementById('paymentForm').addEventListener('submit', function(e) {
     e.preventDefault();
     createPayment();
@@ -212,9 +264,8 @@
 
   async function createPayment() {
     const method = document.getElementById('method').value;
-    if (!method) {
-      return alert('Please select a payment method.');
-    }
+    if (!method) return alert('Please select a payment method.');
+
     const data = {
       method,
       amount: document.getElementById('amount').value,
@@ -224,28 +275,22 @@
       const cardNumber = document.getElementById('cardNumber').value.trim();
       const expiry = document.getElementById('expiry').value;
       const cvv = document.getElementById('cvv').value.trim();
-      if (!cardNumber || !expiry || !cvv) {
-        return alert('Please fill all card details.');
-      }
+      if (!cardNumber||!expiry||!cvv) return alert('Please fill all card details.');
       Object.assign(data, { cardNumber, expiry, cvv });
     }
     if (method === '2') {
       const upiId = document.getElementById('upiId').value.trim();
-      if (!upiId) {
-        return alert('Please enter your UPI ID.');
-      }
+      if (!upiId) return alert('Please enter your UPI ID.');
       data.upiId = upiId;
     }
     if (method === '3') {
       const bank = document.getElementById('bank').value;
-      if (!bank) {
-        return alert('Please select your bank.');
-      }
+      if (!bank) return alert('Please select your bank.');
       data.bank = bank;
     }
 
     try {
-      const response = await fetch(`/payment/create/${data.order_id}/`, {
+      const resp = await fetch(`/payment/create/${data.order_id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,30 +298,38 @@
         },
         body: JSON.stringify(data)
       });
-      const result = await response.json();
+      const result = await resp.json();
       if (result.success) {
-        alert('Payment successful!');
-        window.location.href = '/order/success/';
+        // Populate modal fields immediately
+        document.getElementById('payStatus').textContent = 'Success';
+        document.getElementById('payTime').textContent = new Date().toLocaleString();
+        document.getElementById('payMethod').textContent = { '1':'Card','2':'UPI','3':'Netbanking' }[method];
+        document.getElementById('payAmount').textContent = data.amount;
+        document.getElementById('successMessage').textContent = 'Your payment has been processed successfully!';
+         
+        document.getElementById('loading').style.display = 'block';
+        // Delay modal display by 2 seconds
+        setTimeout(() => {
+          document.getElementById('loading').style.display = 'none';
+          const sm = document.getElementById('successModal');
+          sm.style.display = 'flex';
+          document.getElementById('homeBtn').onclick = () => window.location.href = '/';
+        }, 2000);
       } else {
-        alert('Payment failed: ' + (result.message || 'Unknown error'));
-      }
-    } catch (error) {
-      alert('An error occurred: ' + error.message);
+          document.getElementById('loading').style.display = 'none';
+        }
+    } catch (err) {
+      alert('An error occurred: ' + err.message);
     }
   }
 
-  // CSRF helper
   function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie) {
-      document.cookie.split(';').forEach(cookie => {
-        const trimmed = cookie.trim();
-        if (trimmed.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(trimmed.slice(name.length + 1));
-        }
-      });
-    }
-    return cookieValue;
+    let value = null;
+    document.cookie.split(';').forEach(c => {
+      c = c.trim();
+      if (c.startsWith(name + '=')) value = decodeURIComponent(c.slice(name.length+1));
+    });
+    return value;
   }
 </script>
 {% endblock %}
