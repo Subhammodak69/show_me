@@ -1,8 +1,9 @@
 {% extends "enduser/base.html" %}
 {% load static %}
-
 {% block title %}My Orders{% endblock %}
-
+{% block extra_js %}
+  <script src="{% static 'js/order_list.js' %}"></script>
+{% endblock %}
 {% block content %}
 <div class="container" style="height: 100%;">
   <h2 class="fw-bold text-primary mb-4">Your Orders</h2>
@@ -90,63 +91,11 @@
     </div>
   </div>
 </div>
-
-<script>
-  let deleteOrderId = null;
-
-  function confirmDelete(orderId) {
-    deleteOrderId = orderId;
-    var myModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-    myModal.show();
-  }
-
-  document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-    if (!deleteOrderId) return;
-
-    fetch(`/order/delete/${deleteOrderId}/`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCookie('csrftoken'),
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        document.getElementById(`order-card-${deleteOrderId}`).remove();
-      } else {
-        alert(data.error || "Something went wrong.");
-      }
-      bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
-    })
-    .catch(err => {
-      alert("Error: " + err);
-    });
-  });
-
-  // Get CSRF token
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-</script>
-
 <style>
-
   @media (max-width: 575px){
-    .modal-dialog{
-      width:90%;
-    }
+  .modal-dialog{
+    width: 90%;
   }
+}
 </style>
 {% endblock %}
