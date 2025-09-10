@@ -19,7 +19,6 @@ def get_wishlist_items(user_id):
                 'display_size':Size(item.product_item.size).name,
                 'display_color':Color(item.product_item.color).name,
                 'color':item.product_item.color,
-                'availibility':item.product_item.availibility,
                 'description':item.product_item.product.description,
             }
             for item in whishlist_items

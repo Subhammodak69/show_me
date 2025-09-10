@@ -4,7 +4,6 @@ from E_COMERCE.constants.default_values import Size,Color
 
 class ProductItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='productitems')
-    availibility = models.IntegerField(blank=False , null=False)
     size = models.IntegerField(
         choices=[(s.name,s.value) for s in Size],
         blank=False,null=False

@@ -95,7 +95,6 @@ def get_product_items_data(item_id):
         'display_size': Size(product_item.size).name,
         'color': product_item.color,
         'display_color': Color(product_item.color).name,
-        'availibility': product_item.availibility,
         'created_at': product_item.created_at,
         'product_id': product_item.product.id,
         'product_name':product_item.product.name,
@@ -113,7 +112,7 @@ def create_productitem(request, file):
         size = int(request.POST.get('size'))
         color = int(request.POST.get('colour'))
         price = int(request.POST.get('price'))
-        availibility = int(request.POST.get('availibility'))
+        # availibility = int(request.POST.get('availibility'))
 
         # Debug prints
 
@@ -137,7 +136,7 @@ def create_productitem(request, file):
             size=size,
             color=color,
             price=price,
-            availibility=availibility,
+            # availibility=availibility,
             photo_url=f"/static/{relative_path}",
         )
 
@@ -157,7 +156,7 @@ def update_productitem(item_id, data, file=None):
         item.size = item.size = Size[data.get('size')].value
         item.color = Color[data.get('colour')].value
         item.price = int(data.get('price'))
-        item.availibility = int(data.get('availibility'))
+        # item.availibility = int(data.get('availibility'))
     
         if file:
             ext = os.path.splitext(file.name)[1]
