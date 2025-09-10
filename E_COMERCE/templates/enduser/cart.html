@@ -1,7 +1,9 @@
 {% extends "enduser/base.html" %}
 {% load static %}
-
 {% block title %}Cart | Show_me{% endblock %}
+{% block extra_js %}
+  <script src="{% static 'js/cart.js' %}"></script>
+{% endblock %}
 
 {% block content %}
 <div class="container" style="height: 100%;">
@@ -80,31 +82,5 @@
     </div>
   </div>
 </div>
-
-<script>
-function removeCartItem(itemId) {
-    if (!confirm("Are you sure you want to remove this item?")) return;
-
-    fetch(`/cart/remove/${itemId}/`, {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const itemElement = document.getElementById(`cart-item-${itemId}`);
-            if (itemElement) {
-                itemElement.remove();
-            }
-        } else {
-            alert(data.error || "Failed to remove item.");
-        }
-    })
-    .catch(() => alert("Something went wrong."));
-}
-</script>
-
 
 {% endblock %}

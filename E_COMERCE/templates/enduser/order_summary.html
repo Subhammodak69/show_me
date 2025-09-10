@@ -2,92 +2,100 @@
 {% load static %}
 
 {% block title %}Cart | Show_me{% endblock %}
+{% block extra_js %}
+  <script src="{% static 'js/order_summary.js' %}"></script>
+{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/order_summary.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid" style="height: 100%;padding:0px !important; margin-bottom: 20px;">
   <h2 class="mb-3">Your Order Summary</h2>
 
-  <form id="order-form" class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-4" style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
+  <form id="order-form" class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-4"
+    style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
     <!-- Cart Items -->
     <div id="cart-items" class="w-100 w-md-50">
       {% for item in cart_items %}
-        <div class="cart-item border p-3 rounded text-center mb-3" data-id="{{ item.id }}">
-            <!-- Product Image -->
-            <img src="{{ item.photo }}" class="mb-3 rounded" alt="Product Image" style="width: 100%; max-width: 135px; height: auto;">
+      <div class="cart-item border p-3 rounded text-center mb-3" data-id="{{ item.id }}">
+        <!-- Product Image -->
+        <img src="{{ item.photo }}" class="mb-3 rounded" alt="Product Image" style="width: 100%; max-width: 135px; height: auto;">
+        <!-- Product Info -->
+        <h5 class="fw-semibold mb-2">{{ item.product_name }}</h5>
 
-            <!-- Product Info -->
-            <h5 class="fw-semibold mb-2">{{ item.product_name }}</h5>
-
-            <!-- Selectors -->
-            <div class="d-flex flex-wrap gap-2 justify-content-center align-items-end mb-2">
-                <!-- Quantity -->
-                <div>
-                  <label class="d-block">Quantity:</label>
-                  <input type="number" class="quantity form-control w-auto text-center" value="{{ item.quantity }}" min="1" style="max-width: 75px;">
-                </div>
-                <!-- Size -->
-                <div>
-                  <label class="d-block">Size:</label>
-                  <select class="size form-select w-auto" style="max-width: 90px;">
-                    {% for s in item.available_sizes %}
-                      <option value="{{ s.value }}" {% if s.value == item.size %}selected{% endif %}>{{ s.name }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <!-- Color -->
-                {% if item.available_colors %}
-                <div>
-                  <label class="d-block">Color:</label>
-                  <select class="color form-select w-auto" style="max-width: 90px;">
-                    {% for c in item.available_colors %}
-                      <option value="{{ c.value }}" {% if c.value == item.color %}selected{% endif %}>{{ c.name }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                {% endif %}
-            </div>
-            <!-- Remove Button -->
-            <div>
-              <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem({{ item.id }})">Remove</button>
-            </div>
+        <!-- Selectors -->
+        <div class="d-flex flex-wrap gap-2 justify-content-center align-items-end mb-2">
+          <!-- Quantity -->
+          <div>
+            <label class="d-block">Quantity:</label>
+            <input type="number" class="quantity form-control w-auto text-center" value="{{ item.quantity }}" min="1" style="max-width: 75px;">
+          </div>
+          <!-- Size -->
+          <div>
+            <label class="d-block">Size:</label>
+            <select class="size form-select w-auto" style="max-width: 90px;">
+              {% for s in item.available_sizes %}
+              <option value="{{ s.value }}" {% if s.value == item.size %}selected{% endif %}>{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <!-- Color -->
+          {% if item.available_colors %}
+          <div>
+            <label class="d-block">Color:</label>
+            <select class="color form-select w-auto" style="max-width: 90px;">
+              {% for c in item.available_colors %}
+              <option value="{{ c.value }}" {% if c.value == item.color %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
         </div>
+        <!-- Remove Button -->
+        <div>
+          <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem({{ item.id }})">Remove</button>
+        </div>
+      </div>
       {% endfor %}
     </div>
 
-    <div class="border rounded p-3 mb-3 bg-light">
-        <h4>Payable Amount</h4>
-        <div class="d-flex align-items-center w-100 justify-content-between">
-          <div>Product item-- </div>
-          <div class="text-secondary">{{price|floatformat:2}}</div>
-        </div>
-        <div class="d-flex align-items-center w-100 justify-content-between">
-          <div>Discount Amount-- </div>
-          <div class="text-danger">-{{discount}}</div>
-        </div>
-        <br>
-        <hr>
-        <div class="d-flex align-items-center w-100 justify-content-between">
-          <div>Total-- </div>
-          <div class="text-success">{{total|floatformat:2}}</div>
-        </div>
-      </div>
+    
 
     <!-- User + Address Info -->
     <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0">
+      <div class="border rounded p-3 mb-3 bg-light">
+      <h4>Payable Amount</h4>
+      <div class="d-flex align-items-center w-100 justify-content-between">
+        <div>Product item-- </div>
+        <div class="text-secondary">{{price|floatformat:2}}</div>
+      </div>
+      <div class="d-flex align-items-center w-100 justify-content-between">
+        <div>Discount Amount-- </div>
+        <div class="text-danger">-{{discount}}</div>
+      </div>
+      <br>
+      <hr>
+      <div class="d-flex align-items-center w-100 justify-content-between">
+        <div>Total-- </div>
+        <div class="text-success">{{total|floatformat:2}}</div>
+      </div>
+    </div>
+    
       <div class="border rounded p-3 mb-3 bg-light">
         <h4 class="mb-3">User Details</h4>
         <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
         {% if user.phone %}
-          <p><strong>Phone:</strong> {{ user.phone }}</p>
+        <p><strong>Phone:</strong> {{ user.phone }}</p>
         {% endif %}
         {% if user.address %}
-          <p><strong>Address:</strong> {{ user.address }}</p>
+        <p><strong>Address:</strong> {{ user.address }}</p>
         {% endif %}
       </div>
       <label for="delivery-address" class="mt-2"><strong>Delivery Address</strong></label>
-      <textarea id="delivery-address" name="address" class="form-control mb-2"
-        placeholder="Enter delivery address manually..." required></textarea>
+      <textarea id="delivery-address" name="address" class="form-control mb-2" placeholder="Enter delivery address manually..."
+        required></textarea>
       <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
         Use My Current Location
       </button>
@@ -95,138 +103,4 @@
     </div>
   </form>
 </div>
-
-<!-- RESPONSIVE: Stack and shrink for mobile -->
-<style>
-@media (max-width: 786px) {
-  #order-form {
-    flex-direction: column !important;
-    gap: 1.2rem !important;
-    padding: 1rem 0.2rem !important;
-  }
-  #cart-items, .w-md-50 {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  .cart-item, .cart-item .card, .cart-item img {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  .cart-item img {
-    max-width: 90px !important;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-  }
-  .cart-item h5 {
-    font-size: 1rem !important;
-  }
-  .border.p-3.mb-3.bg-light {
-    padding: 1rem !important;
-    font-size: 15px;
-  }
-  label, .form-label, .form-control, select, textarea, .btn {
-    font-size: 15px !important;
-  }
-  .cart-item .form-control, .cart-item .form-select {
-    font-size: 14px !important;
-    padding: 0.1rem 0.3rem !important;
-  }
-}
-@media (max-width: 400px) {
-  .cart-item img {
-    max-width: 65px !important;
-  }
-}
-</style>
-
-<!-- Location Script -->
-<script>
-function getCurrentLocation() {
-  const textarea = document.getElementById('delivery-address');
-  textarea.placeholder = "Fetching location...";
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        const { latitude, longitude } = position.coords;
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
-          .then(response => response.json())
-          .then(data => {
-             const addr = data.address;
-             let addressParts = [
-               addr.house_number, addr.road, addr.suburb, addr.village,
-               addr.town, addr.city, addr.state, addr.postcode, addr.country
-             ].filter(Boolean);
-             let address = addressParts.join('\n');
-             if (addressParts.length < 4) address = data.display_name;
-             textarea.value = address;
-             textarea.placeholder = "Location fetched successfully.";
-          })
-          .catch(() => { textarea.placeholder = "Failed to retrieve address."; });
-      },
-      function () {
-        textarea.placeholder = "Permission denied or location unavailable.";
-      }
-    );
-  } else {
-    textarea.placeholder = "Geolocation not supported.";
-  }
-}
-</script>
-
-<script>
-function removeItem(itemId) {
-  fetch(`/cart/remove/${itemId}/`, {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
-    }
-  }).then(() => location.reload());
-}
-
-document.querySelectorAll('.quantity, .size, .color').forEach(el => {
-  el.addEventListener('change', () => {
-    const cartItemEl = el.closest('.cart-item');
-    const id = cartItemEl.dataset.id;
-    const quantity = cartItemEl.querySelector('.quantity')?.value;
-    const size = cartItemEl.querySelector('.size')?.value;
-    const color = cartItemEl.querySelector('.color')?.value;
-    fetch(`/cart/update/${id}/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token }}'
-      },
-      body: JSON.stringify({ quantity, size, color })
-    });
-  });
-});
-
-document.getElementById('order-form').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const form = this;
-  const formData = new FormData(form);
-
-  // If using regular form POST (not custom JSON), just send FormData and handle CSRF as per Django
-  fetch("", {
-    method: "POST",
-    body: formData,
-    headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success && data.order_id) {
-      window.location.href = `/payment/create/${data.order_id}/`;
-    } else {
-      alert("Order not placed: " + (data.error || "Unknown error"));
-    }
-  })
-  .catch(() => {
-    alert("Order request failed. Please try again.");
-  });
-});
-</script>
 {% endblock %}
