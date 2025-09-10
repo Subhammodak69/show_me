@@ -45,11 +45,7 @@
 
       <p>
         <strong>Availability:</strong>
-        {% if product_item_data.availibility > 0 %}
           In stock ({{ product_item_data.availibility }} available)
-        {% else %}
-          <span class="text-danger">Out of stock</span>
-        {% endif %}
       </p>
 
       <p><strong>Color:</strong> {{ product_item_data.display_color }}</p>

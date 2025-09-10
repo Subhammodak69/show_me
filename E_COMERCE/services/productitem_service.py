@@ -74,8 +74,13 @@ def get_size_choices_dict():
 def get_colour_choices_dict():
     return {colour.name: colour.value for colour in Color}
 
+def get_product_items_availibility(product_item):
+    return ProductItem.objects.filter(product = product_item.product).count()
+
 def get_product_items_data(item_id):
     product_item = ProductItem.objects.filter(id=item_id, is_active=True).select_related('product', 'product__subcategory__category').first()
+    availibility = get_product_items_availibility(product_item)
+    
     discount= Offer.objects.filter(product = item_id, is_active =True).first()
     discount_amount = 0
     
@@ -101,6 +106,7 @@ def get_product_items_data(item_id):
         'product_subcategory_name':product_item.product.subcategory.name,
         'product_category_name':product_item.product.subcategory.category.name,
         'offer':discount_amount,
+        'availibility':availibility 
     }
     return item_data
 
@@ -112,8 +118,6 @@ def create_productitem(request, file):
         size = int(request.POST.get('size'))
         color = int(request.POST.get('colour'))
         price = int(request.POST.get('price'))
-        # availibility = int(request.POST.get('availibility'))
-
         # Debug prints
 
         product = Product.objects.get(id=product_id, is_active=True)
@@ -136,7 +140,6 @@ def create_productitem(request, file):
             size=size,
             color=color,
             price=price,
-            # availibility=availibility,
             photo_url=f"/static/{relative_path}",
         )
 
@@ -156,7 +159,6 @@ def update_productitem(item_id, data, file=None):
         item.size = item.size = Size[data.get('size')].value
         item.color = Color[data.get('colour')].value
         item.price = int(data.get('price'))
-        # item.availibility = int(data.get('availibility'))
     
         if file:
             ext = os.path.splitext(file.name)[1]

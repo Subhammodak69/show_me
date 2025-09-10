@@ -48,8 +48,8 @@
                 <a href="{% url 'product_details' item.id %}">
                   <img src="{{ item.photo }}" alt="{{ item.name }}" class="img-fluid" style="width:60px; height:60px; object-fit:contain;">
                 </a>
-                {% if item.availibility == 0 %}
-                  <div class="text-danger small mt-1 text-center fw-semibold">Currently unavailable</div>
+                {% if item.availibility <= 5 %}
+                  <div class="text-danger small mt-1 text-center fw-semibold">Harry!({{item.availibility}} stocks available)</div>
                 {% endif %}
               </div>
               <!-- Details -->

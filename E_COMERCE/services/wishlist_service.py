@@ -1,5 +1,6 @@
 from E_COMERCE.models import ProductItem,Wishlist,User
 from django.core.exceptions import ObjectDoesNotExist
+from E_COMERCE.services import productitem_service
 
 def  wishlist_item_ids(user_id):
     return Wishlist.objects.filter(created_by=user_id, is_active=True).values_list('product_item', flat=True)
@@ -19,6 +20,7 @@ def get_wishlist_items(user_id):
                 'display_size':Size(item.product_item.size).name,
                 'display_color':Color(item.product_item.color).name,
                 'color':item.product_item.color,
+                'availibility':productitem_service.get_product_items_availibility(item.product_item),
                 'description':item.product_item.product.description,
             }
             for item in whishlist_items

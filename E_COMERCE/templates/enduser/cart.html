@@ -30,9 +30,9 @@
               
               <p class="mb-1">Size: {{ item.display_size }}</p>
               <p class="mb-1">Color: {{ item.display_color }}</p>
-              {% if item.availibility == 0 %}
-              <p class="text-danger fw-bold mb-0">Out Of Stock</p>
-              {% endif %}
+               {% if item.availibility <= 5 %}
+                  <div class="text-danger small mt-1 text-center fw-semibold">Harry!({{item.availibility}} stocks available)</div>
+                {% endif %}
             </div>
           </div>
 
