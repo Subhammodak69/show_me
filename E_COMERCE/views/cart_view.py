@@ -98,6 +98,7 @@ class CartCreateView(EnduserRequiredMixin,View):
             size = data.get('size')
             color = data.get('color')
             quantity = int(data.get('quantity', 1))
+            print("bdshfnd baslammmmmmm")
 
             item = cart_service.add_item_to_cart(user, product_item_id, size, color, quantity)
             return JsonResponse({'status': 'success', 'message': 'Item added to cart', 'item_id': item.id})

@@ -20,7 +20,7 @@ class OrderListView(EnduserRequiredMixin, View):
         })
   
     
-
+@method_decorator(csrf_exempt, name='dispatch')
 class OrderCreateView(EnduserRequiredMixin,View):
     def get(self, request):
         user = request.user

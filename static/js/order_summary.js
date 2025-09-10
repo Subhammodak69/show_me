@@ -56,27 +56,32 @@ document.querySelectorAll('.quantity, .size, .color').forEach(el => {
   });
 });
 
-document.getElementById('order-form').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const form = this;
-  const formData = new FormData(form);
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('order-form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const form = this;
+      const formData = new FormData(form);
 
-  fetch("", {
-    method: "POST",
-    body: formData,
-    headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success && data.order_id) {
-      window.location.href = `/payment/create/${data.order_id}/`;
-    } else {
-      alert("Order not placed: " + (data.error || "Unknown error"));
-    }
-  })
-  .catch(() => {
-    alert("Order request failed. Please try again.");
-  });
+      fetch("", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.order_id) {
+            window.location.href = `/payment/create/${data.order_id}/`;
+          } else {
+            alert("Order not placed: " + (data.error || "Unknown error"));
+          }
+        })
+        .catch(() => {
+          alert("Order request failed. Please try again.");
+        });
+    });
+  }
 });

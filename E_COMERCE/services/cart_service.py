@@ -42,17 +42,35 @@ def add_item_to_cart(user, product_item_id, size, color, quantity):
     cart = get_or_create_cart(user)
     product_item = get_object_or_404(ProductItem, id=product_item_id)
 
-    item, created = CartItem.objects.get_or_create(
-        cart=cart,
-        product_item=product_item,
-        size=size,
-        defaults={'quantity': quantity, 'color': color}
-    )
-    if not created:
-        item.quantity += quantity
+    # Try to find a soft-deleted (inactive) CartItem and reactivate it
+    try:
+        item = CartItem.objects.get(
+            cart=cart,
+            product_item=product_item,
+            size=size,
+            is_active=False  # inactive item
+        )
+        item.is_active = True  # reactivate
+        item.color = color
+        item.quantity = quantity  # reset quantity or add? Choose logic as needed
         item.save()
+        created = False
+    except CartItem.DoesNotExist:
+        # Try to get or create an active cart item
+        item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            product_item=product_item,
+            size=size,
+            is_active=True,  # only active items
+            defaults={'quantity': quantity, 'color': color}
+        )
+        if not created:
+            # If found, increase quantity
+            item.quantity += quantity
+            item.save()
 
     return item
+
 
 def update_cart_item(user, cart_item_id, quantity):
     cart = get_or_create_cart(user)
