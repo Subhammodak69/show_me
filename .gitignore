@@ -21,6 +21,7 @@ db.sqlite3
 # Static and media files
 static/posters
 static/product_images
+static/category_images/
 media/
 
 # Optional (if you use collectstatic)
