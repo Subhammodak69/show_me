@@ -27,30 +27,11 @@
         <!-- Selectors -->
         <div class="d-flex flex-wrap gap-2 justify-content-center align-items-end mb-2">
           <!-- Quantity -->
-          <div>
-            <label class="d-block">Quantity:</label>
-            <input type="number" class="quantity form-control w-auto text-center" value="{{ item.quantity }}" min="1" style="max-width: 75px;">
-          </div>
+          <div>{{item.quantity}}</div>
           <!-- Size -->
-          <div>
-            <label class="d-block">Size:</label>
-            <select class="size form-select w-auto" style="max-width: 90px;">
-              {% for s in item.available_sizes %}
-              <option value="{{ s.value }}" {% if s.value == item.size %}selected{% endif %}>{{ s.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
+          <div>{{item.size_display}}</div>
           <!-- Color -->
-          {% if item.available_colors %}
-          <div>
-            <label class="d-block">Color:</label>
-            <select class="color form-select w-auto" style="max-width: 90px;">
-              {% for c in item.available_colors %}
-              <option value="{{ c.value }}" {% if c.value == item.color %}selected{% endif %}>{{ c.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          {% endif %}
+          <div>{{item.color_display}}</div>
         </div>
         <!-- Remove Button -->
         <div>

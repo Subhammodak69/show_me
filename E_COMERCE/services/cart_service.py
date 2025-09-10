@@ -199,14 +199,6 @@ def get_user_cart_items(user_id):
             'size_display': Size(item.size).name,
             'price_per_unit': product_item.price,
             'total_price': product_item.price * item.quantity,
-            'available_sizes': [
-                {'value': s.value, 'name': s.name}
-                for s in Size
-            ],
-            'available_colors': [
-                {'value': c.value, 'name': c.name}
-                for c in Color
-            ],
             'discount':get_discount_by_id(item.product_item)
         })
     

@@ -38,23 +38,7 @@ function removeItem(itemId) {
   }).then(() => location.reload());
 }
 
-document.querySelectorAll('.quantity, .size, .color').forEach(el => {
-  el.addEventListener('change', () => {
-    const cartItemEl = el.closest('.cart-item');
-    const id = cartItemEl.dataset.id;
-    const quantity = cartItemEl.querySelector('.quantity')?.value;
-    const size = cartItemEl.querySelector('.size')?.value;
-    const color = cartItemEl.querySelector('.color')?.value;
-    fetch(`/cart/update/${id}/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token }}'
-      },
-      body: JSON.stringify({ quantity, size, color })
-    });
-  });
-});
+
 
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('order-form');
