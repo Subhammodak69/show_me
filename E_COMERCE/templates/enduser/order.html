@@ -1,8 +1,8 @@
-{% extends 'enduser/base.html'%}
+{% extends 'enduser/base.html' %}
 {% load static %}
 {% block title %} Order|Show_me {% endblock %}
 {% block content %}
-<div class="container my-4 " style="overflow-y: auto; margin-bottom:20px;">
+<div class="container my-4" style="overflow-y: auto; margin-bottom:20px;">
   <div class="row">
 
     <!-- Left Side (Main Content) -->
@@ -19,7 +19,7 @@
       </div>
 
       <!-- 2. DELIVERY ADDRESS SECTION -->
-    <div class="border p-3 mb-3">
+      <div class="border p-3 mb-3">
         <h5>2. DELIVERY ADDRESS</h5>
 
         <!-- Address Input Field -->
@@ -33,13 +33,13 @@
 
         <!-- Modal Trigger Buttons -->
         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addressModal">
-        + Add a new address
+          + Add a new address
         </button>
         <button type="button" class="btn btn-secondary btn-sm" onclick="getLiveLocation()">
-        + Add live location
+          + Add live location
         </button>
         <div id="locationStatus" class="text-muted mt-2" style="font-size: 14px;"></div>
-    </div>
+      </div>
 
       <!-- 3. ORDER SUMMARY -->
       <div class="border p-3 mb-3">
@@ -121,186 +121,7 @@
   </div>
 </div>
 
-        <!-- Your Script: at end of body -->
-        <script>
-        function saveAddress() {
-        const address = document.getElementById("address-textarea").value.trim();
-        const inputField = document.getElementById("addressInput");
-
-        if (address.length === 0) {
-            alert("Please enter a valid address.");
-            return;
-        }
-
-        inputField.value = address;
-        inputField.focus();
-
-        const modalEl = document.getElementById('addressModal');
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        modal.hide();
-
-        setTimeout(() => {
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        }, 300);
-        }
-
-        function getLiveLocation() {
-        const status = document.getElementById('locationStatus');
-        status.textContent = '⏳ Getting your current location...';
-
-        if (!navigator.geolocation) {
-            alert("❌ Geolocation not supported.");
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(success, geoError, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        });
-        }
-
-        function success(position) {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const status = document.getElementById('locationStatus');
-
-        const apiKey = '1691222b1b6a469f8390a7b90e4225e8';
-        const url = `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lon}&key=${apiKey}`;
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-            if (data && data.results && data.results.length > 0) {
-                const address = data.results[0].formatted;
-                document.getElementById('addressInput').value = address;
-                status.textContent = '✅ Address added successfully.';
-            } else {
-                throw new Error("No address found");
-            }
-            })
-            .catch(error => {
-            console.error('Geocoding error:', error);
-            alert("❌ Error: Unable to convert location to address.");
-            status.textContent = '';
-            });
-        }
-
-        function geoError(error) {
-        console.error("Geolocation error:", error);
-        alert("❌ Location access failed.");
-        document.getElementById('locationStatus').textContent = '';
-        }
-        </script>
-
-<style>
-    .container {
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* Section Boxes */
-.section-box {
-    background-color: #fff;
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-}
-
-.section-box h5 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 16px;
-}
-
-/* Address Cards */
-.address-card {
-    border: 1px solid #dcdcdc;
-    border-radius: 6px;
-    padding: 10px 15px;
-    margin-bottom: 12px;
-    position: relative;
-    background-color: #fafafa;
-}
-
-.address-card.bg-light {
-    background-color: #fffde7;
-    border: 1px solid #fbc02d;
-}
-
-.address-card input[type="radio"] {
-    margin-right: 10px;
-}
-
-.address-card .badge {
-    font-size: 11px;
-    padding: 3px 6px;
-    background-color: #e0e0e0;
-    color: #333;
-}
-
-.address-card .btn-warning {
-    background-color: #ff9f00;
-    border: none;
-    padding: 5px 12px;
-    font-size: 13px;
-}
-
-/* Order Summary */
-.order-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid #efefef;
-}
-
-/* Price Details */
-.price-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.price-total {
-    font-weight: bold;
-    border-top: 1px solid #ccc;
-    padding-top: 10px;
-    font-size: 16px;
-}
-
-.text-success {
-    color: #388e3c !important;
-}
-
-/* Buttons */
-.btn-outline-primary {
-    font-size: 13px;
-    padding: 3px 10px;
-}
-
-.btn-sm {
-    font-size: 13px !important;
-    padding: 4px 8px !important;
-}
-
-/* Safe Info */
-.safe-info {
-    font-size: 13px;
-    color: #757575;
-    margin-top: 10px;
-}
-
-/* Small link */
-.add-new-address {
-    color: #2874f0;
-    font-weight: 500;
-    font-size: 14px;
-    text-decoration: none;
-}
-.add-new-address:hover {
-    text-decoration: underline;
-}
-</style>
+<script src="{% static 'js/order.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/order.css' %}"/>
 
 {% endblock %}

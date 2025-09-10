@@ -23,7 +23,7 @@ class PaymentCreateView(EnduserRequiredMixin,View):
 
         payment = create_payment(request.user,data)
         if(payment):
-            payment_status_update(payment)
+            payment_status_update(payment,order_id)
             return JsonResponse({'success': True, 'message': 'Payment completed successfully'})
         else:
             JsonResponse({'success': False, 'message': 'Payment not Failed! '})

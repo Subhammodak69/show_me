@@ -1,6 +1,6 @@
 from E_COMERCE.models import Payment,Order
 from django.http import JsonResponse
-from E_COMERCE.constants.default_values import PayMethods,PaymentStatus,Banks
+from E_COMERCE.constants.default_values import PayMethods,PaymentStatus,Banks,Status
 
 
 def get_order_by_id(order_id):
@@ -43,7 +43,11 @@ def create_payment(user,data):
     
     
     
-def payment_status_update(payment):
+def payment_status_update(payment,order_id):
+    order_obj = Order.objects.get(id=order_id,is_active=True)
+    order_obj.status = Status.PROCESSING.value
+    order_obj.save()
+    
     payment_obj = Payment.objects.get(id=payment.id)
     payment_obj.status = PaymentStatus.SUCCESS.value
     payment_obj.save() 
