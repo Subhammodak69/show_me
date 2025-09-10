@@ -1,0 +1,83 @@
+/* Desktop view improvements */
+@media (min-width: 787px) {
+  #direct-order-form {
+    flex-direction: row !important;
+    gap: 2rem !important;
+    padding: 2rem 2rem !important;
+    justify-content: center;
+  }
+
+  .cart-item {
+    max-width: 350px;
+    width: 100%;
+    margin-bottom: 0 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .cart-item img {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+  }
+
+  .cart-item h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  #direct-order-form > div:nth-child(2) {
+    width: 55%;
+  }
+
+  #direct-order-form > div:nth-child(3) {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .border.p-3.mb-3.bg-light {
+    padding: 1.5rem;
+    font-size: 16px;
+    box-shadow: inset 0 0 8px #ccc;
+  }
+
+  button.btn-primary {
+    align-self: flex-end;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+  }
+
+  label, .form-label {
+    font-weight: 500;
+  }
+
+  input.form-control, select.form-select, textarea.form-control {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .d-flex.justify-content-center.gap-3.flex-wrap.mt-2 > div {
+    min-width: 130px;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 786px) {
+  #pay-de {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .cart-item img {
+    max-width: 90px !important;
+  }
+  .cart-item h5 {
+    font-size: 1.08rem !important;
+  }
+}

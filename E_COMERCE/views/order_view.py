@@ -7,6 +7,9 @@ import json
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.default_values import Status
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 
 
 class OrderListView(EnduserRequiredMixin, View):    
@@ -17,7 +20,7 @@ class OrderListView(EnduserRequiredMixin, View):
         })
   
     
-    
+
 class OrderCreateView(EnduserRequiredMixin,View):
     def get(self, request):
         user = request.user
@@ -99,7 +102,7 @@ class CartItemUpdateView(EnduserRequiredMixin, View):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class CartItemRemoveView(EnduserRequiredMixin, View):
     def post(self, request, pk):
         try:
