@@ -19,7 +19,8 @@ db.sqlite3
 .DS_Store
 
 # Static and media files
-static/
+static/posters
+static/product_images
 media/
 
 # Optional (if you use collectstatic)

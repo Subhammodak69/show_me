@@ -20,6 +20,12 @@
     defer></script>
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <!-- Link to custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <!-- Link to custom JS -->
+  <script defer src="{% static 'js/base.js' %}"></script>
+
 </head>
 
 <body>
@@ -30,62 +36,28 @@
           <div class="d-flex align-items-center" style="gap: 40px;width: 100%;">
             <!-- Dropdown menu -->
             <ul class="navbar-nav mb-2 mb-lg-0">
-  <li class="nav-item dropdown">
-    <a class="nav-link" href="#" id="dropdownToggleBtn" data-bs-toggle="tooltip" data-bs-placement="bottom"
-      title="Category" style="padding: 0px !important; font-size: 25px; margin-left: 20px">
-      <i class="bi bi-list"></i>
-    </a>
-    <ul class="dropdown-menu custom-dropdown-menu overflow-auto"
-        style="top: 126%; max-height: 80vh">
-      <li>
-        <h6 class="dropdown-header">Categories</h6>
-      </li>
-      <!-- Categories will be inserted here -->
-      <span id="category-list"></span>
-      <li>
-        <hr class="dropdown-divider" />
-      </li>
-      <li>
-        <a class="dropdown-item text-info" href="javascript:void(0);" >Show All</a>
-      </li>
-    </ul>
-  </li>
-</ul>
+              <li class="nav-item dropdown">
+                <a class="nav-link" href="#" id="dropdownToggleBtn" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                  title="Category" style="padding: 0px !important; font-size: 25px; margin-left: 20px">
+                  <i class="bi bi-list"></i>
+                </a>
+                <ul class="dropdown-menu custom-dropdown-menu overflow-auto" style="top: 126%; max-height: 80vh">
+                  <li>
+                    <h6 class="dropdown-header">Categories</h6>
+                  </li>
+                  <!-- Categories will be inserted here by JS -->
+                  <span id="category-list"></span>
+                  <li>
+                    <hr class="dropdown-divider" />
+                  </li>
+                  <li>
+                    <a class="dropdown-item text-info" href="javascript:void(0);">Show All</a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
 
-
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-  fetch('/api/all/category/')
-    .then(response => response.json())
-    .then(data => {
-      // data should be an array of categories, with .id and .name
-      const categoryList = document.getElementById('category-list');
-      categoryList.innerHTML = ''; // clear if necessary
-
-      data.forEach(category => {
-        // Build each list item
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.className = 'dropdown-item';
-        a.href = `/category/products/${category.id}/`; // or use your url pattern
-        a.textContent = category.name;
-        // If you prefer JS redirection instead of normal link:
-        // a.href = "javascript:void(0);"
-        // a.onclick = () => window.location.href = `/category/${category.id}/`;
-
-        li.appendChild(a);
-        categoryList.appendChild(li);
-      });
-    })
-    .catch(error => {
-      // Handle error (optional)
-      console.error('Error fetching categories:', error);
-    });
-});
-
-</script>
-            <div class="navbar-brand" style="font-size: 30px; color: #21d6f9 !important"
-              onclick="window.location.href='/'">
+            <div class="navbar-brand" style="font-size: 30px; color: #21d6f9 !important" onclick="window.location.href='/'">
               <em><b>Show Me</b></em>
             </div>
           </div>
@@ -98,7 +70,7 @@
 
           <!-- Right icons -->
           <div class="d-flex align-items-center" style="padding: 0px 10px; gap:10px;">
-            <div class="cart-link d-flex align-items-center text-white"onclick="window.location.href='/'"
+            <div class="cart-link d-flex align-items-center text-white" onclick="window.location.href='/'"
               style="cursor: pointer; margin-right: 20px; gap: 10px">
               <i class="bi bi-house" style="font-size: 20px;"></i>
               <span style="font-size: 14px; white-space:nowrap;">Home</span>
@@ -135,39 +107,30 @@
                 <li><a class="dropdown-item d-flex align-items-center gap-2" href="/cart/"><i class="bi bi-cart3 me-2"></i> Cart</a></li>
                 <li><a class="dropdown-item d-flex align-items-center gap-2" href="/wishlist/"><i
                       class="bi bi-heart"></i> Wishlist</a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-gear"></i>
-                    Settings</a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-bell"></i>
-                    Notifications</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-bell"></i> Notifications</a></li>
                 <li>
                   <hr class="dropdown-divider" />
                 </li>
                 <form action="{% url 'log_out' %}" method="POST">{% csrf_token %}
-                  <button type="submit" class="dropdown-item" style="color: #3bf6ff;"><i
-                      class="bi bi-box-arrow-right"></i> Login Another Account</button>
+                  <button type="submit" class="dropdown-item" style="color: #3bf6ff;"><i class="bi bi-box-arrow-right"></i> Login Another Account</button>
                 </form>
                 <form action="{% url 'log_out' %}" method="POST">{% csrf_token %}
-                  <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i>
-                    Logout</button>
+                  <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
                 </form>
               </ul>
             </div>
             {% else %}
-            <!-- Add data-bs-toggle="tooltip" and title -->
             <div style="display: flex; gap: 10px;">
               <button type="button" class="btn btn-primary lg-btnn d-flex align-items-center gap-2"
-                onclick="window.location.href='/login/'" data-bs-toggle="tooltip" data-bs-placement="bottom"
-                title="Log In">
+                onclick="window.location.href='/login/'" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Log In">
                 <i class="bi bi-box-arrow-in-right"></i>
               </button>
-
               <button type="button" class="btn btn-secondary lg-btnn d-flex align-items-center gap-2"
-                onclick="window.location.href='/signin/'" data-bs-toggle="tooltip" data-bs-placement="bottom"
-                title="Sign In">
+                onclick="window.location.href='/signin/'" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Sign In">
                 <i class="bi bi-person-plus"></i>
               </button>
             </div>
-
             {% endif %}
           </div>
         </div>
@@ -184,133 +147,6 @@
       <div class="nav-item" onclick="window.location.href='/cart/'"><i class="bi bi-cart"></i> Cart</div>
       <div class="nav-item" onclick="window.location.href='/wishlist/'"><i class="bi bi-heart"></i> Wishlist</div>
     </sub-nav>
-    <!-- tooltip-->
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-          new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-      });
-    </script>
-    <!-- JavaScript -->
-    <script>
-      const icon = document.getElementById('searchToggleIcon');
-const mobileInput = document.getElementById('searchInputMobile');
-const desktopInput = document.getElementById('searchInputDesktop');
-
-
-// Handle icon click (toggle input)
-icon.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (mobileInput.classList.contains('active')) {
-    // If already open, hide it
-    mobileInput.classList.remove('active');
-    icon.style.display = 'inline-block';
-  } else {
-    // If closed, open it
-    mobileInput.classList.add('active');
-    icon.style.display = 'none';
-  }
-});
-
-// Click outside input
-document.addEventListener('click', (e) => {
-  if (
-    window.innerWidth <= 662 &&
-    !e.target.closest('.mobile-search-container') &&
-    e.target !== icon
-  ) {
-    mobileInput.classList.remove('active');
-    icon.style.display = 'inline-block';
-  }
-});
-
-// On resize: reset views
-window.addEventListener('resize', () => {
-  if (window.innerWidth > 662) {
-    icon.style.display = 'none';
-    mobileInput.classList.remove('active');
-    desktopInput.style.display = 'inline-block';
-  } else {
-    icon.style.display = 'inline-block';
-    desktopInput.style.display = 'none';
-  }
-});
-
-// On load: ensure initial state
-window.addEventListener('load', () => {
-  if (window.innerWidth > 662) {
-    icon.style.display = 'none';
-    desktopInput.style.display = 'inline-block';
-  } else {
-    icon.style.display = 'inline-block';
-    desktopInput.style.display = 'none';
-  }
-});
-
-    </script>
-
-    <!-- CSS -->
-    <style>
-      .desktop-search {
-        display: inline-block;
-        padding: 5px 10px;
-        font-size: 16px;
-      }
-
-      .search-icon {
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-        display: none;
-        margin-left: 10px;
-      }
-
-      .mobile-search-container {
-        display: none;
-        padding: 5px 0;
-        background-color: #f8f9fa;
-      }
-
-      .mobile-search {
-        width: 100%;
-        display: none;
-        font-size: 16px;
-        padding: 5px 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
-
-      .mobile-search.active {
-        display: inline-block;
-      }
-
-      @media (max-width: 662px) {
-        .desktop-search {
-          display: none !important;
-        }
-        #searchResults{
-          left:5% !important;
-            position: absolute;
-            background: white;
-            border: 1px solid rgb(204, 204, 204);
-            width: 90%!important;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        .search-icon {
-          display: inline-block !important;
-        }
-
-        .mobile-search-container {
-          width: 100%;
-          display: flex;
-        }
-      }
-    </style>
-
 
     <div class="sub-container d-flex flex-column align-items-center min-vh-75 overflow-y-scroll" style="
           min-height:100vh;
@@ -323,19 +159,13 @@ window.addEventListener('load', () => {
     <footer class="bg-dark text-white pt-5 pb-4 mt-4">
       <div class="container text-md-left">
         <div class="row">
-          <!-- Company Info -->
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
             <h5 class="text-uppercase fw-bold">show_me</h5>
-            <p>
-              Discover the latest trends in fashion with
-              <strong>show_me</strong>. Shop clothes, accessories, and more with confidence and
-              style.
-            </p>
+            <p>Discover the latest trends in fashion with <strong>show_me</strong>. Shop clothes, accessories, and more with confidence and style.</p>
             <p><i class="bi bi-telephone-fill me-2"></i> +91 9547444749</p>
             <p><i class="bi bi-envelope-fill me-2"></i> support@showme.style</p>
           </div>
 
-          <!-- Categories -->
           <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
             <h5 class="text-uppercase fw-bold">Categories</h5>
             <p><a href="#" class="text-white text-decoration-none">Men's Fashion</a></p>
@@ -344,38 +174,29 @@ window.addEventListener('load', () => {
             <p><a href="#" class="text-white text-decoration-none">New Arrivals</a></p>
           </div>
 
-          <!-- Newsletter Signup -->
           <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-4">
             <h5 class="text-uppercase fw-bold">Join Our Style Club</h5>
             <form>
               <div class="mb-2">
                 <input type="email" class="form-control" placeholder="Email for fashion tips & offers" />
               </div>
-              <button type="submit" class="btn btn-outline-light btn-sm">
-                Subscribe
-              </button>
+              <button type="submit" class="btn btn-outline-light btn-sm">Subscribe</button>
             </form>
           </div>
 
-          <!-- Store Location -->
           <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-md-0 mb-4">
             <h5 class="text-uppercase fw-bold">Visit Us</h5>
             <div class="ratio ratio-16x9">
-              <iframe
-                src="https://maps.google.com/maps?q=kolkata%20shopping&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
-                width="100%" height="150" style="border: 0" allowfullscreen="" loading="lazy"></iframe>
+              <iframe src="https://maps.google.com/maps?q=kolkata%20shopping&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed" width="100%" height="150" style="border: 0" allowfullscreen="" loading="lazy"></iframe>
             </div>
           </div>
         </div>
 
         <hr class="mb-4 mt-4 text-light" />
 
-        <!-- Bottom Row -->
         <div class="row d-flex align-items-center">
           <div class="col-md-7 col-lg-8">
-            <p class="text-center text-md-start mb-0">
-              &copy; 2025 <strong>show_me</strong> | Dress with Confidence.
-            </p>
+            <p class="text-center text-md-start mb-0">&copy; 2025 <strong>show_me</strong> | Dress with Confidence.</p>
           </div>
           <div class="col-md-5 col-lg-4">
             <div class="text-center text-md-end">
@@ -389,394 +210,6 @@ window.addEventListener('load', () => {
       </div>
     </footer>
   </div>
-<script>
-
-//searchbar code 
-
-$(document).ready(function() {
-  let $searchInput = $('#searchInputDesktop, #searchInputMobile');
-
-  let $resultsList = $('<ul id="searchResults" style="left: 20%; top: 100%; position: absolute; background: white; border: 1px solid rgb(204, 204, 204); width: 60%; max-height: 200px; overflow-y: auto; z-index: 1000;"></ul>');
-  $searchInput.after($resultsList);
-  $resultsList.hide();
-
-  let debounceTimer;
-
-  $searchInput.on('input', function() {
-    clearTimeout(debounceTimer);
-    let query = $(this).val().trim();
-    if (query.length < 2) { 
-      $resultsList.empty().hide();
-      return;
-    }
-
-    debounceTimer = setTimeout(function() {
-      $.ajax({
-        url: `/category/products/search/?q=${encodeURIComponent(query)}`,
-        method: 'GET',
-        success: function(data) {
-          $resultsList.empty();
-          if (data.length === 0) {
-            $resultsList.append('<li>No results found</li>');
-          } else {
-            data.forEach(function(item) {
-              let $li = $('<li style="padding: 5px; cursor: pointer;"></li>');
-              $li.text(item.product_name); // use product_name as per your backend JSON
-              $li.on('click', function() {
-                // Redirect to product item detail page using product item's id
-                window.location.href = `/product/details/${item.id}/`; // keep your URL
-              });
-              $resultsList.append($li);
-            });
-          }
-          $resultsList.show();
-        },
-        error: function() {
-          $resultsList.empty().append('<li>Error fetching results</li>').show();
-        }
-      });
-    }, 300);
-  });
-
-  // Hide results on click outside
-  $(document).on('click', function(e) {
-    if (!$(e.target).closest($searchInput).length && !$(e.target).closest($resultsList).length) {
-      $resultsList.hide();
-    }
-  });
-});
-
-</script>
-
-
-
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const toggleButton = document.getElementById("dropdownToggleBtn");
-      const dropdownMenu = document.querySelector(".custom-dropdown-menu");
-      const navDropdown = document.querySelector(".nav-item.dropdown");
-
-      // Toggle dropdown manually
-      toggleButton.addEventListener("click", function (event) {
-        event.preventDefault();
-        dropdownMenu.classList.toggle("show");
-        event.stopPropagation();
-      });
-
-
-      // Prevent close when clicking nav-item container
-      navDropdown.addEventListener("click", function (event) {
-        event.stopPropagation();
-      });
-
-      // Close dropdown on outside click
-      document.addEventListener("click", function () {
-        dropdownMenu.classList.remove("show");
-      });
-
-    });
-  </script>
-
-  <style>
-    /* === LOGO === */
-    #logo {
-      border: 2px solid transparent;
-      border-radius: 8px;
-      transition: border-color 0.3s ease;
-    }
-
-    #logo:hover {
-      border-color: aqua;
-    }
-
-    /* === NAVBAR === */
-    .navbar {
-      background-color: #121212 !important;
-      padding: 10px 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .navbar-toggler {
-      border: none;
-    }
-
-    .navbar-toggler-icon {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23ffffff' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 191, 166, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-    }
-
-    /* Navbar links */
-    .nav-link {
-      color: #eaeaea !important;
-      font-weight: 500;
-      font-size: 16px;
-      margin-left: 10px;
-      transition: color 0.3s ease;
-    }
-
-    #logo-wrp {
-      align-items: center !important;
-      display: flex !important;
-      justify-content: space-between !important;
-      width: 100% !important;
-      margin-right: 20px;
-    }
-
-    .nav-link:hover {
-      color: #00bfa6 !important;
-    }
-
-    /* === BUTTONS === */
-    .btn-primary {
-      background-color: #00bfa6;
-      border: none;
-      font-size: 13px;
-      padding: 6px 14px;
-      border-radius: 6px;
-      transition: background 0.3s ease;
-    }
-
-    .btn-primary:hover {
-      background-color: #00c9b7;
-    }
-
-    .category-section {
-      transition: opacity 0.4s ease;
-    }
-
-    .btn-secondary {
-      background-color: #5a5a5a;
-      border: none;
-      font-size: 13px;
-      padding: 6px 14px;
-      border-radius: 6px;
-    }
-
-    .btn-secondary:hover {
-      background-color: #444;
-    }
-
-    /* === SEARCH BAR === */
-    form[role="search"] input {
-      border-radius: 20px;
-      padding-left: 15px;
-      font-size: 14px;
-      background-color: #fff;
-      border: 1px solid #ced4da;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    form[role="search"] input:focus {
-      border-color: #00bfa6;
-      box-shadow: 0 0 5px rgba(0, 191, 166, 0.3);
-    }
-
-    /* === PROFILE AVATAR === */
-    #pro-pic,
-    .avatar-circle {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .avatar-circle {
-      background: linear-gradient(135deg, #007bff, #00c9b7);
-      color: #fff;
-      font-weight: bold;
-      text-align: center;
-      line-height: 40px;
-      font-size: 18px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    /* === DROPDOWN MENU === */
-    .dropdown-menu {
-      background-color: #1f1f1f;
-      border: none;
-      padding: 0.5rem 0;
-      min-width: 250px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .dropdown-menu a.dropdown-item.active {
-      background-color: #00bfa6;
-      color: white !important;
-      font-weight: 600;
-    }
-
-    .dropdown-menu a.dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 20px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #eaeaea;
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
-
-    .dropdown-menu a.dropdown-item:hover {
-      background-color: #2b2b2b;
-      color: #00bfa6;
-    }
-
-    .dropdown-divider {
-      margin: 0.5rem 0;
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .dropdown-item.text-danger {
-      color: #dc3545 !important;
-    }
-
-    .dropdown-item.text-danger:hover {
-      background-color: #ffe5e8;
-    }
-
-    .lg-btnn {
-      font-size: 13px;
-      padding: 5px 12px;
-      margin-left: 10px;
-    }
-
-    /* === FOOTER === */
-    footer {
-      background-color: #1c1c1c;
-      color: #fff;
-    }
-
-    footer h5 {
-      color: #00bfa6;
-      font-weight: bold;
-      margin-bottom: 1rem;
-    }
-
-    footer a {
-      color: #ddd;
-      transition: color 0.3s;
-    }
-
-    footer a:hover {
-      color: #00bfa6;
-    }
-
-    footer input[type="email"] {
-      border-radius: 20px;
-      font-size: 14px;
-    }
-
-    footer button {
-      background-color: transparent;
-      border-color: #00bfa6;
-      color: #00bfa6;
-    }
-
-    footer button:hover {
-      background-color: #00bfa6;
-      color: #fff;
-    }
-
-    /* === ANIMATIONS === */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-5px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @media (max-width: 400px) {
-      .sub-navbar{
-        font-size: 12px!important;
-      }
-      #logo-wrp {
-        gap: 10px !important;
-        margin: 0px !important;
-      }
-
-      .lg-btnn {
-        margin: 0px !important;
-      }
-    }
-
-    /*Responsive*/
-
-    @media (max-width: 992px) {
-
-      #logo-wrp {
-        gap: 40px;
-        width: 100%;
-      }
-
-      .input {
-        width: 45%;
-      }
-
-      .custom-dropdown-menu {
-        position: absolute !important;
-      }
-    }
-
-    @media (max-width: 870px) {
-      .sub-navbar{
-        font-weight: 500;
-        display: flex !important;
-        align-items: center;
-        justify-content: space-around;
-        background: #ff9c14;
-        padding: 5px 20px;
-      }
-      .nav-item:active{
-        color: #ebdecb;
-      }
-      .row {
-        margin: 0px;
-      }
-
-      #dropdownToggleBtn {
-        font-size: 30px !important;
-        margin: 0 !important;
-      }
-
-      .input {
-        width: 100% !important;
-      }
-
-      .custom-dropdown-menu {
-        position: absolute !important;
-      }
-
-      .cart-link {
-        display: none !important;
-      }
-
-      .category-section {
-        overflow-x: auto !important;
-      }
-
-      .group {
-        flex-wrap: nowrap !important;
-      }
-
-      .container {
-        padding: 0 !important;
-      }
-    }
-
-    html,
-    body {
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-  </style>
 </body>
 
 </html>
