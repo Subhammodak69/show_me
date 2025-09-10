@@ -100,8 +100,7 @@ def update_cart_item_singly(user, item_id, quantity=None, size=None, color=None)
 def remove_cart_item(user, item_id):
     try:
         cart_item = CartItem.objects.get(id=item_id, cart__user=user, is_active=True)
-        cart_item.is_active = False
-        cart_item.save()
+        cart_item.delete()
         return True
     except CartItem.DoesNotExist:
         raise ValueError("Cart item not found")
