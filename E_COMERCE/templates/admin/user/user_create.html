@@ -40,7 +40,7 @@ document.getElementById('create-user-form').addEventListener('submit', async fun
 
   const response = await fetch("{% url 'user_create' %}", {
     method: 'POST',
-    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    headers: { 'X-CSRFToken': 'csrfToken' },
     body: formData
   });
 

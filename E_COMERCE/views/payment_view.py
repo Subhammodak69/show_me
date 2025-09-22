@@ -5,7 +5,11 @@ from django.shortcuts import render
 from django.http import Http404,HttpResponseBadRequest
 from django.http import JsonResponse
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class PaymentCreateView(EnduserRequiredMixin,View):
     def get(self, request, order_id):
         order = get_order_by_id(order_id)

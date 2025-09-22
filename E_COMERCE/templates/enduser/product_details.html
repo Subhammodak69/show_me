@@ -276,7 +276,7 @@ function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
+      'X-CSRFToken': 'csrfToken',
     },
     body: JSON.stringify({
       product_id: product_id,
@@ -385,7 +385,7 @@ function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken,
+        'X-CSRFToken': 'csrfToken',
       },
       body: JSON.stringify({
         product_item_id: productItemId,

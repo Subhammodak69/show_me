@@ -5,6 +5,8 @@ from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.default_values import Size,Color
 from django.http import JsonResponse
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 #admin
@@ -13,6 +15,8 @@ class AdminCartItemListView(AdminRequiredMixin,View):
         cart_items = cartitem_service.get_cart_items()
         return render(request, 'admin/cartitem/cartitem_list.html', {'cartitem_data': cart_items})
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminCartItemCreateView(AdminRequiredMixin,View):
     def get(self, request):
         carts = cart_service.get_all_carts()
@@ -36,6 +40,8 @@ class AdminCartItemCreateView(AdminRequiredMixin,View):
         cartitem_service.cartitem_create(cart_id,product_item_id,size,color,quantity)
         return redirect('admin_cartitem_list')
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminCartItemUpdateView(AdminRequiredMixin,View):
     def get(self, request, pk):
         cart_item = cartitem_service.get_cart_item_object(pk)
@@ -61,6 +67,7 @@ class AdminCartItemUpdateView(AdminRequiredMixin,View):
         return redirect('admin_cartitem_list')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminCartItemToggleStatusView(AdminRequiredMixin,View):
     def post(self, request, cartitem_id):
         try:

@@ -5,6 +5,8 @@ from django.http import JsonResponse
 from E_COMERCE.constants.default_values import Size
 from E_COMERCE.services import orderitem_service
 from E_COMERCE.constants.decorators import AdminRequiredMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 
@@ -17,6 +19,7 @@ class AdminOrderItemListView(AdminRequiredMixin, View):
         })
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminOrderItemCreateView(AdminRequiredMixin, View):
     def get(self, request):
         product_items =  orderitem_service.get_all_product_items()
@@ -38,6 +41,7 @@ class AdminOrderItemCreateView(AdminRequiredMixin, View):
         return redirect('admin_orderitem_list')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminOrderItemToggleStatusView(AdminRequiredMixin, View):
     def post(self, request, pk):
         try:
@@ -49,6 +53,7 @@ class AdminOrderItemToggleStatusView(AdminRequiredMixin, View):
             return JsonResponse({'success': False, 'error': str(e)})
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminOrderItemUpdateView(AdminRequiredMixin, View):
     def get(self, request, pk):
         item = orderitem_service.get_orderitem_by_id(pk)

@@ -4,8 +4,11 @@ from django.http import JsonResponse
 from E_COMERCE.services.rating_service import *
 from E_COMERCE.constants.decorators import *
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RatingCreateView(View, EnduserRequiredMixin):
     def post(self, request):
         try:
@@ -37,7 +40,8 @@ class RatingCreateView(View, EnduserRequiredMixin):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
         
-        
+
+@method_decorator(csrf_exempt, name='dispatch')
 class RatingUpdateView(View,EnduserRequiredMixin):
     def get(self, request, pk):
         rating = get_rating_by_id(pk)

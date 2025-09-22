@@ -95,7 +95,7 @@
     const response = await fetch("{% url 'productitem_create' %}", {
       method: "POST",
       headers: {
-        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+        'X-CSRFToken':'csrfToken'
       },
       body: formData,
     });

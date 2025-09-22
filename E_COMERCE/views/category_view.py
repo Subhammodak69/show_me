@@ -4,6 +4,8 @@ import json
 from E_COMERCE.services import category_service
 from django.shortcuts import render
 from E_COMERCE.constants.decorators import AdminRequiredMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 class CategoryListView(AdminRequiredMixin,View):
@@ -12,6 +14,7 @@ class CategoryListView(AdminRequiredMixin,View):
         return render(request, 'admin/category/category_list.html',{'category_data':category_data})
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CategoryCreateView(AdminRequiredMixin, View):
     def get(self, request):
         return render(request, 'admin/category/category_create.html')
@@ -27,7 +30,7 @@ class CategoryCreateView(AdminRequiredMixin, View):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class CategoryUpdateView(AdminRequiredMixin, View):
     def get(self, request, category_id):
         category = category_service.get_category_data(category_id)
@@ -44,7 +47,7 @@ class CategoryUpdateView(AdminRequiredMixin, View):
 
     
   
-
+@method_decorator(csrf_exempt, name='dispatch')
 class ToggleCategoryStatusView(AdminRequiredMixin,View):
 
     def post(self, request, category_id):

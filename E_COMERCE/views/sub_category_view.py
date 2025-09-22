@@ -4,6 +4,8 @@ from django.shortcuts import render
 import json
 from E_COMERCE.services import sub_category_service
 from E_COMERCE.constants.decorators import AdminRequiredMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 class SubCategoryListView(AdminRequiredMixin,View):
@@ -12,6 +14,7 @@ class SubCategoryListView(AdminRequiredMixin,View):
         return render(request, 'admin/subcategory/subcategory_list.html', {'subcategory_data': subcategory_data})
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class SubCategoryCreateView(AdminRequiredMixin,View):
 
     def get(self, request):
@@ -27,6 +30,7 @@ class SubCategoryCreateView(AdminRequiredMixin,View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class SubCategoryUpdateView(AdminRequiredMixin,View):
 
     def get(self, request, subcategory_id):
@@ -43,6 +47,7 @@ class SubCategoryUpdateView(AdminRequiredMixin,View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ToggleSubCategoryStatusView(AdminRequiredMixin,View):
 
     def post(self, request, subcategory_id):

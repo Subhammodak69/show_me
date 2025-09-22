@@ -33,7 +33,7 @@ function removeItem(itemId) {
   fetch(`/cart/remove/${itemId}/`, {
     method: 'POST',
     headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
+      'X-CSRFToken': 'csrfToken'
     }
   }).then(() => location.reload());
 }
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
         method: "POST",
         body: formData,
         headers: {
-          'X-CSRFToken': '{{ csrf_token }}'
+          'X-CSRFToken': 'csrfToken'
         }
       })
         .then(res => res.json())

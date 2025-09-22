@@ -4,6 +4,8 @@ from  E_COMERCE.services import cart_service,user_service
 from E_COMERCE.constants.decorators import EnduserRequiredMixin,AdminRequiredMixin
 import json
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 #admin
 class AdminCartListView(AdminRequiredMixin, View):
@@ -12,6 +14,7 @@ class AdminCartListView(AdminRequiredMixin, View):
         return render(request, 'admin/cart/cart_list.html', {'cart_data': cart_data})
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminCartToggleStatusView(AdminRequiredMixin, View):
     def post(self, request, cart_id):
         try:
@@ -25,6 +28,8 @@ class AdminCartToggleStatusView(AdminRequiredMixin, View):
             return JsonResponse({'success': False, 'error': 'Something went wrong'})
         
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminCartCreateView(AdminRequiredMixin, View):
     def get(self, request):
         users = user_service.get_all_user()
@@ -39,7 +44,7 @@ class AdminCartCreateView(AdminRequiredMixin, View):
             return JsonResponse({'error': str(e)}, status=400)
         
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminCartUpdateView(AdminRequiredMixin, View):
     def get(self, request, pk):
         cart = cart_service.get_cart_by_id(pk)
@@ -88,7 +93,7 @@ class CartDetailsView(EnduserRequiredMixin, View):
 
         
     
-
+@method_decorator(csrf_exempt, name='dispatch')
 class CartCreateView(EnduserRequiredMixin,View):
     def post(self, request):
         try:
@@ -105,6 +110,7 @@ class CartCreateView(EnduserRequiredMixin,View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CartUpdateView(EnduserRequiredMixin,View):
     def post(self, request):
         try:
@@ -119,6 +125,7 @@ class CartUpdateView(EnduserRequiredMixin,View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CartDeleteView(AdminRequiredMixin,View):
     def post(self, request):
         try:

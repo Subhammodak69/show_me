@@ -4,7 +4,8 @@ from django.shortcuts import render
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from django.contrib.auth import get_user_model
 import json
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from E_COMERCE.services import user_service  # You’ll need to create this service module
 
 User = get_user_model()
@@ -17,7 +18,7 @@ class UserListView(AdminRequiredMixin, View):
         users = user_service.get_all_users()
         return render(request, 'admin/user/user_list.html', {'users': users})
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class UserCreateView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 
@@ -42,6 +43,7 @@ class UserCreateView(AdminRequiredMixin, View):
             return JsonResponse({'success': False, 'error': str(e)})
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class UserUpdateView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 
@@ -66,7 +68,7 @@ class UserUpdateView(AdminRequiredMixin, View):
             return JsonResponse({'success': False, 'error': str(e)})
 
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class ToggleUserStatusView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 

@@ -43,7 +43,7 @@
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token }}'
+        'X-CSRFToken': 'csrfToken'
       },
       body: JSON.stringify(data)
     });

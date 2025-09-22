@@ -56,7 +56,7 @@ DATABASES = {
         'NAME': get_env_variable('DB_NAME'),
         'USER': get_env_variable('DB_USER'),
         'PASSWORD': get_env_variable('DB_PASSWORD'),
-        'HOST': get_env_variable('DB_HOST'),
+        'HOST': 'dpg-d354e5er433s738gqql0-a.oregon-postgres.render.com',
         'PORT': get_env_variable('DB_PORT'),
     }
 }
@@ -80,9 +80,9 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-RAZORPAY_KEY_ID = get_env_variable('RAZORPAY_KEY_ID')
-RAZORPAY_KEY_SECRET = get_env_variable('RAZORPAY_KEY_SECRET')
-MERCHANT_UPI_ID = get_env_variable('MERCHANT_UPI_ID')
+# RAZORPAY_KEY_ID = get_env_variable('RAZORPAY_KEY_ID')
+# RAZORPAY_KEY_SECRET = get_env_variable('RAZORPAY_KEY_SECRET')
+# MERCHANT_UPI_ID = get_env_variable('MERCHANT_UPI_ID')
 
 AUTH_USER_MODEL = 'E_COMERCE.User'
 

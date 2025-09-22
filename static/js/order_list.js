@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch(`/order/delete/${deleteOrderId}/`, {
       method: 'POST',
       headers: {
-        'X-CSRFToken': getCookie('csrftoken'),
+        'X-CSRFToken': 'csrfToken',
         'Content-Type': 'application/json'
       }
     })

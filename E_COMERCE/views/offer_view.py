@@ -20,6 +20,7 @@ class OfferListView(AdminRequiredMixin,View):
         context = {'offers': offers}
         return render(request, 'admin/offer/offer_list.html', context)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class OfferCreateView(AdminRequiredMixin,View):
     def get(self, request):
         context = {'products': get_all_products()}
@@ -44,6 +45,8 @@ class OfferCreateView(AdminRequiredMixin,View):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class OfferUpdateView(AdminRequiredMixin,View):
     def get(self, request, pk):
         offer = get_offer_by_id(pk)

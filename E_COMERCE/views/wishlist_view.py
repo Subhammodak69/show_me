@@ -5,7 +5,9 @@ from django.http import JsonResponse
 import json
 from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.decorators import EnduserRequiredMixin,AdminRequiredMixin
- 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
     
 class WishlistDetailsView(EnduserRequiredMixin,View):
     def get(self,request):
@@ -13,7 +15,7 @@ class WishlistDetailsView(EnduserRequiredMixin,View):
         wishlist_items_data = wishlist_service.get_wishlist_items(user_id)
         return render(request,'enduser/wishlist.html',{'wishlist_items_data':wishlist_items_data})
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class WishlistDeleteView(EnduserRequiredMixin,View):
     def post(self, request):
         data = json.loads(request.body)
@@ -25,6 +27,8 @@ class WishlistDeleteView(EnduserRequiredMixin,View):
         except:
             return JsonResponse({"success": False, "error": "Item not found"}, status=404)
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class WishlistCreateUpdateView(EnduserRequiredMixin,View):
     
     def post(self, request):
@@ -55,7 +59,7 @@ class AdminWishlistListView(View):
         })
 
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminWishlistCreateView(AdminRequiredMixin, View):
     def get(self, request):
         users = user_service.get_all_user()
@@ -75,6 +79,7 @@ class AdminWishlistCreateView(AdminRequiredMixin, View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminWishlistUpdateView(View):
     def get(self, request, pk):
         wishlist = wishlist_service.get_wishlist_by_id(pk)
@@ -94,7 +99,7 @@ class AdminWishlistUpdateView(View):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminWishlistToggleStatusView(EnduserRequiredMixin, View):
     def post(self, request, pk):
         try:

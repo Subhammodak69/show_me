@@ -59,7 +59,7 @@ document.getElementById('updateCategoryForm').addEventListener('submit', async f
   const response = await fetch("{% url 'category_update' category.id %}", {
     method: "POST",
     headers: {
-      'X-CSRFToken': csrfToken
+      'X-CSRFToken': 'csrfToken'
       // Do NOT set 'Content-Type'; browser handles it when you use FormData
     },
     body: formData

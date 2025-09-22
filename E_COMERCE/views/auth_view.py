@@ -13,11 +13,13 @@ from E_COMERCE.services import user_service
 from E_COMERCE.constants.default_values import Role
 from E_COMERCE.constants.decorators import redirect_authenticated_user_to_home
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 # Temporary OTP storage (or use session/cache/DB)
 OTP_STORE = {}
 
 @method_decorator(redirect_authenticated_user_to_home, name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(View):
     def get(self, request):
         return render(request, 'auth/login.html')
@@ -47,7 +49,7 @@ class LoginView(View):
             return JsonResponse({'success': False, 'message': 'Something went wrong. Please try again.'})     
     
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 @method_decorator(redirect_authenticated_user_to_home, name='dispatch')
 class SigninView(View):
     def get(self, request):
@@ -92,7 +94,7 @@ class SigninView(View):
 
 
 User = get_user_model()
-
+@method_decorator(csrf_exempt, name='dispatch')
 class ForgetPasswordView(View):
     def get(self, request):
         return render(request, 'auth/forget_password.html')
@@ -169,7 +171,7 @@ class ForgetPasswordView(View):
             return JsonResponse({'success': False, 'message': 'Invalid action.'})
 
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class SendOTPView(View):
     def post(self, request):
         data = json.loads(request.body)
@@ -206,7 +208,7 @@ class SendOTPView(View):
             print("Error sending email:", e)
             return JsonResponse({'success': False, 'message': 'Failed to send OTP.'})
 
-    
+@method_decorator(csrf_exempt, name='dispatch')    
 class LogoutView(View):
     def post(self, request):
         if request.user.role == Role.ENDUSER.value:
@@ -218,7 +220,7 @@ class LogoutView(View):
     
     
 #admin Authentication
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminLoginView(View):
     def get(self, request):
         return render(request, 'admin/admin_login.html')

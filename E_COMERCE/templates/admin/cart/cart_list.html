@@ -56,7 +56,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token }}',
+        'X-CSRFToken': 'csrfToken',
       },
       body: JSON.stringify({ is_active: !currentStatus })
     });

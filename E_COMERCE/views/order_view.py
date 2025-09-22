@@ -52,7 +52,7 @@ class OrderCreateView(EnduserRequiredMixin,View):
 
 
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class DirectOrderView(EnduserRequiredMixin, View):
     def get(self, request, item_id):
         product_item = productitem_service.get_product_item_by_id(item_id)
@@ -80,7 +80,7 @@ class DirectOrderView(EnduserRequiredMixin, View):
         return JsonResponse({'success': True, 'order_id': order.id})
 
     
-
+@method_decorator(csrf_exempt, name='dispatch')
 class CartItemUpdateView(EnduserRequiredMixin, View):
     def post(self, request, pk):
         try:
@@ -112,7 +112,7 @@ class CartItemRemoveView(EnduserRequiredMixin, View):
             return JsonResponse({'error': str(e)}, status=404)
         
         
-        
+@method_decorator(csrf_exempt, name='dispatch')    
 class OrderDeleteView(EnduserRequiredMixin, View):
     def post(self, request, order_id):
         try:
@@ -143,7 +143,7 @@ class AdminOrderListView(AdminRequiredMixin,View):
         orders = order_service.get_all_orders()
         return render(request, 'admin/order/order_list.html', {'orders': orders})
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminOrderCreateView(AdminRequiredMixin,View):
     def get(self, request):
         users = order_service.get_all_users()
@@ -163,7 +163,7 @@ class AdminOrderCreateView(AdminRequiredMixin,View):
         order_service.create_order(data)
         return redirect("admin_order_list")
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminOrderUpdateView(AdminRequiredMixin,View):
     def get(self, request, pk):
         order = order_service.get_order_by_id(pk)
@@ -185,7 +185,7 @@ class AdminOrderUpdateView(AdminRequiredMixin,View):
         order_service.update_order(pk, data)
         return redirect("admin_order_list")
     
-
+@method_decorator(csrf_exempt, name='dispatch')
 class AdminOrderToggleStatusView(AdminRequiredMixin, View):
     def post(self, request, pk):
         try:

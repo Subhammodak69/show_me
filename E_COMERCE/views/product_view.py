@@ -4,6 +4,8 @@ from E_COMERCE.services import product_service,category_service,sub_category_ser
 from django.http import JsonResponse
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.constants.decorators import EnduserRequiredMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 class ProductDetailsView(View):
@@ -19,7 +21,8 @@ class ProductListView(AdminRequiredMixin,View):
         products = product_service.get_all_products()
         return render(request, 'admin/product/product_list.html', {'products': products})
     
-   
+
+@method_decorator(csrf_exempt, name='dispatch')
 class ProductCreateView(AdminRequiredMixin,View):
     def get(self, request):
         categories = category_service.get_categories()
@@ -40,7 +43,9 @@ class ProductCreateView(AdminRequiredMixin,View):
             return JsonResponse({'success': True, 'product_id': product.id})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
-    
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class ProductUpdateView(AdminRequiredMixin,View):
     def get(self, request, product_id):
         product = product_service.get_product_object_by_id(product_id)
@@ -64,7 +69,8 @@ class ProductUpdateView(AdminRequiredMixin,View):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
       
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
 class ProductToggleStatusView(EnduserRequiredMixin,View):
     def post(self, request, product_id):
         product = product_service.get_product_by_id(product_id)
