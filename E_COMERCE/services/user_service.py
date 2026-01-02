@@ -14,14 +14,10 @@ def user_exists(email):
     return User.objects.filter(email = email , role= Role.ENDUSER.value).exists()
 
 
-def user_is_authenticate(email, password):
+def user_is_authenticate(email):
     try:
         user = User.objects.get(email=email)
-
-        if user.password == password and user.is_active:
-            return user 
-        else:
-            return None 
+        return user
     except User.DoesNotExist:
         return None  
     

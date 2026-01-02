@@ -228,13 +228,15 @@ class AdminLoginView(View):
     def post(self, request):
         email = request.POST.get('email')
         password = request.POST.get('password')
-
-        user = user_service.user_is_authenticate(email, password)
+        # print("email=>",email,"password=>",password)
+        user = user_service.user_is_authenticate(email)
+        # print("user:",user)
 
         if user and user.role == Role.ADMIN.value:
             login(request, user) 
             return redirect('admin')
         else:
+            print("elseeeee")
             return render(request, 'admin/admin_login.html', {
                 'error': 'Invalid credentials or not an admin user.'
             })
