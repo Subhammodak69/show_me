@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from env_config import get_env_variable
+import urllib.parse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -50,14 +51,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'show_me.wsgi.application'
 
+uri = get_env_variable('DATABASE_URL', default='')
+parsed = urllib.parse.urlparse(uri)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': get_env_variable('DB_NAME'),
-        'USER': get_env_variable('DB_USER'),
-        'PASSWORD': get_env_variable('DB_PASSWORD'),
-        'HOST': 'dpg-d354e5er433s738gqql0-a.oregon-postgres.render.com',
-        'PORT': get_env_variable('DB_PORT'),
+        'NAME': parsed.path[1:], 
+        'USER': parsed.username,  
+        'PASSWORD': parsed.password,
+        'HOST': parsed.hostname,  
+        'PORT': parsed.port,     
+        'OPTIONS': {'sslmode': 'require'},
+        'CONN_MAX_AGE': 600,
     }
 }
 

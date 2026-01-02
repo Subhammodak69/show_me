@@ -21,6 +21,8 @@ static/posters
 static/product_images
 static/category_images/
 media/
+**/migrations/
+!**/migrations/__init__.py
 
 # Optional (if you use collectstatic)
 staticfiles/
