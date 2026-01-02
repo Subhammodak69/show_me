@@ -1,0 +1,137 @@
+  /* Container */
+  .payment-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh;
+    margin: 2rem auto;
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* Left image panel */
+  .payment-image {
+    display: none;
+    background: url("{% static 'images/payment-illustration.jpg' %}") center/cover no-repeat;
+  }
+
+  /* Right form panel */
+  .payment-form {
+    flex: 1;
+    padding: 2rem;
+  }
+
+  /* Responsive columns for large screens */
+  @media (max-width: 480px) {
+    .payment-container {
+      width: 99% !important;
+    }
+  }
+  @media (min-width: 768px) {
+    .payment-container {
+      flex-direction: row;
+    }
+    .payment-image {
+      flex: 1;
+      display: block;
+    }
+    .payment-form {
+      flex: 1;
+      padding: 3rem;
+      background: white;
+    }
+  }
+
+  /* Form styling */
+  .payment-form h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+  .payment-form label {
+    font-weight: 500;
+    margin-top: 1rem;
+  }
+  .payment-form select,
+  .payment-form input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  .payment-form .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .payment-form .btn-primary {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1.1rem;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .payment-form .btn-primary:hover {
+    background-color: #0056b3;
+  }
+
+  /* Modal display hidden by default */
+  #modalbody,
+  #successModal {
+    display: none;
+  }
+  #modalbody,
+  #successModal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgb(0 0 0 / 78%);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #modalbody > div,
+  #successModal > div {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  /* Image style fix */
+  .payment-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+  }
+
+   /* Loader overlay */
+  #loaderOverlay {
+    display: flex;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(39, 37, 37, 0.49);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  #loaderOverlay .spinner {
+    margin:auto;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #007bff;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
