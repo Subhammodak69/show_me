@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils.dateparse import parse_datetime
 from E_COMERCE.models import Poster
 from E_COMERCE.models import User
+from django.utils import timezone
 
 def get_all_posters():
     return Poster.objects.filter(is_active = True)
@@ -26,13 +27,22 @@ def create_poster(data, file):
             for chunk in file.chunks():
                 dest.write(chunk)
 
+        # In create_poster(), replace the create call with:
+        start_date = parse_datetime(data.get('start_date')) if data.get('start_date') else None
+        if start_date and timezone.is_naive(start_date):
+            start_date = timezone.make_aware(start_date)
+
+        end_date = parse_datetime(data.get('end_date')) if data.get('end_date') else None
+        if end_date and timezone.is_naive(end_date):
+            end_date = timezone.make_aware(end_date)
+
         poster = Poster.objects.create(
             created_by=user,
             title=data.get('title', ''),
             description=data.get('description', ''),
             photo_url=f"/static/{relative_path}",
-            start_date=parse_datetime(data.get('start_date')) if data.get('start_date') else None,
-            end_date=parse_datetime(data.get('end_date')) if data.get('end_date') else None,
+            start_date=start_date,
+            end_date=end_date,
         )
         return poster
 
