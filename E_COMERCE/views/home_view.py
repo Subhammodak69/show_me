@@ -1,8 +1,9 @@
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from E_COMERCE.services import user_service,poster_service,order_service,productitem_service,category_service
 import random
+from E_COMERCE.constants.default_values import Role
 
 
 class HomeView(View):
@@ -11,6 +12,8 @@ class HomeView(View):
         if request.user.is_authenticated:
             user_id = request.user.id
             user = user_service.get_user(user_id)
+            if user.role == Role.ADMIN.value:
+                return redirect('/admin/')
             user_data = {
                 'user_id': user_id,
                 'is_authenticated': True,
