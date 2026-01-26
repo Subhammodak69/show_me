@@ -1,15 +1,15 @@
 from pathlib import Path
 import os
-from env_config import get_env_variable
-import urllib.parse
+from env_config import env
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = get_env_variable('SECRET_KEY')
+SECRET_KEY = env('SECRET_KEY')
 
-DEBUG = get_env_variable('DEBUG', 'False') == 'True'
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['*']  # ✅ Not safe for production
+ALLOWED_HOSTS = ['*'] 
 
 
 INSTALLED_APPS = [
@@ -53,20 +53,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'show_me.wsgi.application'
 
-uri = get_env_variable('DATABASE_URL', default='')
-parsed = urllib.parse.urlparse(uri)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': parsed.path[1:], 
-        'USER': parsed.username,  
-        'PASSWORD': parsed.password,
-        'HOST': parsed.hostname,  
-        'PORT': parsed.port,     
-        'OPTIONS': {'sslmode': 'require'},
-        'CONN_MAX_AGE': 600,
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -76,20 +73,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = get_env_variable('EMAIL_HOST')
-EMAIL_PORT = int(get_env_variable('EMAIL_PORT'))
-EMAIL_USE_TLS = get_env_variable('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = get_env_variable('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD')
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = int(env('EMAIL_PORT'))
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# RAZORPAY_KEY_ID = get_env_variable('RAZORPAY_KEY_ID')
-# RAZORPAY_KEY_SECRET = get_env_variable('RAZORPAY_KEY_SECRET')
-# MERCHANT_UPI_ID = get_env_variable('MERCHANT_UPI_ID')
+# RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID')
+# RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET')
+# MERCHANT_UPI_ID = env('MERCHANT_UPI_ID')
 
 AUTH_USER_MODEL = 'E_COMERCE.User'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # NEW: Collect here

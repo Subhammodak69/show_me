@@ -1,8 +1,7 @@
+
 # env_config.py
+import environ
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-def get_env_variable(key, default=None):
-    return os.getenv(key, default)
+env = environ.Env()
+environ.Env.read_env(os.path.join(os.path.dirname(__file__), ".env"))
