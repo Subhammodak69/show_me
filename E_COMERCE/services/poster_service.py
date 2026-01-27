@@ -18,17 +18,21 @@ def create_poster(data, file):
 
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
-        dir_path = os.path.join(settings.STATIC_URL, 'static', 'posters')
+        
+        # ✅ FIXED: Use BASE_DIR instead of STATIC_URL for filesystem path
+        dir_path = os.path.join(settings.BASE_DIR, 'static', 'posters')
         os.makedirs(dir_path, exist_ok=True)
         relative_path = f"posters/{filename}"
         absolute_path = os.path.join(dir_path, filename)
-        print('relativePath=> ',relative_path)
-        print('absolutePath=> ',absolute_path)
+        
+        print('relativePath=> ', relative_path)
+        print('absolutePath=> ', absolute_path)
+        
         with open(absolute_path, 'wb+') as dest:
             for chunk in file.chunks():
                 dest.write(chunk)
 
-        # In create_poster(), replace the create call with:
+        # ✅ FIXED: Full URL path for frontend (same as category)
         start_date = parse_datetime(data.get('start_date')) if data.get('start_date') else None
         if start_date and timezone.is_naive(start_date):
             start_date = timezone.make_aware(start_date)
@@ -41,7 +45,7 @@ def create_poster(data, file):
             created_by=user,
             title=data.get('title', ''),
             description=data.get('description', ''),
-            photo_url=relative_path,
+            photo_url=f"/static/{relative_path}",  # ✅ Full URL path
             start_date=start_date,
             end_date=end_date,
         )
@@ -49,20 +53,33 @@ def create_poster(data, file):
 
     except Exception as e:
         raise Exception(f"Failed to create poster: {str(e)}")
+    
 
 def update_poster(poster_id, data, file=None):
     try:
         poster = Poster.objects.get(id=poster_id)
         poster.created_by = User.objects.get(id=data.get('user_id'))
-        poster.title = data.get('title', '')
-        poster.description = data.get('description', '')
-        poster.start_date = parse_datetime(data.get('start_date')) if data.get('start_date') else None
-        poster.end_date = parse_datetime(data.get('end_date')) if data.get('end_date') else None
+        poster.title = data.get('title', poster.title)  # ✅ Keep existing if not provided
+        poster.description = data.get('description', poster.description)  # ✅ Keep existing
+        
+        # ✅ Fixed timezone handling
+        start_date = parse_datetime(data.get('start_date')) if data.get('start_date') else None
+        if start_date and timezone.is_naive(start_date):
+            start_date = timezone.make_aware(start_date)
+        poster.start_date = start_date
+        
+        end_date = parse_datetime(data.get('end_date')) if data.get('end_date') else None
+        if end_date and timezone.is_naive(end_date):
+            end_date = timezone.make_aware(end_date)
+        poster.end_date = end_date
 
+        # Handle new photo if uploaded
         if file:
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
-            dir_path = os.path.join(settings.STATIC_URL, 'static', 'posters')
+            
+            # ✅ FIXED: Use BASE_DIR instead of STATIC_URL
+            dir_path = os.path.join(settings.BASE_DIR, 'static', 'posters')
             os.makedirs(dir_path, exist_ok=True)
             relative_path = f"posters/{filename}"
             absolute_path = os.path.join(dir_path, filename)
@@ -71,11 +88,17 @@ def update_poster(poster_id, data, file=None):
                 for chunk in file.chunks():
                     dest.write(chunk)
 
-            poster.photo_url = relative_path
+            # ✅ FIXED: Full URL path for frontend
+            poster.photo_url = f"/static/{relative_path}"
 
+        # If no file, old photo_url remains unchanged
         poster.save()
         return poster
 
+    except Poster.DoesNotExist:
+        raise Exception("Poster not found.")
+    except User.DoesNotExist:
+        raise Exception("User not found.")
     except Exception as e:
         raise Exception(f"Update failed: {str(e)}")
 

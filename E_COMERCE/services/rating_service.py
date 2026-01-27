@@ -39,7 +39,6 @@ def get_rating_by_id(pk):
         return None
 
 
-
 def create_rating(data, file, user):
     try:
         photo_url = ''  # Default photo URL if no file is uploaded
@@ -48,20 +47,23 @@ def create_rating(data, file, user):
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
             relative_path = f"rating_photos/{filename}"
-            absolute_path = os.path.join(settings.STATIC_URL, relative_path)
-    
-            os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
-    
+            
+            # ✅ FIXED: Use BASE_DIR instead of STATIC_URL
+            dir_path = os.path.join(settings.BASE_DIR, 'static', 'rating_photos')
+            os.makedirs(dir_path, exist_ok=True)
+            absolute_path = os.path.join(dir_path, filename)
+
             with open(absolute_path, 'wb+') as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
             
-            photo_url = relative_path
-    
+            # ✅ FIXED: Full URL path for frontend
+            photo_url = f"/static/{relative_path}"
+
         product = Product.objects.get(id=data.get('product_id'))
         rating_value = int(data.get('rating'))
         review_text = data.get('review', '')
-    
+
         rating = Rating.objects.create(
             product=product,
             photo_url=photo_url,
@@ -71,8 +73,11 @@ def create_rating(data, file, user):
         )
         return rating
 
+    except Product.DoesNotExist:
+        raise Exception("Product not found.")
     except Exception as e:
         raise Exception(f"Failed to create rating: {str(e)}")
+
 
 
 

@@ -118,17 +118,21 @@ def create_productitem(request, file):
         size = int(request.POST.get('size'))
         color = int(request.POST.get('colour'))
         price = int(request.POST.get('price'))
-        # Debug prints
 
         product = Product.objects.get(id=product_id, is_active=True)
 
-        # Save the uploaded image
+        # ✅ FIXED: Save image to static folder
+        if not file:
+            raise Exception("Photo file is missing.")
+
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
         relative_path = f"product_images/{filename}"
-        absolute_path = os.path.join(settings.STATIC_URL, 'static', relative_path)
-
-        os.makedirs(os.path.dirname(absolute_path), exist_ok=True)  # ensure dir exists
+        
+        # ✅ Use BASE_DIR instead of STATIC_URL
+        dir_path = os.path.join(settings.BASE_DIR, 'static', 'product_images')
+        os.makedirs(dir_path, exist_ok=True)
+        absolute_path = os.path.join(dir_path, filename)
 
         with open(absolute_path, 'wb+') as destination:
             for chunk in file.chunks():
@@ -140,7 +144,7 @@ def create_productitem(request, file):
             size=size,
             color=color,
             price=price,
-            photo_url=relative_path,
+            photo_url=f"/static/{relative_path}",  # ✅ Full URL path
         )
 
         return item
@@ -149,21 +153,22 @@ def create_productitem(request, file):
         raise Exception("Invalid or inactive product selected.")
     except Exception as e:
         raise Exception(f"Failed to create product item: {str(e)}")
-
-
-
+    
 def update_productitem(item_id, data, file=None):
     try:
         item = ProductItem.objects.get(id=item_id)
         item.product = Product.objects.get(id=data.get('product'))
-        item.size = item.size = Size[data.get('size')].value
+        item.size = Size[data.get('size')].value  # ✅ Fixed duplicate assignment
         item.color = Color[data.get('colour')].value
         item.price = int(data.get('price'))
-    
+        
+        # Handle new photo if uploaded
         if file:
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
-            dir_path = os.path.join(settings.STATIC_URL, 'static', 'product_images')
+            
+            # ✅ FIXED: Use BASE_DIR instead of STATIC_URL
+            dir_path = os.path.join(settings.BASE_DIR, 'static', 'product_images')
             os.makedirs(dir_path, exist_ok=True)
             relative_path = f"product_images/{filename}"
             absolute_path = os.path.join(dir_path, filename)
@@ -172,13 +177,19 @@ def update_productitem(item_id, data, file=None):
                 for chunk in file.chunks():
                     dest.write(chunk)
 
-            item.photo_url = relative_path
+            item.photo_url = f"/static/{relative_path}"  # ✅ Full URL path
 
         item.save()
         return item
 
+    except ProductItem.DoesNotExist:
+        raise Exception("Product item not found.")
+    except Product.DoesNotExist:
+        raise Exception("Product not found.")
     except Exception as e:
         raise Exception(f"Update failed: {str(e)}")
+
+
     
 def get_all_productitems():
     items = ProductItem.objects.select_related('product').all().order_by('id')

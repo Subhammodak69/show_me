@@ -3,6 +3,7 @@ import os
 from uuid import uuid4
 from django.conf import settings
 
+
 def create_category(data, file, user):
     try:
         if not file:
@@ -11,24 +12,30 @@ def create_category(data, file, user):
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
         relative_path = f"category_images/{filename}"
-        absolute_path = os.path.join(settings.STATIC_URL, 'static', relative_path)
-
-        os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
-
+        
+        # ✅ Save to STATICFILES_DIRS location (show_me/static/category_images/)
+        dir_path = os.path.join(settings.BASE_DIR, 'static', 'category_images')
+        os.makedirs(dir_path, exist_ok=True)
+        absolute_path = os.path.join(dir_path, filename)
+        print(absolute_path)
+        print(relative_path)
+        # Save the file
         with open(absolute_path, 'wb+') as destination:
             for chunk in file.chunks():
                 destination.write(chunk)
 
+        # ✅ photo_url matches STATIC_URL structure for frontend
         category = Category.objects.create(
             name=data.get('name'),
             description=data.get('description'),
-            photo_url=relative_path,
+            photo_url=f"/static/{relative_path}",  # Full URL path for template
             created_by=user
         )
         return category
 
     except Exception as e:
         raise Exception(f"Failed to create category: {str(e)}")
+
 
    
 
@@ -43,16 +50,21 @@ def update_category(category_id, data, file=None):
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
             relative_path = f"category_images/{filename}"
-            absolute_path = os.path.join(settings.STATIC_URL, 'static', relative_path)
-            os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
+            
+            # ✅ Save to STATICFILES_DIRS location
+            dir_path = os.path.join(settings.BASE_DIR, 'static', 'category_images')
+            os.makedirs(dir_path, exist_ok=True)
+            absolute_path = os.path.join(dir_path, filename)
 
+            # Save new file (old one stays until collectstatic cleans up)
             with open(absolute_path, 'wb+') as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
 
-            category.photo_url = relative_path
+            # ✅ Full URL path for frontend consistency
+            category.photo_url = f"/static/{relative_path}"
 
-        # If file not supplied, the old photo_url remains unchanged
+        # If no file, old photo_url remains unchanged
         category.save()
         return category
 
