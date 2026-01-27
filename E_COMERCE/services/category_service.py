@@ -11,7 +11,7 @@ def create_category(data, file, user):
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
         relative_path = f"category_images/{filename}"
-        absolute_path = os.path.join(settings.BASE_DIR, 'static', relative_path)
+        absolute_path = os.path.join(settings.STATIC_URL, 'static', relative_path)
 
         os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
 
@@ -22,7 +22,7 @@ def create_category(data, file, user):
         category = Category.objects.create(
             name=data.get('name'),
             description=data.get('description'),
-            photo_url=f"/static/{relative_path}",
+            photo_url=relative_path,
             created_by=user
         )
         return category
@@ -43,14 +43,14 @@ def update_category(category_id, data, file=None):
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
             relative_path = f"category_images/{filename}"
-            absolute_path = os.path.join(settings.BASE_DIR, 'static', relative_path)
+            absolute_path = os.path.join(settings.STATIC_URL, 'static', relative_path)
             os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
 
             with open(absolute_path, 'wb+') as destination:
                 for chunk in file.chunks():
                     destination.write(chunk)
 
-            category.photo_url = f"/static/{relative_path}"
+            category.photo_url = relative_path
 
         # If file not supplied, the old photo_url remains unchanged
         category.save()

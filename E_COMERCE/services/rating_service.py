@@ -48,7 +48,7 @@ def create_rating(data, file, user):
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
             relative_path = f"rating_photos/{filename}"
-            absolute_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+            absolute_path = os.path.join(settings.STATIC_URL, relative_path)
     
             os.makedirs(os.path.dirname(absolute_path), exist_ok=True)
     
@@ -56,7 +56,7 @@ def create_rating(data, file, user):
                 for chunk in file.chunks():
                     destination.write(chunk)
             
-            photo_url = f"/static/{relative_path}"  # or use MEDIA_URL depending on your setup
+            photo_url = relative_path
     
         product = Product.objects.get(id=data.get('product_id'))
         rating_value = int(data.get('rating'))

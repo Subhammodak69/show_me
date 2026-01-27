@@ -126,7 +126,7 @@ def create_productitem(request, file):
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
         relative_path = f"product_images/{filename}"
-        absolute_path = os.path.join(settings.BASE_DIR, 'static', relative_path)
+        absolute_path = os.path.join(settings.STATIC_URL, 'static', relative_path)
 
         os.makedirs(os.path.dirname(absolute_path), exist_ok=True)  # ensure dir exists
 
@@ -140,7 +140,7 @@ def create_productitem(request, file):
             size=size,
             color=color,
             price=price,
-            photo_url=f"/static/{relative_path}",
+            photo_url=relative_path,
         )
 
         return item
@@ -163,7 +163,7 @@ def update_productitem(item_id, data, file=None):
         if file:
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
-            dir_path = os.path.join(settings.BASE_DIR, 'static', 'product_images')
+            dir_path = os.path.join(settings.STATIC_URL, 'static', 'product_images')
             os.makedirs(dir_path, exist_ok=True)
             relative_path = f"product_images/{filename}"
             absolute_path = os.path.join(dir_path, filename)
@@ -172,7 +172,7 @@ def update_productitem(item_id, data, file=None):
                 for chunk in file.chunks():
                     dest.write(chunk)
 
-            item.photo_url = f"/static/{relative_path}"
+            item.photo_url = relative_path
 
         item.save()
         return item

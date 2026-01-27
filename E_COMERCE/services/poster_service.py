@@ -18,11 +18,12 @@ def create_poster(data, file):
 
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
-        dir_path = os.path.join(settings.BASE_DIR, 'static', 'posters')
+        dir_path = os.path.join(settings.STATIC_URL, 'static', 'posters')
         os.makedirs(dir_path, exist_ok=True)
         relative_path = f"posters/{filename}"
         absolute_path = os.path.join(dir_path, filename)
-
+        print('relativePath=> ',relative_path)
+        print('absolutePath=> ',absolute_path)
         with open(absolute_path, 'wb+') as dest:
             for chunk in file.chunks():
                 dest.write(chunk)
@@ -40,7 +41,7 @@ def create_poster(data, file):
             created_by=user,
             title=data.get('title', ''),
             description=data.get('description', ''),
-            photo_url=f"/static/{relative_path}",
+            photo_url=relative_path,
             start_date=start_date,
             end_date=end_date,
         )
@@ -61,7 +62,7 @@ def update_poster(poster_id, data, file=None):
         if file:
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
-            dir_path = os.path.join(settings.BASE_DIR, 'static', 'posters')
+            dir_path = os.path.join(settings.STATIC_URL, 'static', 'posters')
             os.makedirs(dir_path, exist_ok=True)
             relative_path = f"posters/{filename}"
             absolute_path = os.path.join(dir_path, filename)
@@ -70,7 +71,7 @@ def update_poster(poster_id, data, file=None):
                 for chunk in file.chunks():
                     dest.write(chunk)
 
-            poster.photo_url = f"/static/{relative_path}"
+            poster.photo_url = relative_path
 
         poster.save()
         return poster
