@@ -4,7 +4,7 @@ import os
 from uuid import uuid4
 from django.conf import settings
 from collections import defaultdict
-
+from django.core.files.storage import default_storage
 
 
 def get_all_productitems_by_category():
@@ -121,7 +121,6 @@ def create_productitem(request, file):
 
         product = Product.objects.get(id=product_id, is_active=True)
 
-        # ✅ FIXED: Save image to static folder
         if not file:
             raise Exception("Photo file is missing.")
 
@@ -129,22 +128,19 @@ def create_productitem(request, file):
         filename = f"{uuid4()}{ext}"
         relative_path = f"product_images/{filename}"
         
-        # ✅ Use BASE_DIR instead of STATIC_URL
-        dir_path = os.path.join(settings.BASE_DIR, 'static', 'product_images')
-        os.makedirs(dir_path, exist_ok=True)
-        absolute_path = os.path.join(dir_path, filename)
+        # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
+        cloudinary_path = default_storage.save(relative_path, file)
+        photo_url = default_storage.url(cloudinary_path)  # Full CDN URL
+        
+        print(f"Cloudinary path: {cloudinary_path}")
+        print(f"CDN URL: {photo_url}")
 
-        with open(absolute_path, 'wb+') as destination:
-            for chunk in file.chunks():
-                destination.write(chunk)
-
-        # Create product item instance
         item = ProductItem.objects.create(
             product=product,
             size=size,
             color=color,
             price=price,
-            photo_url=f"/static/{relative_path}",  # ✅ Full URL path
+            photo_url=photo_url,  # Full Cloudinary CDN URL
         )
 
         return item
@@ -153,12 +149,14 @@ def create_productitem(request, file):
         raise Exception("Invalid or inactive product selected.")
     except Exception as e:
         raise Exception(f"Failed to create product item: {str(e)}")
+
     
+
 def update_productitem(item_id, data, file=None):
     try:
         item = ProductItem.objects.get(id=item_id)
         item.product = Product.objects.get(id=data.get('product'))
-        item.size = Size[data.get('size')].value  # ✅ Fixed duplicate assignment
+        item.size = Size[data.get('size')].value
         item.color = Color[data.get('colour')].value
         item.price = int(data.get('price'))
         
@@ -166,18 +164,16 @@ def update_productitem(item_id, data, file=None):
         if file:
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
-            
-            # ✅ FIXED: Use BASE_DIR instead of STATIC_URL
-            dir_path = os.path.join(settings.BASE_DIR, 'static', 'product_images')
-            os.makedirs(dir_path, exist_ok=True)
             relative_path = f"product_images/{filename}"
-            absolute_path = os.path.join(dir_path, filename)
+            
+            # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
+            cloudinary_path = default_storage.save(relative_path, file)
+            photo_url = default_storage.url(cloudinary_path)
+            
+            print(f"Cloudinary path: {cloudinary_path}")
+            print(f"CDN URL: {photo_url}")
 
-            with open(absolute_path, 'wb+') as dest:
-                for chunk in file.chunks():
-                    dest.write(chunk)
-
-            item.photo_url = f"/static/{relative_path}"  # ✅ Full URL path
+            item.photo_url = photo_url  # Full Cloudinary CDN URL
 
         item.save()
         return item
@@ -188,6 +184,7 @@ def update_productitem(item_id, data, file=None):
         raise Exception("Product not found.")
     except Exception as e:
         raise Exception(f"Update failed: {str(e)}")
+
 
 
     

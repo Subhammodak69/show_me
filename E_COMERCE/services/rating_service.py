@@ -1,7 +1,8 @@
 from E_COMERCE.models import Rating,ProductItem,Product
 import os
 from uuid import uuid4
-from django.conf import settings
+from django.core.files.storage import default_storage
+
 
 def get_all_ratings_by_product_item_id(item_id):
     productitem = ProductItem.objects.filter(id=item_id, is_active=True).first()
@@ -48,17 +49,12 @@ def create_rating(data, file, user):
             filename = f"{uuid4()}{ext}"
             relative_path = f"rating_photos/{filename}"
             
-            # ✅ FIXED: Use BASE_DIR instead of STATIC_URL
-            dir_path = os.path.join(settings.BASE_DIR, 'static', 'rating_photos')
-            os.makedirs(dir_path, exist_ok=True)
-            absolute_path = os.path.join(dir_path, filename)
-
-            with open(absolute_path, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
+            # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
+            cloudinary_path = default_storage.save(relative_path, file)
+            photo_url = default_storage.url(cloudinary_path)  # Full CDN URL
             
-            # ✅ FIXED: Full URL path for frontend
-            photo_url = f"/static/{relative_path}"
+            print(f"Cloudinary path: {cloudinary_path}")
+            print(f"CDN URL: {photo_url}")
 
         product = Product.objects.get(id=data.get('product_id'))
         rating_value = int(data.get('rating'))
@@ -66,7 +62,7 @@ def create_rating(data, file, user):
 
         rating = Rating.objects.create(
             product=product,
-            photo_url=photo_url,
+            photo_url=photo_url,  # Full Cloudinary CDN URL or empty string
             user=user,
             rating=rating_value,
             review=review_text,
@@ -77,7 +73,6 @@ def create_rating(data, file, user):
         raise Exception("Product not found.")
     except Exception as e:
         raise Exception(f"Failed to create rating: {str(e)}")
-
 
 
 

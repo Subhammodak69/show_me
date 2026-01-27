@@ -2,24 +2,21 @@ from pathlib import Path
 import os
 from env_config import env
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = env('SECRET_KEY')
-
 DEBUG = env('DEBUG')
-
 ALLOWED_HOSTS = ['*'] 
 
-
 INSTALLED_APPS = [
-    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',  # ← MUST be before cloudinary
+    'cloudinary_storage',
+    'cloudinary',
     'E_COMERCE',
 ]
 
@@ -64,7 +61,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -79,21 +75,31 @@ EMAIL_USE_TLS = env('EMAIL_USE_TLS')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID')
-# RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET')
-# MERCHANT_UPI_ID = env('MERCHANT_UPI_ID')
-
 AUTH_USER_MODEL = 'E_COMERCE.User'
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # NEW: Collect here
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  
 
+# =====================================================
+# STATIC FILES (CSS/JS - Keep as-is)
+# =====================================================
 STATIC_URL = '/static/'
-STATICFILES_DIRS= [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# =====================================================
+# CLOUDIOUSINARY (UPLOADED IMAGES - NEW)
+# =====================================================
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': env('CLOUDINARY_API_KEY'),
+    'API_SECRET': env('CLOUDINARY_API_SECRET')
+}
+
+MEDIA_URL = '/media/'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

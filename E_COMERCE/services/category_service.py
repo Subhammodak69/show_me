@@ -1,8 +1,8 @@
-from E_COMERCE.models import Category
 import os
 from uuid import uuid4
+from django.core.files.storage import default_storage
 from django.conf import settings
-
+from E_COMERCE.models import Category
 
 def create_category(data, file, user):
     try:
@@ -13,22 +13,19 @@ def create_category(data, file, user):
         filename = f"{uuid4()}{ext}"
         relative_path = f"category_images/{filename}"
         
-        # ✅ Save to STATICFILES_DIRS location (show_me/static/category_images/)
-        dir_path = os.path.join(settings.BASE_DIR, 'static', 'category_images')
-        os.makedirs(dir_path, exist_ok=True)
-        absolute_path = os.path.join(dir_path, filename)
-        print(absolute_path)
-        print(relative_path)
-        # Save the file
-        with open(absolute_path, 'wb+') as destination:
-            for chunk in file.chunks():
-                destination.write(chunk)
+        # ✅ CLOUDIOUSINARY: Auto-uploads to cloud + returns path
+        cloudinary_path = default_storage.save(relative_path, file)
+        
+        # ✅ CLOUDIOUSINARY: Full CDN URL (https://res.cloudinary.com/...)
+        photo_url = default_storage.url(cloudinary_path)
+        
+        print(f"Cloudinary path: {cloudinary_path}")
+        print(f"CDN URL: {photo_url}")
 
-        # ✅ photo_url matches STATIC_URL structure for frontend
         category = Category.objects.create(
             name=data.get('name'),
             description=data.get('description'),
-            photo_url=f"/static/{relative_path}",  # Full URL path for template
+            photo_url=photo_url,  # Full Cloudinary URL!
             created_by=user
         )
         return category
@@ -37,7 +34,6 @@ def create_category(data, file, user):
         raise Exception(f"Failed to create category: {str(e)}")
 
 
-   
 
 def update_category(category_id, data, file=None):
     try:
@@ -51,18 +47,16 @@ def update_category(category_id, data, file=None):
             filename = f"{uuid4()}{ext}"
             relative_path = f"category_images/{filename}"
             
-            # ✅ Save to STATICFILES_DIRS location
-            dir_path = os.path.join(settings.BASE_DIR, 'static', 'category_images')
-            os.makedirs(dir_path, exist_ok=True)
-            absolute_path = os.path.join(dir_path, filename)
+            # ✅ CLOUDIOUSINARY: Auto-uploads to cloud + returns path
+            cloudinary_path = default_storage.save(relative_path, file)
+            
+            # ✅ CLOUDIOUSINARY: Full CDN URL (https://res.cloudinary.com/...)
+            photo_url = default_storage.url(cloudinary_path)
+            
+            print(f"Cloudinary path: {cloudinary_path}")
+            print(f"CDN URL: {photo_url}")
 
-            # Save new file (old one stays until collectstatic cleans up)
-            with open(absolute_path, 'wb+') as destination:
-                for chunk in file.chunks():
-                    destination.write(chunk)
-
-            # ✅ Full URL path for frontend consistency
-            category.photo_url = f"/static/{relative_path}"
+            category.photo_url = photo_url  # Full Cloudinary URL!
 
         # If no file, old photo_url remains unchanged
         category.save()
@@ -73,7 +67,6 @@ def update_category(category_id, data, file=None):
     except Exception as e:
         raise Exception(f"Failed to update category: {str(e)}")
 
-    
 
 def get_category_data(category_id):
     return Category.objects.filter(id=category_id,is_active=True).first()

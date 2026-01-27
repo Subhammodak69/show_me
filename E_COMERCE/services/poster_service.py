@@ -1,38 +1,32 @@
 import os
 from uuid import uuid4
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.utils.dateparse import parse_datetime
-from E_COMERCE.models import Poster
-from E_COMERCE.models import User
 from django.utils import timezone
+from E_COMERCE.models import User, Poster
 
 def get_all_posters():
     return Poster.objects.filter(is_active = True)
+
 def create_poster(data, file):
     try:
         user = User.objects.get(id=data['user_id'])
 
-        # Save the uploaded image
         if not file:
             raise Exception("Photo file is missing.")
 
         ext = os.path.splitext(file.name)[1]
         filename = f"{uuid4()}{ext}"
-        
-        # ✅ FIXED: Use BASE_DIR instead of STATIC_URL for filesystem path
-        dir_path = os.path.join(settings.BASE_DIR, 'static', 'posters')
-        os.makedirs(dir_path, exist_ok=True)
         relative_path = f"posters/{filename}"
-        absolute_path = os.path.join(dir_path, filename)
         
-        print('relativePath=> ', relative_path)
-        print('absolutePath=> ', absolute_path)
+        # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
+        cloudinary_path = default_storage.save(relative_path, file)
+        photo_url = default_storage.url(cloudinary_path)  # Full CDN URL
         
-        with open(absolute_path, 'wb+') as dest:
-            for chunk in file.chunks():
-                dest.write(chunk)
+        print(f"Cloudinary path: {cloudinary_path}")
+        print(f"CDN URL: {photo_url}")
 
-        # ✅ FIXED: Full URL path for frontend (same as category)
         start_date = parse_datetime(data.get('start_date')) if data.get('start_date') else None
         if start_date and timezone.is_naive(start_date):
             start_date = timezone.make_aware(start_date)
@@ -45,7 +39,7 @@ def create_poster(data, file):
             created_by=user,
             title=data.get('title', ''),
             description=data.get('description', ''),
-            photo_url=f"/static/{relative_path}",  # ✅ Full URL path
+            photo_url=photo_url,  # Full Cloudinary CDN URL
             start_date=start_date,
             end_date=end_date,
         )
@@ -53,16 +47,15 @@ def create_poster(data, file):
 
     except Exception as e:
         raise Exception(f"Failed to create poster: {str(e)}")
-    
+
 
 def update_poster(poster_id, data, file=None):
     try:
         poster = Poster.objects.get(id=poster_id)
         poster.created_by = User.objects.get(id=data.get('user_id'))
-        poster.title = data.get('title', poster.title)  # ✅ Keep existing if not provided
-        poster.description = data.get('description', poster.description)  # ✅ Keep existing
+        poster.title = data.get('title', poster.title)
+        poster.description = data.get('description', poster.description)
         
-        # ✅ Fixed timezone handling
         start_date = parse_datetime(data.get('start_date')) if data.get('start_date') else None
         if start_date and timezone.is_naive(start_date):
             start_date = timezone.make_aware(start_date)
@@ -77,21 +70,17 @@ def update_poster(poster_id, data, file=None):
         if file:
             ext = os.path.splitext(file.name)[1]
             filename = f"{uuid4()}{ext}"
-            
-            # ✅ FIXED: Use BASE_DIR instead of STATIC_URL
-            dir_path = os.path.join(settings.BASE_DIR, 'static', 'posters')
-            os.makedirs(dir_path, exist_ok=True)
             relative_path = f"posters/{filename}"
-            absolute_path = os.path.join(dir_path, filename)
+            
+            # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
+            cloudinary_path = default_storage.save(relative_path, file)
+            photo_url = default_storage.url(cloudinary_path)
+            
+            print(f"Cloudinary path: {cloudinary_path}")
+            print(f"CDN URL: {photo_url}")
 
-            with open(absolute_path, 'wb+') as dest:
-                for chunk in file.chunks():
-                    dest.write(chunk)
+            poster.photo_url = photo_url  # Full Cloudinary CDN URL
 
-            # ✅ FIXED: Full URL path for frontend
-            poster.photo_url = f"/static/{relative_path}"
-
-        # If no file, old photo_url remains unchanged
         poster.save()
         return poster
 
@@ -101,6 +90,7 @@ def update_poster(poster_id, data, file=None):
         raise Exception("User not found.")
     except Exception as e:
         raise Exception(f"Update failed: {str(e)}")
+
 
 def toggle_poster_status(poster_id):
     try:
