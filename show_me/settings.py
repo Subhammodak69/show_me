@@ -143,15 +143,19 @@ CLOUDINARY_STORAGE = {
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # ✅ Changed from console
-EMAIL_HOST = env('EMAIL_HOST', default='smtp.sendgrid.net')
-EMAIL_PORT = int(env('EMAIL_PORT', default=587))
-EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='apikey')  # ✅ SendGrid literal
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')  # Your SG.xxxx API key
-DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER', default='modaksubham69@gmail.com')
-# Remove all EMAIL_* settings - HTTP API doesn't need them
-SENDGRID_API_KEY = env('EMAIL_HOST_PASSWORD')  # Reuse your existing var
+# ✅ RESEND ONLY - Remove all SendGrid SMTP settings
+RESEND_API_KEY = env('RESEND_API_KEY')  # re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='onboarding@resend.dev')
+
+# ✅ DELETE THESE SendGrid lines completely:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = env('EMAIL_HOST', default='smtp.sendgrid.net')
+# EMAIL_PORT = int(env('EMAIL_PORT', default=587))
+# EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True, cast=bool)
+# EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='apikey')
+# EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+# SENDGRID_API_KEY = env('EMAIL_HOST_PASSWORD')
+
 
 
 # Default primary key field type

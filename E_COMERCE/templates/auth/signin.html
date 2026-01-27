@@ -5,74 +5,69 @@
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-center min-vh-100 m-4">
-  <div class="card shadow border-0 rounded-4 " style="max-width: 420px;  width:90%; top: 20%;
-    position: absolute;">
+  <div class="card shadow border-0 rounded-4" style="max-width: 420px; width:90%; top: 20%; position: absolute;">
     <div class="card-body p-4">
       <div class="mb-3 text-center">
         <img src="{% static 'logo/logo.jpg' %}" alt="Logo" width="100" class="mb-2" />
         <h3 class="fw-bold mb-1">Create Account</h3>
         <p class="text-muted mb-3">Sign up to get started</p>
       </div>
+      
       <!-- Spinner (hidden initially) -->
       <div class="justify-content-center mb-3" id="spinner" style="display: none;">
         <div class="spinner-border text-primary" style="width:2.5rem;height:2.5rem;" role="status"></div>
       </div>
+      
       <!-- Messages -->
       <div id="msg-box" class="mb-2"></div>
+      
       <!-- FORM -->
       <form id="signupForm" class="needs-validation" novalidate autocomplete="on">
         {% csrf_token %}
+        
         <!-- Name fields -->
-        <div class="row" id="name-fields">
-          <div class="col-md-6 mb-3">
+        <div class="row mb-3">
+          <div class="col-md-6">
             <div class="form-floating">
               <input type="text" class="form-control" id="first_name" name="first_name" placeholder="First Name" required>
               <label for="first_name">First Name</label>
             </div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-6">
             <div class="form-floating">
               <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last Name" required>
               <label for="last_name">Last Name</label>
             </div>
           </div>
         </div>
+        
         <!-- Email -->
-        <div class="mb-3" id="email-section">
+        <div class="mb-3">
           <div class="form-floating">
             <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
             <label for="email">Email Address</label>
           </div>
         </div>
-        <!-- OTP -->
-        <div class="mb-3" id="otp-section" style="display: none;">
-          <div class="form-floating mb-2">
-            <input type="text" class="form-control" id="otp-input" name="otp" placeholder="OTP">
-            <label for="otp-input">OTP</label>
-          </div>
-          <button type="button" class="btn btn-warning w-100" onclick="checkOTP()">Verify OTP</button>
-        </div>
-        <!-- OTP Buttons -->
-        <div class="mb-3" id="otp-buttons">
-          <button type="button" id="send-btn" class="btn btn-primary w-100" onclick="sendOTP()">Send OTP</button>
-          <button type="button" id="resend-btn" class="btn btn-outline-secondary w-100 mt-2" style="display: none;" onclick="resendOTP()">Resend OTP</button>
-        </div>
+        
         <!-- Password -->
-        <div class="mb-3" id="password-section" style="display: none;">
+        <div class="mb-3">
           <div class="form-floating position-relative">
             <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
             <label for="password">Password</label>
             <button type="button" class="btn btn-sm btn-outline-secondary position-absolute top-50 end-0 translate-middle-y me-2"
-              id="togglePassword" style="display:none;" tabindex="-1">
+              id="togglePassword" tabindex="-1">
               <i class="bi bi-eye"></i>
             </button>
           </div>
+          <div class="form-text">
+            Password must be at least 8 characters long
+          </div>
         </div>
+        
         <!-- Submit -->
-        <div id="submit-section" style="display: none;">
-          <button type="submit" class="btn btn-success w-100 fw-bold py-2">Sign Up</button>
-        </div>
+        <button type="submit" class="btn btn-success w-100 fw-bold py-2">Sign Up</button>
       </form>
+      
       <div class="text-center mt-4 small">
         Already have an account? <a href="/login/" class="fw-semibold">Sign in</a>
       </div>
@@ -86,12 +81,6 @@
 <script>
 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-function showElement(id) {
-  document.getElementById(id).style.display = '';
-}
-function hideElement(id) {
-  document.getElementById(id).style.display = 'none';
-}
 function showSpinner() {
   document.getElementById('spinner').style.display = 'flex';
 }
@@ -112,79 +101,40 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-// OTP send
-async function sendOTP() {
-  const email = document.getElementById("email").value;
-  if (!email) {
-    document.getElementById('msg-box').innerHTML = '<div class="alert alert-warning">Please enter an email address.</div>';
-    return;
-  }
-  showSpinner();
-  document.getElementById('msg-box').innerHTML = '';
-  try {
-    const res = await fetch("{% url 'send_otp' %}", {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": csrfToken,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    hideElement('send-btn');
-    if (data.success) {
-      document.getElementById('msg-box').innerHTML = `<div class='alert alert-success'>${data.message || "OTP sent!"}</div>`;
-      showElement('resend-btn');
-      showElement('otp-section');
-    } else {
-      document.getElementById('msg-box').innerHTML = `<div class='alert alert-danger'>${data.message || "Error sending OTP"}</div>`;
-    }
-    hideSpinner();
-    if (data.redirect) {
-    setTimeout(function() {
-        window.location.href = data.redirect;
-    }, 2000);  // Delay 1000 milliseconds = 1 second
-}
 
-  } catch(err) {
-    hideSpinner();
-    document.getElementById('msg-box').innerHTML = `<div class='alert alert-danger'>Could not send OTP.</div>`;
-  }
-}
 
-function resendOTP() {
-  sendOTP();
-}
-
-async function checkOTP() {
-  const otp = document.getElementById("otp-input").value;
-  if (!otp) {
-    document.getElementById('msg-box').innerHTML = '<div class="alert alert-warning">Enter the OTP.</div>';
-    return;
-  }
-  hideElement('otp-section');
-  hideElement('otp-buttons');
-  hideElement('name-fields');
-  hideElement('email-section');
-  showElement('password-section');
-  showElement('submit-section');
-  if(document.getElementById('togglePassword')) {
-    document.getElementById('togglePassword').style.display = '';
-  }
-}
-
-// Submit
+// Form submission
 document.getElementById("signupForm").addEventListener("submit", async function (e) {
   e.preventDefault();
+  
+  // Client-side validation
+  const firstName = document.getElementById("first_name").value.trim();
+  const lastName = document.getElementById("last_name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  
+  if (!firstName || !lastName || !email || !password) {
+    document.getElementById('msg-box').innerHTML = 
+      '<div class="alert alert-warning">Please fill all fields.</div>';
+    return;
+  }
+  
+  if (password.length < 8) {
+    document.getElementById('msg-box').innerHTML = 
+      '<div class="alert alert-warning">Password must be at least 8 characters.</div>';
+    return;
+  }
+  
   showSpinner();
   document.getElementById('msg-box').innerHTML = '';
+  
   const data = {
-    first_name: document.getElementById("first_name") ? document.getElementById("first_name").value : "",
-    last_name: document.getElementById("last_name") ? document.getElementById("last_name").value : "",
-    email: document.getElementById("email") ? document.getElementById("email").value : "",
-    otp: document.getElementById("otp-input") ? document.getElementById("otp-input").value : "",
-    password: document.getElementById("password") ? document.getElementById("password").value : ""
-  }
+    first_name: firstName,
+    last_name: lastName,
+    email: email,
+    password: password
+  };
+  
   try {
     const res = await fetch("{% url 'sign_up' %}", {
       method: "POST",
@@ -194,27 +144,35 @@ document.getElementById("signupForm").addEventListener("submit", async function 
       },
       body: JSON.stringify(data)
     });
+    
     const response = await res.json();
     hideSpinner();
+    
     if (response.success) {
-      document.getElementById('msg-box').innerHTML = `<div class="alert alert-success">${response.message || "Sign Up Successful! Redirecting..."}</div>`;
-      setTimeout(() => window.location.href = "/login/", 1200);
+      document.getElementById('msg-box').innerHTML = 
+        `<div class="alert alert-success">${response.message}</div>`;
+      
+      if (response.redirect) {
+        setTimeout(() => window.location.href = response.redirect, 1500);
+      } else {
+        setTimeout(() => window.location.href = '/', 1500);
+      }
     } else {
-      document.getElementById('msg-box').innerHTML = `<div class="alert alert-danger">${response.message || "Sign Up Failed"}</div>`;
+      document.getElementById('msg-box').innerHTML = 
+        `<div class="alert alert-danger">${response.message || "Registration failed."}</div>`;
     }
   } catch(err) {
     hideSpinner();
-    document.getElementById('msg-box').innerHTML = '<div class="alert alert-danger">Could not sign up at this time.</div>';
+    document.getElementById('msg-box').innerHTML = 
+      '<div class="alert alert-danger">Network error. Please try again.</div>';
   }
 });
 
-
-
-//refresh page
+// Refresh page on back/forward (prevent autofill issues)
 window.addEventListener('pageshow', function(event) {
-    if (event.persisted || (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'back_forward')) {
-        window.location.reload();
-    }
+  if (event.persisted || (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'back_forward')) {
+    window.location.reload();
+  }
 });
 </script>
 {% endblock %}
