@@ -91,7 +91,8 @@
 
     const form = e.target;    
     const formData = new FormData(form);
-    
+    const loader = document.querySelector('.loading');
+    loader.style.display='flex';
     const response = await fetch("{% url 'productitem_create' %}", {
       method: "POST",
       headers: {
@@ -103,8 +104,12 @@
     const result = await response.json();
 
     if (result.success) {
+    loader.style.display='none';
+
       window.location.href = "{% url 'productitem_list' %}";
     } else {
+    loader.style.display='none';
+
       const responseDiv = document.getElementById("response");
       responseDiv.innerHTML = `<div class="alert alert-danger">${result.error || 'An error occurred.'}</div>`;
     }

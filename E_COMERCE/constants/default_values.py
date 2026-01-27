@@ -28,6 +28,7 @@ class Color(Enum):
     BLUE = 2
     GREEN = 3
     BLACK = 4
+    YELLOW = 5
 
 
 class PaymentStatus(Enum):

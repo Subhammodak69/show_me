@@ -86,7 +86,8 @@ document.getElementById("update-form").addEventListener("submit", async function
   const form = e.target;
   const formData = new FormData(form);
   const csrfToken = getCookie("csrftoken");
-
+  const loader = document.querySelector('.loading');
+    loader.style.display='flex';
   try {
     const response = await fetch("{{ request.path }}", {
       method: "POST",
@@ -103,15 +104,23 @@ document.getElementById("update-form").addEventListener("submit", async function
     try {
       result = JSON.parse(rawText);
     } catch (err) {
+              loader.style.display='none';
+
       throw new Error("Invalid JSON returned by server");
     }
 
     if (result.success) {
+              loader.style.display='none';
+
       window.location.href = "{% url 'productitem_list' %}";
     } else {
+              loader.style.display='none';
+
       document.getElementById("update-msg").innerText = result.message || "Update failed.";
     }
   } catch (error) {
+            loader.style.display='none';
+
     console.error("Fetch error:", error);
     document.getElementById("update-msg").innerText = "Something went wrong. Please try again.";
   }

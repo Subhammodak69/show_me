@@ -35,16 +35,29 @@
     </form>
 </div>
 <script>
-    document.getElementById('createPosterForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
+document.getElementById('createPosterForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    
+    // Safe loader show
+    const loader = document.querySelector('.loading');
+    if (loader) {
+        loader.style.display = 'block';
+    }
+    
+    // Disable submit button to prevent double-click
+    const submitBtn = this.querySelector('button[type="submit"], input[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
 
-        const form = document.getElementById('createPosterForm');
-        const formData = new FormData(form);
+    const form = document.getElementById('createPosterForm');
+    const formData = new FormData(form);
 
+    try {
         const response = await fetch("{% url 'admin_poster_create' %}", {
             method: "POST",
             headers: {
-                'X-CSRFToken': 'csrfToken'
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value // Fixed CSRF
             },
             body: formData
         });
@@ -53,9 +66,20 @@
         if (result.success) {
             window.location.href = "{% url 'admin_poster_list' %}";
         } else {
-            alert("Error: " + result.error);
+            throw new Error(result.error || "Unknown error");
         }
-    });
+    } catch (error) {
+        alert("Error: " + error.message);
+    } finally {
+        // Always hide loader and re-enable button
+        if (loader) {
+            loader.style.display = 'none';
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+        }
+    }
+});
 
 </script>
 {% endblock %}

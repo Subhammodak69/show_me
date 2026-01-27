@@ -48,35 +48,46 @@ document.getElementById("photo").addEventListener("change", function() {
 });
 
 document.getElementById('createCategoryForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Show loader
+    const loader = document.querySelector('.loading');
+    if (loader) {
+        loader.style.display = 'flex';
+    }
 
-  // Create FormData object for sending multipart/form-data
-  const formData = new FormData();
-  formData.append('name', document.getElementById('name').value);
-  formData.append('description', document.getElementById('description').value);
-  
-  // Append the selected image file
-  const photoInput = document.getElementById('photo');
-  if(photoInput.files.length > 0) {
-    formData.append('photo', photoInput.files[0]);
-  }
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-  const response = await fetch("{% url 'category_create' %}", {
-    method: "POST",
-    headers: {
-      'X-CSRFToken': 'csrfToken'
-      // Notice: Don't set 'Content-Type' header here. It will be set automatically by the browser when using FormData.
-    },
-    body: formData
-  });
+    // Create FormData object for sending multipart/form-data
+    const formData = new FormData();
+    formData.append('name', document.getElementById('name').value);
+    formData.append('description', document.getElementById('description').value);
+    
+    // Append the selected image file
+    const photoInput = document.getElementById('photo');
+    if(photoInput.files.length > 0) {
+        formData.append('photo', photoInput.files[0]);
+    }
 
-  const result = await response.json();
+    const response = await fetch("{% url 'category_create' %}", {
+        method: "POST",
+        headers: {
+            'X-CSRFToken': csrfToken  // Fixed: use variable instead of string
+        },
+        body: formData
+    });
 
-  // Redirect after success
-  window.location.href = "{% url 'category' %}";
+    const result = await response.json();
+    
+    // Hide loader
+    if (loader) {
+        loader.style.display = 'none';
+    }
+
+    // Redirect after success
+    window.location.href = "{% url 'category' %}";
 });
+
 
 </script>
 

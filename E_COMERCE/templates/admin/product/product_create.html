@@ -46,7 +46,8 @@
 
     const form = e.target;
     const formData = new FormData(form);
-
+    const loader = document.querySelector('.loading');
+    loader.style.display='flex';
     fetch("{{ request.path }}", {
       method: "POST",
       headers: {
@@ -57,8 +58,12 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+            loader.style.display='none';
+
         window.location.href = "{% url 'product' %}";
       } else {
+            loader.style.display='none';
+
         alert("Error: " + data.error);
       }
     });

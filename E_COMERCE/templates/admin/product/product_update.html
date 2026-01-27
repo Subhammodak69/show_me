@@ -46,6 +46,8 @@
     e.preventDefault();
 
     const formData = new FormData(form);
+    const loader = document.querySelector('.loading');
+    loader.style.display='flex';
 
     try {
       const response = await fetch("", {
@@ -59,6 +61,8 @@
       const data = await response.json();
 
       if (data.success) {
+        loader.style.display='none';
+
         alertBox.className = "alert alert-success";
         alertBox.textContent = "Product updated successfully!";
         alertBox.classList.remove("d-none");
@@ -68,11 +72,15 @@
           window.location.href = "{% url 'product' %}";
         }, 1000);
       } else {
+        loader.style.display='none';
+
         alertBox.className = "alert alert-danger";
         alertBox.textContent = data.error || "Something went wrong.";
         alertBox.classList.remove("d-none");
       }
     } catch (error) {
+        loader.style.display='none';
+
       alertBox.className = "alert alert-danger";
       alertBox.textContent = "Network error.";
       alertBox.classList.remove("d-none");

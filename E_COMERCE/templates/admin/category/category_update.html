@@ -49,25 +49,37 @@
 
 
 document.getElementById('updateCategoryForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const form = document.getElementById('updateCategoryForm');
-  const formData = new FormData(form);
+    // Show loader
+    const loader = document.querySelector('.loading');
+    if (loader) {
+        loader.style.display = 'flex';
+    }
 
-  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const form = document.getElementById('updateCategoryForm');
+    const formData = new FormData(form);
 
-  const response = await fetch("{% url 'category_update' category.id %}", {
-    method: "POST",
-    headers: {
-      'X-CSRFToken': 'csrfToken'
-      // Do NOT set 'Content-Type'; browser handles it when you use FormData
-    },
-    body: formData
-  });
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-  const result = await response.json();
-  window.location.href = "{% url 'category' %}";
+    const response = await fetch("{% url 'category_update' category.id %}", {
+        method: "POST",
+        headers: {
+            'X-CSRFToken': csrfToken  // Fixed: use variable
+        },
+        body: formData
+    });
+
+    const result = await response.json();
+    
+    // Hide loader
+    if (loader) {
+        loader.style.display = 'none';
+    }
+    
+    window.location.href = "{% url 'category' %}";
 });
+
 
 </script>
 

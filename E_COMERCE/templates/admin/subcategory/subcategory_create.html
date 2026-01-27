@@ -39,6 +39,8 @@
       description: document.getElementById('description').value,
       category_id: document.getElementById('category_id').value
     };
+    const loader = document.querySelector('.loading');
+    loader.style.display='flex';
 
     const response = await fetch("{% url 'subcategory_create' %}", {
       method: 'POST',
@@ -51,8 +53,12 @@
 
     const result = await response.json();
     if (result.id) {
+                  loader.style.display='none';
+
       window.location.href = "{% url 'subcategory' %}";
     } else {
+              loader.style.display='none';
+
       alert(result.error || 'Creation failed.');
     }
   });
