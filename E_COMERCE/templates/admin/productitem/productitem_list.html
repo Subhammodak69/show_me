@@ -20,7 +20,6 @@
         <th>Color</th>
         <th>Price (₹)</th>
         <th>Image</th>
-        <th>Availability</th>
         <th>Status</th>
         <th>Actions</th>
       </tr>
@@ -34,6 +33,7 @@
         <td>{{ item.color }}</td>
         <td>{{ item.price }}</td>
         <td><img src="{{ item.photo_url }}" alt="Product Image" style="    object-fit: cover;width: 70px;height: 70px;"></td>
+
         <td>
           <span id="status-badge-{{ item.id }}" class="badge {% if item.is_active %}bg-success{% else %}bg-danger{% endif %}">
             {% if item.is_active %}Active{% else %}Inactive{% endif %}

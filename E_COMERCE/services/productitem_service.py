@@ -1,10 +1,9 @@
 from E_COMERCE.models import Product, ProductItem,Offer
 from E_COMERCE.constants.default_values import Size,Color
-import os
+import cloudinary
+import cloudinary.uploader
 from uuid import uuid4
-from django.conf import settings
 from collections import defaultdict
-from django.core.files.storage import default_storage
 
 
 def get_all_productitems_by_category():
@@ -102,13 +101,18 @@ def get_product_items_data(item_id):
         'display_color': Color(product_item.color).name,
         'created_at': product_item.created_at,
         'product_id': product_item.product.id,
+        'product_description':product_item.product.description,
         'product_name':product_item.product.name,
         'product_subcategory_name':product_item.product.subcategory.name,
+        'product_subcategory_description':product_item.product.subcategory.description,
         'product_category_name':product_item.product.subcategory.category.name,
+        'product_category_description':product_item.product.subcategory.category.description,
         'offer':discount_amount,
         'availibility':availibility 
     }
     return item_data
+
+
 
 
 
@@ -124,16 +128,17 @@ def create_productitem(request, file):
         if not file:
             raise Exception("Photo file is missing.")
 
-        ext = os.path.splitext(file.name)[1]
-        filename = f"{uuid4()}{ext}"
-        relative_path = f"product_images/{filename}"
+        # ✅ SAME CLOUDINARY METHOD - Direct uploader
+        result = cloudinary.uploader.upload(
+            file,
+            folder="product_images",
+            resource_type="image",
+            public_id=f"product_{uuid4()}",
+            overwrite=True,
+        )
         
-        # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
-        cloudinary_path = default_storage.save(relative_path, file)
-        photo_url = default_storage.url(cloudinary_path)  # Full CDN URL
-        
-        print(f"Cloudinary path: {cloudinary_path}")
-        print(f"CDN URL: {photo_url}")
+        photo_url = result['secure_url']
+        print(f"✅ Product item uploaded: {photo_url}")
 
         item = ProductItem.objects.create(
             product=product,
@@ -150,8 +155,6 @@ def create_productitem(request, file):
     except Exception as e:
         raise Exception(f"Failed to create product item: {str(e)}")
 
-    
-
 def update_productitem(item_id, data, file=None):
     try:
         item = ProductItem.objects.get(id=item_id)
@@ -160,20 +163,27 @@ def update_productitem(item_id, data, file=None):
         item.color = Color[data.get('colour')].value
         item.price = int(data.get('price'))
         
-        # Handle new photo if uploaded
+        # ✅ NEW PHOTO + OLD PHOTO DELETE (SAME AS OTHERS)
         if file:
-            ext = os.path.splitext(file.name)[1]
-            filename = f"{uuid4()}{ext}"
-            relative_path = f"product_images/{filename}"
-            
-            # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
-            cloudinary_path = default_storage.save(relative_path, file)
-            photo_url = default_storage.url(cloudinary_path)
-            
-            print(f"Cloudinary path: {cloudinary_path}")
-            print(f"CDN URL: {photo_url}")
+            # Delete old Cloudinary image
+            if item.photo_url:
+                try:
+                    public_id = item.photo_url.split('/')[-1].split('.')[0]
+                    cloudinary.uploader.destroy(public_id, invalidate=True)
+                    print(f"🗑️ Deleted old product image: {public_id}")
+                except Exception as delete_error:
+                    print(f"⚠️ Could not delete old image: {delete_error}")
 
-            item.photo_url = photo_url  # Full Cloudinary CDN URL
+            # Upload new image (SAME METHOD)
+            result = cloudinary.uploader.upload(
+                file,
+                folder="product_images",
+                resource_type="image",
+                public_id=f"product_{uuid4()}",
+                overwrite=True,
+            )
+            item.photo_url = result['secure_url']
+            print(f"✅ New product image: {item.photo_url}")
 
         item.save()
         return item
@@ -184,6 +194,27 @@ def update_productitem(item_id, data, file=None):
         raise Exception("Product not found.")
     except Exception as e:
         raise Exception(f"Update failed: {str(e)}")
+
+def delete_productitem(item_id):
+    """Delete product item and its Cloudinary image"""
+    try:
+        item = ProductItem.objects.get(id=item_id)
+        
+        # Delete Cloudinary image
+        if item.photo_url:
+            try:
+                public_id = item.photo_url.split('/')[-1].split('.')[0]
+                cloudinary.uploader.destroy(public_id, invalidate=True)
+                print(f"🗑️ Deleted product image: {public_id}")
+            except Exception as delete_error:
+                print(f"⚠️ Could not delete image: {delete_error}")
+        
+        item.delete()
+        return True
+        
+    except ProductItem.DoesNotExist:
+        raise Exception("Product item not found.")
+
 
 
 

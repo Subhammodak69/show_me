@@ -40,29 +40,34 @@ def get_rating_by_id(pk):
         return None
 
 
+import cloudinary
+import cloudinary.uploader
+from uuid import uuid4
+from E_COMERCE.models import Product, Rating
+
 def create_rating(data, file, user):
     try:
-        photo_url = ''  # Default photo URL if no file is uploaded
-
-        if file:
-            ext = os.path.splitext(file.name)[1]
-            filename = f"{uuid4()}{ext}"
-            relative_path = f"rating_photos/{filename}"
-            
-            # ✅ CLOUDIOUSINARY: Auto-uploads to cloud
-            cloudinary_path = default_storage.save(relative_path, file)
-            photo_url = default_storage.url(cloudinary_path)  # Full CDN URL
-            
-            print(f"Cloudinary path: {cloudinary_path}")
-            print(f"CDN URL: {photo_url}")
-
         product = Product.objects.get(id=data.get('product_id'))
         rating_value = int(data.get('rating'))
         review_text = data.get('review', '')
 
+        photo_url = None  # Will be None if no file
+
+        # ✅ SAME CLOUDINARY METHOD - Optional image upload
+        if file:
+            result = cloudinary.uploader.upload(
+                file,
+                folder="rating_photos",
+                resource_type="image",
+                public_id=f"rating_{uuid4()}",
+                overwrite=True,
+            )
+            photo_url = result['secure_url']
+            print(f"✅ Rating photo uploaded: {photo_url}")
+
         rating = Rating.objects.create(
             product=product,
-            photo_url=photo_url,  # Full Cloudinary CDN URL or empty string
+            photo_url=photo_url,  # Full Cloudinary URL or None
             user=user,
             rating=rating_value,
             review=review_text,
@@ -74,13 +79,65 @@ def create_rating(data, file, user):
     except Exception as e:
         raise Exception(f"Failed to create rating: {str(e)}")
 
+def update_rating(rating_id, data, file=None):
+    try:
+        rating = Rating.objects.get(id=rating_id)
+        rating.product = Product.objects.get(id=data.get('product_id'))
+        rating.rating = int(data.get('rating'))
+        rating.review = data.get('review', rating.review)
+        
+        # ✅ NEW PHOTO + OLD PHOTO DELETE (SAME PATTERN)
+        if file:
+            # Delete old Cloudinary image
+            if rating.photo_url:
+                try:
+                    public_id = rating.photo_url.split('/')[-1].split('.')[0]
+                    cloudinary.uploader.destroy(public_id, invalidate=True)
+                    print(f"🗑️ Deleted old rating image: {public_id}")
+                except Exception as delete_error:
+                    print(f"⚠️ Could not delete old image: {delete_error}")
 
+            # Upload new image
+            result = cloudinary.uploader.upload(
+                file,
+                folder="rating_photos",
+                resource_type="image",
+                public_id=f"rating_{uuid4()}",
+                overwrite=True,
+            )
+            rating.photo_url = result['secure_url']
+            print(f"✅ New rating image: {rating.photo_url}")
 
-def update_rating(rating, data):
-    for attr, value in data.items():
-        setattr(rating, attr, value)
-    rating.save()
-    return rating
+        rating.save()
+        return rating
+
+    except Rating.DoesNotExist:
+        raise Exception("Rating not found.")
+    except Product.DoesNotExist:
+        raise Exception("Product not found.")
+    except Exception as e:
+        raise Exception(f"Update failed: {str(e)}")
+
+def delete_rating(rating_id):
+    """Delete rating and its Cloudinary image"""
+    try:
+        rating = Rating.objects.get(id=rating_id)
+        
+        # Delete Cloudinary image
+        if rating.photo_url:
+            try:
+                public_id = rating.photo_url.split('/')[-1].split('.')[0]
+                cloudinary.uploader.destroy(public_id, invalidate=True)
+                print(f"🗑️ Deleted rating image: {public_id}")
+            except Exception as delete_error:
+                print(f"⚠️ Could not delete image: {delete_error}")
+        
+        rating.delete()
+        return True
+        
+    except Rating.DoesNotExist:
+        raise Exception("Rating not found.")
+
 
 def deactivate_rating(rating):
     rating.is_active = False

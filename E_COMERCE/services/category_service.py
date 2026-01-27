@@ -1,30 +1,28 @@
-import os
 from uuid import uuid4
-from django.core.files.storage import default_storage
-from django.conf import settings
 from E_COMERCE.models import Category
+import cloudinary
+import cloudinary.uploader
 
 def create_category(data, file, user):
     try:
         if not file:
             raise Exception("Photo file is missing.")
 
-        ext = os.path.splitext(file.name)[1]
-        filename = f"{uuid4()}{ext}"
-        relative_path = f"category_images/{filename}"
+        # ✅ SAME CLOUDINARY METHOD AS POSTERS
+        result = cloudinary.uploader.upload(
+            file,
+            folder="category_images",
+            resource_type="image",
+            public_id=f"category_{uuid4()}",
+            overwrite=True,
+        )
         
-        # ✅ CLOUDIOUSINARY: Auto-uploads to cloud + returns path
-        cloudinary_path = default_storage.save(relative_path, file)
-        
-        # ✅ CLOUDIOUSINARY: Full CDN URL (https://res.cloudinary.com/...)
-        photo_url = default_storage.url(cloudinary_path)
-        
-        print(f"Cloudinary path: {cloudinary_path}")
-        print(f"CDN URL: {photo_url}")
+        photo_url = result['secure_url']
+        print(f"✅ Category uploaded: {photo_url}")
 
         category = Category.objects.create(
             name=data.get('name'),
-            description=data.get('description'),
+            description=data.get('description', ''),
             photo_url=photo_url,  # Full Cloudinary URL!
             created_by=user
         )
@@ -33,32 +31,37 @@ def create_category(data, file, user):
     except Exception as e:
         raise Exception(f"Failed to create category: {str(e)}")
 
-
-
 def update_category(category_id, data, file=None):
     try:
         category = Category.objects.get(pk=category_id)
+        
+        # Update basic fields
         category.name = data.get('name', category.name)
         category.description = data.get('description', category.description)
 
-        # Handle new photo if uploaded
+        # ✅ NEW PHOTO + OLD PHOTO DELETE (SAME AS POSTERS)
         if file:
-            ext = os.path.splitext(file.name)[1]
-            filename = f"{uuid4()}{ext}"
-            relative_path = f"category_images/{filename}"
-            
-            # ✅ CLOUDIOUSINARY: Auto-uploads to cloud + returns path
-            cloudinary_path = default_storage.save(relative_path, file)
-            
-            # ✅ CLOUDIOUSINARY: Full CDN URL (https://res.cloudinary.com/...)
-            photo_url = default_storage.url(cloudinary_path)
-            
-            print(f"Cloudinary path: {cloudinary_path}")
-            print(f"CDN URL: {photo_url}")
+            # Delete old Cloudinary image
+            if category.photo_url:
+                try:
+                    # Extract public_id from URL
+                    public_id = category.photo_url.split('/')[-1].split('.')[0]
+                    cloudinary.uploader.destroy(public_id, invalidate=True)
+                    print(f"🗑️ Deleted old category image: {public_id}")
+                except Exception as delete_error:
+                    print(f"⚠️ Could not delete old image: {delete_error}")
 
-            category.photo_url = photo_url  # Full Cloudinary URL!
+            # Upload new image (SAME METHOD)
+            result = cloudinary.uploader.upload(
+                file,
+                folder="category_images",
+                resource_type="image",
+                public_id=f"category_{uuid4()}",
+                overwrite=True,
+            )
+            category.photo_url = result['secure_url']
+            print(f"✅ New category image: {category.photo_url}")
 
-        # If no file, old photo_url remains unchanged
         category.save()
         return category
 
@@ -66,6 +69,27 @@ def update_category(category_id, data, file=None):
         raise Exception("Category not found.")
     except Exception as e:
         raise Exception(f"Failed to update category: {str(e)}")
+
+def delete_category(category_id):
+    """Delete category and its Cloudinary image"""
+    try:
+        category = Category.objects.get(pk=category_id)
+        
+        # Delete Cloudinary image
+        if category.photo_url:
+            try:
+                public_id = category.photo_url.split('/')[-1].split('.')[0]
+                cloudinary.uploader.destroy(public_id, invalidate=True)
+                print(f"🗑️ Deleted category image: {public_id}")
+            except Exception as delete_error:
+                print(f"⚠️ Could not delete image: {delete_error}")
+        
+        category.delete()
+        return True
+        
+    except Category.DoesNotExist:
+        raise Exception("Category not found.")
+
 
 
 def get_category_data(category_id):

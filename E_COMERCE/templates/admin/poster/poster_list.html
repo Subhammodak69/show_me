@@ -26,9 +26,12 @@
                         <td>{{ poster.created_by.get_full_name }}</td>
                         <td>{{ poster.title }}</td>
                         <td>
-                              <img src="{{ poster.photo_url }}" alt="Poster"
-                        style="width:80px;height:40px;object-fit:cover;">
-                            </td>
+        <img src="{{ poster.photo_url }}" 
+             alt="{{ poster.title|default:'Poster' }}" 
+             class="poster-thumb"
+             style="width:80px;height:40px;object-fit:cover;border-radius:4px;">
+</td>
+
                         <td>
                               <span id="status-badge-{{ poster.id }}"
                         class="badge {% if poster.is_active %}bg-success{% else %}bg-danger{% endif %}">

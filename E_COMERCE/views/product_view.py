@@ -11,6 +11,7 @@ from django.utils.decorators import method_decorator
 class ProductDetailsView(View):
     def get(self,request,item_id):
         product_item_data = productitem_service.get_product_items_data(item_id)
+        print(product_item_data)
         related_products_data = productitem_service.get_product_item_related_product_items(product_item_data['product_id'])
         ratings_data = rating_service.get_all_ratings_by_product_item_id(item_id)
         return render(request, 'enduser/product_details.html',{'product_item_data':product_item_data,'related_products_data':related_products_data,'ratings': ratings_data})

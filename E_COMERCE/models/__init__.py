@@ -12,3 +12,4 @@ from .payment_model import *
 from .poster_model import *
 from .rating_model import *
 from .offer_model import *
+from .product_images_model import *

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from E_COMERCE.models import ProductItem, Rating, Poster, Category, Product, User
+from E_COMERCE.models import ProductItem, Rating, Poster, Category, Product, Payment, CartItem, Cart, Order, OrderItem, SubCategory, Wishlist
 
 class Command(BaseCommand):
     help = 'Clear all application data (Render safe)'
@@ -16,6 +16,13 @@ class Command(BaseCommand):
         Poster.objects.all().delete()
         Product.objects.all().delete()
         Category.objects.all().delete()
+        Wishlist.objects.all().delete()
+        Cart.objects.all().delete()
+        Order.objects.all().delete()
+        OrderItem.objects.all().delete()
+        SubCategory.objects.all().delete()
+        CartItem.objects.all().delete()
+        Payment.objects.all().delete()
         
         print("✅ ALL DATA DELETED SUCCESSFULLY!")
         self.stdout.write(self.style.SUCCESS('Database cleared!'))
