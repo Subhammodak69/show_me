@@ -31,7 +31,7 @@ def send_otp_email(email, otp, subject="Your OTP Code"):
     try:
         send_mail(
             subject=subject,
-            message=f"Your OTP code is: {otp}",  # Plain text fallback
+            message=f"Your OTP code is: {otp}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
             fail_silently=False,
