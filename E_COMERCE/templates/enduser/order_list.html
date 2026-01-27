@@ -62,9 +62,11 @@
 
     <div class="card-footer bg-white d-flex justify-content-end">
       <a href="{% url 'track_order' order.id %}" class="btn btn-outline-primary btn-sm me-2">Track Order</a>
+      {% if order.status == 1 or order.status == 2 %}
       <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete('{{ order.id }}')">
         <i class="bi bi-x-circle"></i> Cancel Order
       </button>
+      {% endif %}
     </div>
   </div>
   {% endfor %}

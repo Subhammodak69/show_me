@@ -63,9 +63,10 @@
         <label for="method">Choose Payment Method</label>
         <select id="method" name="method" required>
           <option value="">-- select --</option>
-          {% for method in methods %}
+          <option value="cod">Cash On Delivery</option>
+          {% comment %} {% for method in methods %}
             <option value="{{ method.value }}">{{ method.name }}</option>
-          {% endfor %}
+          {% endfor %} {% endcomment %}
         </select>
       </div>
       <div class="form-section">
@@ -74,7 +75,7 @@
       </div>
       <input type="hidden" id="order_id" name="order_id" value="{{ order.id }}">
 
-      <div class="form-section" id="cardFields" style="display:none;">
+      {% comment %} <div class="form-section" id="cardFields" style="display:none;">
         <label for="cardNumber">Card Number</label>
         <input type="text" id="cardNumber" name="cardNumber" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" />
         <label for="expiry">Expiry Date</label>
@@ -96,9 +97,9 @@
             <option value="{{ bank.value }}">{{ bank.name }}</option>
           {% endfor %}
         </select>
-      </div>
+      </div> {% endcomment %}
 
-      <button type="submit" class="btn-primary">Make Payment</button>
+      <button type="submit" class="btn-primary">Order</button>
     </form>
     <button class="mt-4 btn btn-warning" onclick="open_modal()">Go Back to Home</button>
   </div>

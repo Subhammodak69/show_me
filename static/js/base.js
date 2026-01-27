@@ -8,27 +8,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Category dropdown functionality
 document.addEventListener("DOMContentLoaded", function () {
-  fetch('/api/all/category/')
-    .then(response => response.json())
-    .then(data => {
-      const categoryList = document.getElementById('category-list');
-      categoryList.innerHTML = '';
+    fetch('/api/all/category/')
+        .then(response => response.json())
+        .then(data => {
+            // Target both spans
+            const sidebarList = document.getElementById('sidebar-category-list');
+            const dropdownList = document.getElementById('dropdown-category-list');
+            
+            // Clear both
+            sidebarList.innerHTML = '';
+            dropdownList.innerHTML = '';
 
-      data.forEach(category => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.className = 'dropdown-item';
-        a.href = `/category/products/${category.id}/`;
-        a.textContent = category.name;
-
-        li.appendChild(a);
-        categoryList.appendChild(li);
-      });
-    })
-    .catch(error => {
-      console.error('Error fetching categories:', error);
-    });
+            // Populate both with same data
+            data.forEach(category => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.className = 'dropdown-item';  // Works for both sidebar and dropdown
+                a.href = `/category/products/${category.id}/`;
+                a.textContent = category.name;
+                
+                li.appendChild(a);
+                
+                // Add to both containers
+                sidebarList.appendChild(li.cloneNode(true));  // Clone for sidebar
+                dropdownList.appendChild(li);  // Original for dropdown
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching categories:', error);
+            // Optional: Show error in both spans
+            const errorMsg = document.createElement('p');
+            errorMsg.className = 'text-danger small';
+            errorMsg.textContent = 'Failed to load categories.';
+            document.getElementById('sidebar-category-list').appendChild(errorMsg.cloneNode(true));
+            document.getElementById('dropdown-category-list').appendChild(errorMsg);
+        });
 });
+
 
 // Search toggle for mobile
 const icon = document.getElementById('searchToggleIcon');

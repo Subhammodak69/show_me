@@ -40,6 +40,7 @@ class PayMethods(Enum):
     CARD = 1
     UPI = 2
     NETBANKING = 3
+    COD = 4
     
 class Banks(Enum):
     STATE_BANK_OF_INDIA = 1

@@ -24,21 +24,21 @@ def create_payment(user,data):
         return JsonResponse({'success': False, 'message': 'Order not found or inactive'}, status=404)
 
     # Collect optional payment details based on method
-    card_number = data.get('cardNumber') if method == 'card' else None
-    expiry_date = data.get('expiry') if method == 'card' else None
-    upi_id = data.get('upiId') if method == 'upi' else None
-    bank = data.get('bank') if method == 'netbanking' else None
+    # card_number = data.get('cardNumber') if method == 'card' else None
+    # expiry_date = data.get('expiry') if method == 'card' else None
+    # upi_id = data.get('upiId') if method == 'upi' else None
+    # bank = data.get('bank') if method == 'netbanking' else None
 
     # Create Payment record (in real app, integrate payment gateway here)
     return Payment.objects.create(
         user=user,
         amount=amount,
-        method=method,
+        method=PayMethods.COD.value,
         status=PaymentStatus.PENDING.value,
-        card_number=card_number,
-        expiry_date=expiry_date,
-        upi_id=upi_id,
-        bank=bank,
+        # card_number=card_number,
+        # expiry_date=expiry_date,
+        # upi_id=upi_id,
+        # bank=bank,
     )
     
     

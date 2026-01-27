@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (result.success) {
         document.getElementById('payStatus').textContent = 'Success';
         document.getElementById('payTime').textContent = new Date().toLocaleString();
-        document.getElementById('payMethod').textContent = { '1': 'Card', '2': 'UPI', '3': 'Netbanking' }[method];
+        document.getElementById('payMethod').textContent = 'Cash On Delivery';
         document.getElementById('payAmount').textContent = data.amount;
         document.getElementById('successMessage').textContent = 'Your payment has been processed successfully!';
 

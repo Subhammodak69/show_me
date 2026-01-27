@@ -11,7 +11,7 @@
 {% block content %}
 
 <!-- Category Row -->
-<div class="cat category-row d-flex justify-content-between align-items-center bg-white shadow-sm rounded mb-3"
+<div class="cat category-row d-flex gap-2 align-items-center bg-white shadow-sm rounded mb-3"
     style="overflow-x:auto;width: 90%; padding:15px;">
     {% for category in categories %}
     <div class="category-item text-center" style="flex:0 0 85px;" onclick="window.location.href='{% url 'category_product_list' category.id %}'" style="cursor:pointer;">
@@ -46,14 +46,14 @@
         </section>
         <!-- Hot Deals / Product Scroll Row -->
         <section class="mb-4" style=" width: 100%;">
-            <h5 class="fw-bold ms-1 mb-3">Best Deals on Smartphones</h5>
+            <h5 class="fw-bold ms-1 mb-3">Best Deals on Clothes</h5>
             <div class="hot-items d-flex flex-row" style="overflow-x:auto;gap:14px;">
                 {% for item in best_deals %}
                 <div class="card p-2 text-center" style="min-width:170px;max-width:180px;">
                     <img src="{{ item.photo_url }}" alt="{{ item.title }}" class="card-img-top mx-auto"
                         style="width:100px;height:130px;object-fit:contain;">
                     <div class="card-body px-0">
-                        <div class="card-title" style="font-size:15px;" onclick="window.location.href='{% url 'product_details' item.id %}'" style="cursor: pointer;">{{ item.product.name }}</div>
+                        <div class="card-title" style="font-size:15px; color: blue;cursor:pointer;" onclick="window.location.href='{% url 'product_details' item.id %}'" style="cursor: pointer;">{{ item.product.name }}</div>
                         <div class="card-text text-muted" style="font-size:14px;">From ₹{{ item.price }}</div>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
             <img src="{{ product.photo_url }}" alt="{{ product.title }}" class="card-img-top mx-auto"
                 style="width:100px;height:130px;object-fit:contain;">
             <div class="card-body px-0">
-                <div class="card-title" style="font-size:15px; cursor:pointer;"
+                <div class="card-title" style="font-size:15px; color: blue; cursor:pointer;"
                      onclick="window.location.href='{% url 'product_details' product.id %}'">{{ product.product.name }}</div>
                 <div class="card-text text-muted" style="font-size:14px;">From ₹{{ product.price }}</div>
             </div>
