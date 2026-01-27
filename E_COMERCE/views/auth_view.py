@@ -5,11 +5,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils import timezone
-from django.core.mail import send_mail
 from django.conf import settings
 import json
 import random
-import os
+import sendgrid
+from sendgrid.helpers.mail import Mail
 from datetime import timedelta
 
 # Your imports (adjust paths)
@@ -27,15 +27,15 @@ def redirect_authenticated_user_to_home(view_func):
     return wrapper
 
 def send_otp_email(email, otp, subject="Your OTP Code"):
-    """✅ SendGrid FIXED - Works on Render"""
+    """✅ SendGrid HTTP API - Works 100% on Render"""
     try:
-        send_mail(
-            subject=subject,
-            message=f"Your OTP code is: {otp}",
+        sg = sendgrid.SendGridAPIClient(api_key=settings.EMAIL_HOST_PASSWORD)
+        
+        message = Mail(
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-            html_message=f"""<!DOCTYPE html>
+            to_emails=email,
+            subject=subject,
+            html_content=f"""<!DOCTYPE html>
             <html>
             <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px;">
                 <div style="max-width: 600px; margin: 0 auto;">
@@ -57,8 +57,15 @@ def send_otp_email(email, otp, subject="Your OTP Code"):
             </body>
             </html>"""
         )
-        print(f"✅ SENDGRID SUCCESS: OTP {otp} → {email}")
-        return True
+        response = sg.send(message)
+        
+        if response.status_code in (200, 202):
+            print(f"✅ SENDGRID SUCCESS: OTP {otp} → {email} (Status: {response.status_code})")
+            return True
+        else:
+            print(f"❌ SENDGRID FAILED: Status {response.status_code}")
+            return False
+            
     except Exception as e:
         print(f"❌ SENDGRID ERROR: {e}")
         return False

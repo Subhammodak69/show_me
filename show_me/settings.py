@@ -150,6 +150,8 @@ EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='apikey')  # ✅ SendGrid literal
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')  # Your SG.xxxx API key
 DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER', default='modaksubham69@gmail.com')
+# Remove all EMAIL_* settings - HTTP API doesn't need them
+SENDGRID_API_KEY = env('EMAIL_HOST_PASSWORD')  # Reuse your existing var
 
 
 # Default primary key field type
