@@ -16,7 +16,6 @@ class Command(BaseCommand):
         Poster.objects.all().delete()
         Product.objects.all().delete()
         Category.objects.all().delete()
-        User.objects.all().delete()
         
         print("✅ ALL DATA DELETED SUCCESSFULLY!")
         self.stdout.write(self.style.SUCCESS('Database cleared!'))
