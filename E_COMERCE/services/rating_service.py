@@ -29,7 +29,6 @@ def get_all_ratings_by_product_item_id(item_id):
             for i in ratings
         ]
 
-    print(data)
     return data
 
 

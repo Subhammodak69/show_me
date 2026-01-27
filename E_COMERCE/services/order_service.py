@@ -129,7 +129,6 @@ def get_order_tracking_info(order_id):
     order_items = order.orderitems.select_related('product_item__product').all()
     expected_delivery = order.created_at + timedelta(days=5)
     status_display = Status(order.status).name
-    print(status_display)
 
     return {
         'order': order,

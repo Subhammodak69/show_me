@@ -18,7 +18,6 @@ class ProductItemListView(AdminRequiredMixin, View):
 
     def get(self, request):
         products = productitem_service.get_all_productitems()
-        print(products)
         return render(request, 'admin/productitem/productitem_list.html', {'productitems': products})
 
 

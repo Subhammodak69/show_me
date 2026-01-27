@@ -18,7 +18,6 @@ def create_category(data, file, user):
         )
         
         photo_url = result['secure_url']
-        print(f"✅ Category uploaded: {photo_url}")
 
         category = Category.objects.create(
             name=data.get('name'),
