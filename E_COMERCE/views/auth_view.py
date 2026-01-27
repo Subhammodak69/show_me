@@ -1,22 +1,67 @@
 from django.views import View
-from django.shortcuts import render,redirect
-from django.contrib.auth import authenticate,login,logout,get_user_model
-from django.contrib.auth.hashers import make_password
-import random
-from show_me.settings import EMAIL_HOST_USER
-from django.core.mail import send_mail
-from E_COMERCE.models import User
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 import json
+import random
+import os
+from datetime import timedelta
+
+# Your imports (adjust paths)
 from E_COMERCE.services import user_service
 from E_COMERCE.constants.default_values import Role
-from E_COMERCE.constants.decorators import redirect_authenticated_user_to_home
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 
-# Temporary OTP storage (or use session/cache/DB)
+User = get_user_model()
 OTP_STORE = {}
+
+def redirect_authenticated_user_to_home(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('/')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+def send_otp_email(email, otp, subject="Your OTP Code"):
+    """✅ SendGrid FIXED - Works on Render"""
+    try:
+        send_mail(
+            subject=subject,
+            message=f"Your OTP code is: {otp}",  # Plain text fallback
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+            html_message=f"""<!DOCTYPE html>
+            <html>
+            <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Your OTP Code</h2>
+                    <div style="background: linear-gradient(135deg, #007bff, #0056b3); 
+                               color: white; padding: 30px; text-align: center; 
+                               font-size: 36px; font-weight: bold; border-radius: 12px;
+                               box-shadow: 0 4px 15px rgba(0,123,255,0.3);">
+                        {otp}
+                    </div>
+                    <p style="color: #666; margin: 20px 0; font-size: 16px;">
+                        This code expires in 2-5 minutes.
+                    </p>
+                    <hr style="border: none; border-top: 1px solid #eee;">
+                    <p style="color: #999; font-size: 14px;">
+                        Do not share this code with anyone.
+                    </p>
+                </div>
+            </body>
+            </html>"""
+        )
+        print(f"✅ SENDGRID SUCCESS: OTP {otp} → {email}")
+        return True
+    except Exception as e:
+        print(f"❌ SENDGRID ERROR: {e}")
+        return False
 
 @method_decorator(redirect_authenticated_user_to_home, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
@@ -31,23 +76,21 @@ class LoginView(View):
             password = data.get('password')
 
             if not email or not password:
-                return JsonResponse({'success': False, 'message': 'Email and password are required.'})
+                return JsonResponse({'success': False, 'message': 'Email and password required.'})
 
             if not user_service.user_exists(email):
-                return JsonResponse({'success': False, 'message': 'Account not found with this email.'})
+                return JsonResponse({'success': False, 'message': 'Account not found.'})
 
             user = authenticate(request, username=email, password=password)
             if user:
-                if user.role == Role.ENDUSER.value:
+                if hasattr(user, 'role') and user.role == Role.ENDUSER.value:
                     login(request, user)
-                    return JsonResponse({'success': True, 'message': 'Login successful! Redirecting...'})
-                else:
-                    return JsonResponse({'success': False, 'message': 'You are not an enduser.'})
-            else:
-                return JsonResponse({'success': False, 'message': 'Incorrect password.'})
+                    return JsonResponse({'success': True, 'message': 'Login successful!', 'redirect': '/'})
+                return JsonResponse({'success': False, 'message': 'Enduser access only.'})
+            return JsonResponse({'success': False, 'message': 'Invalid credentials.'})
         except Exception as e:
-            return JsonResponse({'success': False, 'message': 'Something went wrong. Please try again.'})     
-    
+            print(f"Login error: {e}")
+            return JsonResponse({'success': False, 'message': 'Server error.'})
 
 @method_decorator(csrf_exempt, name='dispatch')
 @method_decorator(redirect_authenticated_user_to_home, name='dispatch')
@@ -56,157 +99,142 @@ class SigninView(View):
         return render(request, 'auth/signin.html')
 
     def post(self, request):
-        data = json.loads(request.body)
-        email = data.get('email')
-        first_name = data.get('first_name')
-        last_name = data.get('last_name')
-        password = data.get('password')
-        otp_input = data.get('otp')
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            first_name = data.get('first_name', '')
+            last_name = data.get('last_name', '')
+            password = data.get('password')
+            otp_input = data.get('otp')
 
-        # 1. OTP Verification
-        otp_record = OTP_STORE.get(email)
-        if not otp_record:
-            return JsonResponse({'success': False, 'message': 'OTP expired or not sent.'})
-        
-        if str(otp_input) != str(otp_record['otp']):
-            return JsonResponse({'success': False, 'message': 'Invalid OTP.'})
+            # OTP Verification
+            otp_record = OTP_STORE.get(email)
+            if not otp_record:
+                return JsonResponse({'success': False, 'message': 'OTP expired or not sent.'})
 
-        # 2. OTP expiry check
-        if timezone.now() > otp_record['expires_at']:
-            return JsonResponse({'success': False, 'message': 'OTP expired.'})
+            if str(otp_input) != str(otp_record['otp']):
+                return JsonResponse({'success': False, 'message': 'Invalid OTP.'})
 
-        # 3. Create user
-        user_exists = user_service.email_exists(email)
-        if user_exists:
-            return JsonResponse({'success': False, 'message': 'User already exists. Please login. Redirecting..........'})
+            if timezone.now() > otp_record['expires_at']:
+                del OTP_STORE[email]
+                return JsonResponse({'success': False, 'message': 'OTP expired.'})
 
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            password=password
-        )
-        del OTP_STORE[email]  # clear OTP
-        return JsonResponse({'success': True, 'message': 'Registration successful! You can now login.'})
+            # Create user
+            if user_service.email_exists(email):
+                del OTP_STORE[email]
+                return JsonResponse({'success': False, 'message': 'Email exists. Please login.', 'redirect': '/login/'})
 
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                password=password
+            )
+            del OTP_STORE[email]
+            return JsonResponse({'success': True, 'message': 'Registration successful! Login now.'})
+        except Exception as e:
+            print(f"Signin error: {e}")
+            return JsonResponse({'success': False, 'message': 'Registration failed.'})
 
-
-
-User = get_user_model()
 @method_decorator(csrf_exempt, name='dispatch')
 class ForgetPasswordView(View):
     def get(self, request):
         return render(request, 'auth/forget_password.html')
 
     def post(self, request):
-        data = json.loads(request.body)
-        action = data.get('action')
+        try:
+            data = json.loads(request.body)
+            action = data.get('action')
 
-        if action == 'send_otp':
-            email = data.get('email')
+            if action == 'send_otp':
+                email = data.get('email')
+                try:
+                    User.objects.get(email=email)
+                except User.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': 'Email not registered.'})
 
-            try:
+                otp = random.randint(100000, 999999)
+                expires_at = timezone.now() + timedelta(minutes=5)
+                OTP_STORE[email] = {'otp': otp, 'expires_at': expires_at}
+
+                if send_otp_email(email, otp, "Password Reset OTP"):
+                    return JsonResponse({'success': True, 'message': 'OTP sent! Check inbox/spam.'})
+                else:
+                    if email in OTP_STORE:
+                        del OTP_STORE[email]
+                    return JsonResponse({'success': False, 'message': 'Failed to send OTP.'})
+
+            elif action == 'verify_otp':
+                email = data.get('email')
+                otp = data.get('otp')
+                otp_record = OTP_STORE.get(email)
+
+                if not otp_record:
+                    return JsonResponse({'success': False, 'message': 'No OTP found.'})
+                if timezone.now() > otp_record['expires_at']:
+                    del OTP_STORE[email]
+                    return JsonResponse({'success': False, 'message': 'OTP expired.'})
+                if str(otp) != str(otp_record['otp']):
+                    return JsonResponse({'success': False, 'message': 'Invalid OTP.'})
+
+                return JsonResponse({'success': True, 'message': 'OTP verified! Set new password.'})
+
+            elif action == 'set_password':
+                email = data.get('email')
+                otp = data.get('otp')
+                new_password = data.get('new_password')
+
+                otp_record = OTP_STORE.get(email)
+                if (not otp_record or timezone.now() > otp_record['expires_at'] or 
+                    str(otp) != str(otp_record['otp'])):
+                    return JsonResponse({'success': False, 'message': 'Invalid/expired OTP.'})
+
                 user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'Email not registered.'})
-
-            otp = random.randint(100000, 999999)
-            print(otp)
-            expires_at = timezone.now() + timedelta(minutes=5)
-
-            OTP_STORE[email] = {'otp': otp, 'expires_at': expires_at}
-
-            subject = 'Your Password Reset OTP'
-            message = f'Your OTP to reset password is: {otp}. It is valid for 5 minutes.'
-            from_email = EMAIL_HOST_USER
-
-            try:
-                send_mail(subject, message, from_email, [email])
-                return JsonResponse({'success': True, 'message': 'OTP sent to your email.'})
-            except Exception as e:
-                return JsonResponse({'success': False, 'message': 'Failed to send OTP email.'})
-
-        elif action == 'verify_otp':
-            email = data.get('email')
-            otp = data.get('otp')
-
-            otp_record = OTP_STORE.get(email)
-            if not otp_record:
-                return JsonResponse({'success': False, 'message': 'No OTP requested for this email.'})
-
-            if timezone.now() > otp_record['expires_at']:
-                del OTP_STORE[email]
-                return JsonResponse({'success': False, 'message': 'OTP expired. Please request again.'})
-
-            if str(otp) != str(otp_record['otp']):
-                return JsonResponse({'success': False, 'message': 'Invalid OTP.'})
-
-            return JsonResponse({'success': True, 'message': 'OTP verified. You can reset your password.'})
-
-        elif action == 'set_password':
-            email = data.get('email')
-            otp = data.get('otp')
-            new_password = data.get('new_password')
-
-            otp_record = OTP_STORE.get(email)
-            if not otp_record or timezone.now() > otp_record['expires_at'] or str(otp) != str(otp_record['otp']):
-                return JsonResponse({'success': False, 'message': 'Invalid or expired OTP.'})
-
-            try:
-                user = User.objects.get(email=email)
-                user.password = make_password(new_password)
+                user.set_password(new_password)
                 user.save()
                 del OTP_STORE[email]
 
-                # Authenticate and login user automatically after password reset
-                auth_user = authenticate(request, username=user.username, password=new_password)
+                auth_user = authenticate(request, username=email, password=new_password)
                 if auth_user:
                     login(request, auth_user)
-                return JsonResponse({'success': True, 'message': 'Password reset successful. redirecting...........'})
-            except User.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'User not found.'})
+                return JsonResponse({'success': True, 'message': 'Password reset! Logging in...', 'redirect': '/'})
 
-        else:
             return JsonResponse({'success': False, 'message': 'Invalid action.'})
-
+        except Exception as e:
+            print(f"ForgetPassword error: {e}")
+            return JsonResponse({'success': False, 'message': 'Server error.'})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SendOTPView(View):
     def post(self, request):
-        data = json.loads(request.body)
-        email = data.get('email')
-        user = user_service.email_user_exists(email)
-        print(user)
-        if user:
-            if user.role == Role.ADMIN.value and user.email == email:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Email already exists as Admin. Redirecting........',
-                    'redirect': '/admin/'
-                })
-            return JsonResponse({
-                'success': False,
-                'message': 'Email already exists. Redirecting........',
-                'redirect': '/login/'
-            })
-
-        otp = random.randint(100000, 999999)
-        expires_at = timezone.now() + timezone.timedelta(minutes=2)
-
-        OTP_STORE[email] = {'otp': otp, 'expires_at': expires_at}
-        print("otp:", otp)
-
-        subject = 'Your OTP Code'
-        message = f'Your One-Time Password (OTP) is: {otp}'
-        from_email = EMAIL_HOST_USER
-
         try:
-            send_mail(subject, message, from_email, [email])
-            return JsonResponse({'success': True, 'message': 'OTP sent to your email.'})
+            data = json.loads(request.body)
+            email = data.get('email')
+
+            if not email:
+                return JsonResponse({'success': False, 'message': 'Email required.'})
+
+            user = user_service.email_user_exists(email)
+            if user:
+                if hasattr(user, 'role') and user.role == Role.ADMIN.value:
+                    return JsonResponse({'success': False, 'message': 'Admin login → /admin/', 'redirect': '/admin/'})
+                return JsonResponse({'success': False, 'message': 'Email exists. Login instead.', 'redirect': '/login/'})
+
+            otp = random.randint(100000, 999999)
+            expires_at = timezone.now() + timedelta(minutes=2)
+            OTP_STORE[email] = {'otp': otp, 'expires_at': expires_at}
+
+            if send_otp_email(email, otp, "Registration OTP"):
+                return JsonResponse({'success': True, 'message': 'OTP sent! Check inbox/spam.'})
+            else:
+                if email in OTP_STORE:
+                    del OTP_STORE[email]
+                return JsonResponse({'success': False, 'message': 'Failed to send OTP.'})
         except Exception as e:
-            print("Error sending email:", e)
-            return JsonResponse({'success': False, 'message': 'Failed to send OTP.'})
+            print(f"SendOTP error: {e}")
+            return JsonResponse({'success': False, 'message': 'Server error.'})
+
 
 @method_decorator(csrf_exempt, name='dispatch')    
 class LogoutView(View):

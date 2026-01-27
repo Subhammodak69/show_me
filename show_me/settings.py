@@ -143,13 +143,14 @@ CLOUDINARY_STORAGE = {
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # ✅ Changed from console
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.sendgrid.net')
 EMAIL_PORT = int(env('EMAIL_PORT', default=587))
 EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='apikey')  # ✅ SendGrid literal
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')  # Your SG.xxxx API key
+DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER', default='modaksubham69@gmail.com')
+
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
