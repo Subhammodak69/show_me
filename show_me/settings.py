@@ -143,8 +143,7 @@ CLOUDINARY_STORAGE = {
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Email configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = int(env('EMAIL_PORT', default=587))
 EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True, cast=bool)
