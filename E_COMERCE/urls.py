@@ -58,6 +58,7 @@ urlpatterns = [
 
     #wishlist
     path('wishlist/',views.WishlistDetailsView.as_view(),name='user_wishlist'),
+    path('api/is-liked-status-check/',views.ApiIsLikedStatusCheckView.as_view(),name='is_liked_check_status'),
     path('wishlist/delete/',views.WishlistDeleteView.as_view(),name='wishlist_delete'),
     path('wishlist/create_update/',views.WishlistCreateUpdateView.as_view(),name='wishlist_create_update'),
 

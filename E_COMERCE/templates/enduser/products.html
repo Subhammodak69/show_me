@@ -5,83 +5,156 @@
 
 {% block content %}
 <div class="home-container" style="gap: 20px;display: flex;">
-  {% for item in product_items %}
-  <div class="product-card">
-    <a href="{% url 'product_details' item.id %}" class="product_img">
-      <img src="{{ item.photo_url }}" alt="Product Image" class="img-pro">
-    </a>
-    <div class="card-body product-info">
-      <a href="{% url 'product_details' item.id %}" class="text-decoration-none text-dark">
-        <h6 class="card-title product-title text-truncate">{{ item.product_name }}</h6>
-      </a>
-      <p class="text-muted mb-0">Size: <b>{{item.display_size}}</b></p>
-      <p class="text-muted mb-0">Color:
-        <span style="color: {{ item.color|lower }};">{{ item.display_color }}</span>
-      </p>
-      <p class="fw-bold mb-0 price">₹{{ item.price }}</p>
+  <section class="mb-4 d-flex" style="width: 100%; overflow-x: auto; gap:20px;">
+  {% for product in product_items %}
+    <div class="card p-2 text-center position-relative" style="min-width:170px;max-width:180px;height:250px;">
+        <!-- Wishlist Heart Icon -->
+        <i id="wishlist-icon-{{ product.id }}" 
+        class="bi bi-heart position-absolute top-0 end-0 m-2 p-1 wishlist-icon"
+        style="font-size: 18px; z-index: 10; cursor: pointer;"
+        onclick="toggle_wishlist_create_update({{ product.id }})"
+        title="Add to wishlist"></i>
+        
+        <img src="{{ product.photo_url }}" alt="{{ product.title }}" class="card-img-top mx-auto"
+            style="width:100px;height:130px;object-fit:contain;">
+        <div class="card-body px-0">
+            <div class="card-title" style="font-size:15px; color: blue; cursor:pointer;"
+                onclick="window.location.href='{% url 'product_details' product.id %}'">{{ product.product.name }}</div>
+            <div class="card-text text-muted" style="font-size:14px;">From ₹{{ product.price }}</div>
+        </div>
     </div>
-    <div class="wishlist-icon" onclick="event.stopPropagation(); toggle_wishlist_create_update({{ item.id }})">
-      {% if item.id in user_wishlist_items_ids %}
-      <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart-fill text-danger"></i>
-      {% else %}
-      <i id="wishlist-icon-{{ item.id }}" class="bi bi-heart"></i>
-      {% endif %}
-    </div>
-  </div>
-
   {% endfor %}
+  </section>
 </div>
+
+<style>
+/* Wishlist icon styles */
+.wishlist-icon {
+    transition: all 0.3s ease;
+}
+
+.wishlist-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+@keyframes wishlist-bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.wishlist-bounce {
+    animation: wishlist-bounce 0.5s ease-in-out;
+}
+</style>
 <script>
-  function toggle_wishlist_create_update(item_id) {
+document.addEventListener('DOMContentLoaded', function() {
+    loadWishlistProducts();
+});
+
+async function loadWishlistProducts() {
+    try {
+        // Fetch user's wishlist from your existing API endpoint
+        const response = await fetch('/api/is-liked-status-check/', {  // Update with your actual URL
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            console.log('No wishlist items or user not logged in');
+            return;
+        }
+
+        const wishlistData = await response.json();
+        // Backend returns product_item_id, frontend uses product.id
+        const wishlistProductItemIds = wishlistData.map(item => item.product_item_id);
+
+        // Update heart icons for wishlist products
+        wishlistProductItemIds.forEach(productItemId => {
+            const wishlistIcon = document.getElementById(`wishlist-icon-${productItemId}`);
+            if (wishlistIcon) {
+                wishlistIcon.classList.remove('bi-heart');
+                wishlistIcon.classList.add('bi-heart-fill');
+                wishlistIcon.style.color = '#ff4757';
+                wishlistIcon.title = 'Remove from wishlist';
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading wishlist:', error);
+    }
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+function toggle_wishlist_create_update(item_id) {
     const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";
     if (!isAuthenticated) {
-      window.location.href = "{% url 'log_in' %}";
-      return;
+        window.location.href = "{% url 'log_in' %}";
+        return;
     }
     fetch("{% url 'wishlist_create_update' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": getCookie("csrftoken")
-      },
-      body: JSON.stringify({ item_id })
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({ item_id })
     })
     .then(res => res.json())
     .then(data => {
-      if (data.status === 'redirect' && data.login_url) {
-        window.location.href = data.login_url;
-        return;
-      }
-      const icon = document.querySelector(`#wishlist-icon-${item_id}`);
-      if (icon) {
-        if (data.status === 'added') {
-          icon.className = "bi bi-heart-fill text-danger wishlist-bounce";
-          setTimeout(() => icon.classList.remove("wishlist-bounce"), 500);
-        } else if (data.status === 'removed') {
-          icon.className = "bi bi-heart";
+        if (data.status === 'redirect' && data.login_url) {
+            window.location.href = data.login_url;
+            return;
         }
-      }
+        const icon = document.querySelector(`#wishlist-icon-${item_id}`);
+        if (icon) {
+            if (data.status === 'added') {
+                icon.className = "bi bi-heart-fill text-danger wishlist-bounce position-absolute top-0 end-0 m-2 p-1 wishlist-icon";
+                setTimeout(() => icon.classList.remove("wishlist-bounce"), 500);
+            } else if (data.status === 'removed') {
+                icon.className = "bi bi-heart position-absolute top-0 end-0 m-2 p-1 wishlist-icon";
+            }
+        }
     });
-  }
+}
 
-  function getCookie(name) {
+function getCookie(name) {
     let cookieValue = null;
     document.cookie.split(';').forEach(cookie => {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-      }
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        }
     });
     return cookieValue;
-  }
+}
 </script>
-
 
 <style>
   .home-container {
     width: 100%;
     padding: 5px 20px;
-    background: #a8fffa;
   }
 
   /* Category Header */

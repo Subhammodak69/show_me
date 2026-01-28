@@ -114,3 +114,6 @@ def toggle_wishlist_status(pk, is_active):
     wishlist.is_active = is_active
     wishlist.save()
     return wishlist.is_active
+
+def get_wishlist_by_user(user):
+    return Wishlist.objects.filter(created_by = user, is_active = True)

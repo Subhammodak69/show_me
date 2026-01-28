@@ -14,7 +14,14 @@ class WishlistDetailsView(EnduserRequiredMixin,View):
         user_id =request.user.id
         wishlist_items_data = wishlist_service.get_wishlist_items(user_id)
         return render(request,'enduser/wishlist.html',{'wishlist_items_data':wishlist_items_data})
-
+    
+class ApiIsLikedStatusCheckView(EnduserRequiredMixin, View):
+    def get(self,request):
+        wishlist_items = wishlist_service.get_wishlist_by_user(request.user)
+        data = [{'product_item_id': item.product_item.id} for item in wishlist_items]
+        print(data)
+        return JsonResponse(data, safe=False)
+    
 @method_decorator(csrf_exempt, name='dispatch')
 class WishlistDeleteView(EnduserRequiredMixin,View):
     def post(self, request):
@@ -111,6 +118,7 @@ class AdminWishlistToggleStatusView(EnduserRequiredMixin, View):
             return JsonResponse({'success': False, 'error': str(e)})
         except Exception:
             return JsonResponse({'success': False, 'error': 'Something went wrong'})
+
 
 
 
