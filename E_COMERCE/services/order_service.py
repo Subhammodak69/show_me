@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.default_values import Status
 
-def create_order_from_cart(user, address):
+def create_order_from_cart(user, address,phone):
     cart_items = CartItem.objects.filter(cart__user=user, is_active=True)
     if not cart_items.exists():
         raise ValueError("Cart is empty.")
@@ -12,6 +12,7 @@ def create_order_from_cart(user, address):
     # Set initial total_price=0 to avoid IntegrityError
     order = Order.objects.create(
         created_by=user,
+        phone = phone,
         delivery_address=address,
         total_price=0  # ✅ required
     )
@@ -36,11 +37,12 @@ def create_order_from_cart(user, address):
 
 
 
-def create_direct_order(user, product_item_id, quantity, size, address):
+def create_direct_order(user, product_item_id, quantity, size, address,phone):
     item = ProductItem.objects.get(id=product_item_id)
 
     order = Order.objects.create(
         created_by=user,
+        phone = phone,
         delivery_address=address,
         total_price=item.price * quantity
     )
@@ -88,6 +90,7 @@ def create_order(data):
     user = get_user_by_id(data['created_by'])
     return Order.objects.create(
         created_by=user,
+        phone = data['phone'],
         delivery_address=data['delivery_address'],
         status=data['status'],
         total_price=data['total_price'],
@@ -99,6 +102,7 @@ def update_order(order_id, data):
     user = get_user_by_id(data['created_by'])
 
     order.created_by = user
+    order.phone = data['phone']
     order.delivery_address = data['delivery_address']
     order.status = data['status']
     order.total_price = data['total_price']

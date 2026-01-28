@@ -12,7 +12,7 @@ from django.utils.decorators import method_decorator
 class RatingCreateView(View, EnduserRequiredMixin):
     def post(self, request):
         try:
-            print("helllooo")
+            # print("helllooo")
             data = json.loads(request.body.decode('utf-8'))  # parse JSON body
             
             rating_data = {
@@ -34,7 +34,7 @@ class RatingCreateView(View, EnduserRequiredMixin):
                 'rating_range': list(range(rating.rating)),
                 'empty_range': list(range(5 - rating.rating)),
             }
-            print(data)
+            # print(data)
             return JsonResponse({'success': True, 'data': data})
         
         except Exception as e:

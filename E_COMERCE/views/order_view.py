@@ -40,11 +40,14 @@ class OrderCreateView(EnduserRequiredMixin,View):
 
     def post(self, request):
         address = request.POST.get("address")
+        phone = request.POST.get("phone")
         if not address:
             return JsonResponse({'error': 'Address is required.'}, status=400)
+        if not phone:
+            return JsonResponse({'error': 'Phone No. is required.'}, status=400)
         
         try:
-            order = order_service.create_order_from_cart(request.user, address)
+            order = order_service.create_order_from_cart(request.user, address,phone)
         except ValueError as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -68,15 +71,17 @@ class DirectOrderView(EnduserRequiredMixin, View):
     
     def post(self, request,item_id):
         data = json.loads(request.body)
+        # print("data=>" ,data)
         product_item_id = data.get("product_item_id")
         quantity = int(data.get("quantity", 1))
         size = int(data.get("size"))
         address = data.get("address")
+        phone = data.get("phone")
 
-        if not all([product_item_id, quantity, size, address]):
+        if not all([product_item_id, quantity, size, address,phone]):
             return JsonResponse({'error': 'Missing fields'}, status=400)
 
-        order = order_service.create_direct_order(request.user, product_item_id, quantity, size, address)
+        order = order_service.create_direct_order(request.user, product_item_id, quantity, size, address,phone)
         return JsonResponse({'success': True, 'order_id': order.id})
 
     
@@ -155,6 +160,7 @@ class AdminOrderCreateView(AdminRequiredMixin,View):
     def post(self, request):
         data = {
             'created_by': request.POST.get("created_by"),
+            'phone': request.POST.get("phone"),
             'delivery_address': request.POST.get("delivery_address"),
             'status': request.POST.get("status"),
             'total_price': request.POST.get("total_price"),
@@ -177,6 +183,7 @@ class AdminOrderUpdateView(AdminRequiredMixin,View):
     def post(self, request, pk):
         data = {
             'created_by': request.POST.get("created_by"),
+            'phone': request.POST.get("phone"),
             'delivery_address': request.POST.get("delivery_address"),
             'status': request.POST.get("status"),
             'total_price': request.POST.get("total_price"),

@@ -1,4 +1,4 @@
-from E_COMERCE.models import Product, ProductItem,Offer
+from E_COMERCE.models import Product, ProductItem,Offer,Rating
 from E_COMERCE.constants.default_values import Size,Color
 import cloudinary
 import cloudinary.uploader
@@ -82,9 +82,13 @@ def get_product_items_data(item_id):
     
     discount= Offer.objects.filter(product = item_id, is_active =True).first()
     discount_amount = 0
-    
-    if discount:
-        discount_amount = discount.discount_value
+    ratings = get_all_rating_by_product(product_item.product)
+    if ratings:  # Check if ratings exist
+        rating = sum(rating.rating for rating in ratings) / len(ratings)
+    else:
+        rating = 0
+        if discount:
+            discount_amount = discount.discount_value
         
 
     if not product_item:
@@ -108,11 +112,14 @@ def get_product_items_data(item_id):
         'product_category_name':product_item.product.subcategory.category.name,
         'product_category_description':product_item.product.subcategory.category.description,
         'offer':discount_amount,
-        'availibility':availibility 
+        'availibility':availibility ,
+        'rating':rating,
+        'rating_count': len(ratings)
     }
     return item_data
 
-
+def get_all_rating_by_product(product):
+    return Rating.objects.filter(product = product,is_active=True)
 
 
 
@@ -138,7 +145,7 @@ def create_productitem(request, file):
         )
         
         photo_url = result['secure_url']
-        print(f"✅ Product item uploaded: {photo_url}")
+        # print(f"✅ Product item uploaded: {photo_url}")
 
         item = ProductItem.objects.create(
             product=product,

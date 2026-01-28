@@ -35,7 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
         quantity: document.getElementById('quantity').value,
         size: document.getElementById('size').value,
         color: document.getElementById('color')?.value,
-        address: document.getElementById('delivery-address').value
+        address: document.getElementById('delivery-address').value,
+        phone: document.getElementById('phone').value
       };
       fetch("", {
         method: "POST",

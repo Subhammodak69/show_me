@@ -185,7 +185,7 @@ class AdminLoginView(View):
             login(request, user) 
             return redirect('admin')
         else:
-            print("elseeeee")
+            # print("elseeeee")
             return render(request, 'admin/admin_login.html', {
                 'error': 'Invalid credentials or not an admin user.'
             })

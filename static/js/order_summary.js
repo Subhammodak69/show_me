@@ -42,6 +42,7 @@ function removeItem(itemId) {
 
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('order-form');
+  console.log(form);
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();

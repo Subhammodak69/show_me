@@ -12,7 +12,7 @@ class Order(models.Model):
     )
     total_price = models.IntegerField(blank=False, null=False)
     is_active = models.BooleanField(default=True)
-
+    phone = models.CharField(max_length=12,blank=False,null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

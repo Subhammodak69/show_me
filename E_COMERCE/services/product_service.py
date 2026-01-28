@@ -83,7 +83,7 @@ def category_product_search(request):
             product__name__icontains=query,
             is_active=True
         )
-    print(f"Found {productitems.count()} items")  # log result count
+    # print(f"Found {productitems.count()} items")  # log result count
 
     results = [{
         "id": item.id,

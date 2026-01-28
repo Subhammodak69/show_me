@@ -76,5 +76,5 @@ class CategoryApiListView(View):
     def get(self, request):
         categories = category_service.get_categories()  # Should return a queryset or list of dicts
         data = list(categories.values('id', 'name'))  # Adjust fields as needed
-        print(data)
+        # print(data)
         return JsonResponse(data, safe=False)

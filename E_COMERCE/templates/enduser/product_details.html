@@ -38,7 +38,7 @@
       <h4 class="text-success">₹{{ product_item_data.price }}</h4>
 
       <div class="mb-2">
-        ⭐ 4.3 | 3,619 ratings & 166 reviews
+        ⭐ {{product_item_data.rating}} | {{product_item_data.rating_count}} ratings & reviews
       </div>
 
       <p><strong>Size:</strong> {{ product_item_data.display_size }}</p>
@@ -62,10 +62,13 @@
         </button>
       </div>
 
-      <div class="mt-4">
+     </div>
+    </div>
+
+          <div class="mt-4">
         <h5>Description</h5>
-        <p>{{ product_item_data.product_description }}</p><br>
-        <p>{{ product_item_data.product_subcategory_description }}</p><br>
+        <p>{{ product_item_data.product_description }}</p>
+        <p>{{ product_item_data.product_subcategory_description }}</p>
         <p>{{ product_item_data.product_category_description }}</p>
       </div>
 
@@ -156,11 +159,10 @@
     {% endfor %}
   </div>
 {% else %}
-  <p class="text-red-600 font-semibold">No reviews found yet.</p>
+  <div id="reviews-show"></div>
+  <p id="noReview" class="text-red-600 font-semibold">No reviews found yet.</p>
 {% endif %}
 
-      </div>
-    </div>
   </div>
   {% else %}
     <h3>Product not found</h3>
@@ -342,6 +344,8 @@ function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
 
       // Create new review element
       const reviewsContainer = document.getElementById('reviews-show');
+      const noReview = document.getElementById('noReview');
+      noReview.style.display = 'none';
       
       if (reviewsContainer) {
         const newReviewDiv = document.createElement('div');
