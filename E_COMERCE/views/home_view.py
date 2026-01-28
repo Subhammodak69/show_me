@@ -33,6 +33,9 @@ class HomeView(View):
 
         # Flatten for best deals or other logic if needed
         all_products = [item for products in products_by_category.values() for item in products]
+        [item.__setattr__('rating', productitem_service.get_average_rating(productitem_service.get_all_rating_by_product(item.product))) for item in all_products]
+        [item.__setattr__('rating_count', len(productitem_service.get_all_rating_by_product(item.product))) for item in all_products]
+
 
         best_deals = random.sample(all_products, min(len(all_products), 10))
 

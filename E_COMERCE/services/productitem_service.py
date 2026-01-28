@@ -6,6 +6,11 @@ from uuid import uuid4
 from collections import defaultdict
 
 
+def get_average_rating(ratings):
+    if ratings:
+        return sum(rating.rating for rating in ratings) / len(ratings)
+    return 0
+
 def get_all_productitems_by_category():
     """
     Returns a dict mapping Category instances to a list of their active ProductItems.
@@ -46,6 +51,8 @@ def get_product_items_by_category(category_id):
                 'display_color':Color(item.color).name,
                 'product_name': item.product.name,
                 'price': item.price,
+                'rating_count':len(get_all_rating_by_product(item.product)),
+                'rating':get_average_rating(get_all_rating_by_product(item.product))
             }
             for item in items
         ]

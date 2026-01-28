@@ -62,8 +62,9 @@
                     <img src="{{ item.photo_url }}" alt="{{ item.title }}" class="card-img-top mx-auto"
                         style="width:100px;height:130px;object-fit:contain;">
                     <div class="card-body px-0">
+                        <div class="text-muted" style="font-size:14px;">⭐{{ item.rating }} | ({{item.rating_count}})</div>
                         <div class="card-title" style="font-size:15px; color: blue;cursor:pointer;" onclick="window.location.href='{% url 'product_details' item.id %}'" style="cursor: pointer;">{{ item.product.name }}</div>
-                        <div class="card-text text-muted" style="font-size:14px;">From ₹{{ item.price }}</div>
+                        <div class="card-text text-muted" style="font-size:14px;">Price ₹{{ item.price }}</div>
                     </div>
                 </div>
                 {% endfor %}
@@ -89,9 +90,10 @@
                     <img src="{{ product.photo_url }}" alt="{{ product.title }}" class="card-img-top mx-auto"
                         style="width:100px;height:130px;object-fit:contain;">
                     <div class="card-body px-0">
+                        <div class="text-muted" style="font-size:14px;">⭐{{ product.rating }} | ({{product.rating_count}})</div>
                         <div class="card-title" style="font-size:15px; color: blue; cursor:pointer;"
                             onclick="window.location.href='{% url 'product_details' product.id %}'">{{ product.product.name }}</div>
-                        <div class="card-text text-muted" style="font-size:14px;">From ₹{{ product.price }}</div>
+                        <div class="card-text text-muted" style="font-size:14px;">Price ₹{{ product.price }}</div>
                     </div>
                 </div>
                 {% endfor %}

@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 class CategoryProductsListView(View):
     def get(sel,request,category_id):
         product_items = productitem_service.get_product_items_by_category(category_id)
+        print(product_items)
         user_wishlist_items_ids = wishlist_service.wishlist_item_ids(request.user.id)
         return render(request,'enduser/products.html',{'product_items':product_items,'user_wishlist_items_ids':user_wishlist_items_ids})
 
