@@ -6,7 +6,7 @@
 {% endblock %}
 {% block content %}
 <div class="container" style="height: 100%;">
-  <h2 class="fw-bold text-primary mb-4">Your Orders</h2>
+  <h2 class="fw-bold text-primary mb-4 text-center "><i class="bi bi-truck me-2"></i>Your Orders</h2>
   {% if orders %}
   {% for order in orders %}
   <div class="card shadow mb-5 border-0 order-card" id="order-card-{{ order.id }}">
