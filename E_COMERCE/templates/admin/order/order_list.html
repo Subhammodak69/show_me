@@ -13,6 +13,7 @@
       <tr>
         <th>ID</th>
         <th>User</th>
+        <th>Phone</th>
         <th>Delivery Address</th>
         <th>Status</th>
         <th>Total Price</th>
@@ -26,6 +27,7 @@
       <tr>
         <td>{{ order.id }}</td>
         <td>{{ order.created_by.get_full_name }}</td>
+        <td>{{order.created_by.phone}}</td>
         <td>{{ order.delivery_address|truncatechars:50 }}</td>
         <td>{{ order.get_status_display }}</td>
         <td>{{ order.total_price }}</td>
@@ -35,7 +37,7 @@
             {% if order.is_active %}Active{% else %}Inactive{% endif %}
           </span>
         </td>
-        <td>
+        <td class="d-flex">
           <a href="{% url 'admin_order_update' order.id %}" class="btn btn-sm btn-warning me-1">
             Update
           </a>

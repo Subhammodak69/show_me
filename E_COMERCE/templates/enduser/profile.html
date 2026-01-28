@@ -35,11 +35,11 @@
                     {% csrf_token %}
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" name="first_name" value="{{request.user.first_name}}">
+                        <input type="text" name="first_name" value="{{request.user.first_name}}"required>
                     </div>
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" name="last_name" value="{{request.user.last_name}}">
+                        <input type="text" name="last_name" value="{{request.user.last_name}}"required>
                     </div>
                     <div class="form-group">
                         <label>Email*</label>
@@ -47,20 +47,25 @@
                     </div>
                     <div class="form-group">
                         <label>Phone</label>
-                        <input type="tel" name="phone" value="{{request.user.phone|default:''}}">
+                        <input type="tel" name="phone" value="{{request.user.phone|default:''}}" required>
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label">Address</label>
-                        <textarea class="form-control" name="address" rows="3">{{request.user.address|default:''}}</textarea>
+                        <textarea class="form-control" name="address" rows="3" required>{{request.user.address|default:''}}</textarea>
                     </div>
                     
                     <div class="form-group mb-3">
                         <label class="form-label">Gender</label>
-                        <select class="form-select" name="gender">
-                            <!-- options as shown above -->
+                        <select class="form-select" name="gender" required>
+                           <option value="">--select--</option>
+                            {% for gender in gender_options %}
+                            <option value="{{gender.value}}" {% if request.user.gender == gender.value %}selected{% endif %}>
+                                {{gender.name}}
+                            </option>
+                            {% endfor %}
                         </select>
                     </div>
-                    <button type="submit">Save Changes</button>
+                    <button class="btn btn-success" type="submit">Save Changes</button>
                 </form>
             </section>
         </main>
@@ -88,7 +93,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
 .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-button[type="submit"], .add-btn { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+button[type="submit"], .add-btn {  color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
 
 .orders-list, .address-list { display: flex; flex-direction: column; gap: 15px; }
 .order-item, .address-item { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
