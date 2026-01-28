@@ -1,7 +1,7 @@
 from django.views import View
 from django.http import JsonResponse
-from django.shortcuts import render
-from E_COMERCE.constants.decorators import AdminRequiredMixin
+from django.shortcuts import render,redirect
+from E_COMERCE.constants.decorators import AdminRequiredMixin,EnduserRequiredMixin
 from django.contrib.auth import get_user_model
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -10,7 +10,25 @@ from E_COMERCE.services import user_service  # You’ll need to create this serv
 
 User = get_user_model()
 
-
+@method_decorator(csrf_exempt,name='dispatch')
+class ProfileView(EnduserRequiredMixin,View):
+    def get(self,request):
+        gender_options = user_service.get_gender_options()
+        return render(request,'enduser/profile.html',{'gender_options':gender_options})
+    def post(self, request):
+        user = request.user
+        
+        # Update user fields
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.phone = request.POST.get('phone', '')
+        user.address = request.POST.get('address', '')
+        user.gender = request.POST.get('gender', '')
+        user.save()
+        
+        print(f"Updated: {user.first_name} {user.last_name}")
+        return redirect('/profile/')
+    
 class UserListView(AdminRequiredMixin, View):
     login_url = 'admin_login'
 

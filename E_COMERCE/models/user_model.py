@@ -20,7 +20,7 @@ class User(AbstractUser):
         blank=False,
         null = False
     )
-    
+    phone = models.CharField(max_length=12,blank=True,null=True)
     email = models.EmailField(max_length=100, blank=False, null=False)
 
     is_active = models.BooleanField(default=True)

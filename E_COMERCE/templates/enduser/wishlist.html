@@ -4,11 +4,11 @@
 {% block title %}My Wishlist{% endblock %}
 
 {% block content %}
-<div class="container my-5"style="padding:10px !important;height: 100%;">
-
+<h2 class="mb-2 text-center fw-bold"><i class="bi bi-heart-fill me-2"></i>Your Wishlist</h2>
+<div class="container pqr my-3"style="padding:10px !important;height: 100%;">
   <div class="row justify-content-between">
     <!-- Sidebar -->
-    <div class="col-md-4 mb-4">
+    <div class="col-md-4 mb-4 profile-sec">
       <div class="card shadow border-0 mb-4">
         <div class="card-body text-center py-4">
           {% if user.profile_photo_url %}
@@ -24,19 +24,18 @@
       </div>
       <div class="list-group">
         
-        <div class="list-group-item bg-light fw-semibold">
+        <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/profile/'">
           <i class="bi bi-person-fill me-2 text-primary"></i> My Profile
         </div>
 
         <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/orders/'">
           <i class="bi bi-bag-check-fill me-2 text-primary"></i> MY ORDERS
-          <span class="float-end">&gt;</span>
         </div>
         <div class="list-group-item bg-light fw-semibold">
           <i class="bi bi-cart-fill me-2 text-primary"></i> My Cart
         </div>
         <div class="list-group-item bg-light fw-semibold">
-          <i class="bi bi-person-fill me-2 text-primary"></i> ACCOUNT SETTINGS
+          <i class="bi bi-gear-fill me-2 text-primary"></i> ACCOUNT SETTINGS
         </div>
         <div class="list-group-item bg-light fw-semibold">
           <i class="bi bi-credit-card-2-back-fill me-2 text-primary"></i> PAYMENTS
@@ -45,9 +44,9 @@
     </div>
 
     <!-- Wishlist Main Content -->
-    <div class="col-md-7">
+    <div class="col-md-7 xyz">
       <div class="bg-white rounded-3 shadow-sm p-3 mb-4">
-        <h4 class="fw-semibold mb-0">My Wishlist <span class="text-muted fs-6">({{ wishlist_items_data|length }})</span></h4>
+        <h4 class="fw-semibold mb-0">Items <span class="text-muted fs-6">({{ wishlist_items_data|length }})</span></h4>
       </div>
       {% if wishlist_items_data %}
         <div class="list-group list-group-flush">
@@ -88,9 +87,9 @@
                 </div>
               </div>
               <!-- Action -->
-              <div class="ms-3">
-                <button class="btn btn-link text-secondary px-2" onclick="delete_wishlist({{ item.wishlist_id }})" title="Remove">
-                  <i class="bi bi-trash" style="font-size:1.3rem;"></i>
+              <div class="ms-3 removeBtnDiv">
+                <button class="btn btn-link text-secondary px-2" onclick="delete_wishlist({{ item.wishlist_id }})" title="Remove" style="background: aliceblue; border-radius: 50%;">
+                  <i class="bi bi-trash" style="font-size:1rem; color: red;"></i>
                 </button>
               </div>
             </div>
@@ -107,7 +106,25 @@
     </div>
   </div>
 </div>
-
+<style>
+  @media(max-width:574px){
+    .removeBtnDiv{
+    position: absolute;
+    right: 0;
+    top: 0;
+    }
+    .xyz{
+      margin:0px!important;
+      padding: 0px;
+    }
+    .pqr{
+      padding: 0px!important;
+    }
+    .profile-sec{
+      padding:0px!important;
+    }
+  }
+</style>
 <script>
   function delete_wishlist(wishlist_id) {
     fetch("{% url 'wishlist_delete' %}", {

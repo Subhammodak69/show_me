@@ -12,7 +12,8 @@ urlpatterns = [
     path('signin/', views.SigninView.as_view(), name='sign_up'), 
     path('logout/', views.LogoutView.as_view(), name='log_out'),
     path('forget-password/', views.ForgetPasswordView.as_view(), name='forget_password'),
-
+    path('profile/',views.ProfileView.as_view(),name='profile'),
+ 
     #user
     path('admin/users/', views.UserListView.as_view(), name='user_list'),
     path('admin/users/toggle-status/<int:user_id>/', views.ToggleUserStatusView.as_view(), name='toggle_user_status'),

@@ -1,8 +1,17 @@
 from E_COMERCE.models import User
 from django.contrib.auth import get_user_model
 User = get_user_model()
-from E_COMERCE.constants.default_values import Role
+from E_COMERCE.constants.default_values import Role,Gender
 
+def get_gender_options():
+    data = [
+        {
+            'name':gender.name,
+            'value':gender.value
+        }
+        for gender in Gender
+    ]
+    return data
 
 def email_exists(email):
     return User.objects.filter(email=email).exists()
