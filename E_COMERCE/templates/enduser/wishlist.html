@@ -6,24 +6,34 @@
 {% block content %}
 <div class="container my-5"style="padding:10px !important;height: 100%;">
 
-  <div class="row justify-content-center">
+  <div class="row justify-content-between">
     <!-- Sidebar -->
-    <div class="col-md-3 mb-4">
-      <div class="card shadow-sm border-0 mb-4">
+    <div class="col-md-4 mb-4">
+      <div class="card shadow border-0 mb-4">
         <div class="card-body text-center py-4">
           {% if user.profile_photo_url %}
-            <img src="{{ user.profile_photo_url.url }}" width="64" height="64" class="mb-3 bg-light rounded-circle border" alt="User avatar">
-          {% else %}
-            <img src="{% static 'logo\user_logo.jpg' %}" width="64" height="64" class="mb-3 bg-light rounded-circle border" alt="Default avatar">
+            <img src="{{ user.profile_photo_url }}" id="pro-pic" class="rounded-circle" width="40"
+              height="40" style="object-fit: cover" alt="User profile photo" />
+            {% else %}
+            <div id="pro-pic" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: auto; display: flex; justify-content: center; align-items: center; font-size: 35px;" class="avatar-circle mb-3" aria-label="User initial avatar" role="img">
+              {{user.first_name|default:user.username|slice:":1"|upper }}</div>
           {% endif %}
 
           <div class="fw-bold fs-5 mb-1">Hello,<br>{{ user.get_full_name }}</div>
         </div>
       </div>
-      <div class="list-group shadow-sm">
+      <div class="list-group">
+        
+        <div class="list-group-item bg-light fw-semibold">
+          <i class="bi bi-person-fill me-2 text-primary"></i> My Profile
+        </div>
+
         <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/orders/'">
           <i class="bi bi-bag-check-fill me-2 text-primary"></i> MY ORDERS
           <span class="float-end">&gt;</span>
+        </div>
+        <div class="list-group-item bg-light fw-semibold">
+          <i class="bi bi-cart-fill me-2 text-primary"></i> My Cart
         </div>
         <div class="list-group-item bg-light fw-semibold">
           <i class="bi bi-person-fill me-2 text-primary"></i> ACCOUNT SETTINGS
@@ -35,7 +45,7 @@
     </div>
 
     <!-- Wishlist Main Content -->
-    <div class="col-md-9">
+    <div class="col-md-7">
       <div class="bg-white rounded-3 shadow-sm p-3 mb-4">
         <h4 class="fw-semibold mb-0">My Wishlist <span class="text-muted fs-6">({{ wishlist_items_data|length }})</span></h4>
       </div>
@@ -44,7 +54,7 @@
           {% for item in wishlist_items_data %}
             <div class="list-group-item py-3 d-flex align-items-center" data-item-id="{{ item.wishlist_id }}" style="border-bottom: 1px solid #ececec; gap: 1.25rem; min-height: 100px;">
               <!-- Image -->
-              <div class="flex-shrink-0" style="width:64px;">
+              <div class="flex-shrink-0" style="width: 100px; justify-content: center; display: flex; flex-direction: column; align-items: center;">
                 <a href="{% url 'product_details' item.id %}">
                   <img src="{{ item.photo }}" alt="{{ item.name }}" class="img-fluid" style="width:60px; height:60px; object-fit:contain;">
                 </a>

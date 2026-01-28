@@ -5,13 +5,13 @@
 {% block content %}
 <div class="container" style="height: 100%;margin: auto;">
   {% if product_item_data %}
-  <div class="row">
+  <div class="row justify-content-between">
     <!-- Main Product Image + Related Items -->
-    <div class="col-md-5">
-      <div class="border rounded shadow-sm p-2 mb-3">
+    <div class="col-md-4">
+      <div class="border rounded shadow-sm p-2 mb-3"style="height:500px;">
         <img src="{{ product_item_data.photo }}" alt="{{ product_item_data.product_name }}" 
              class="img-fluid rounded" 
-             style="width: 100%; height: 100%; object-fit: contain; background: antiquewhite;">
+             style="width: 100%; height: 100%; object-fit: contain;">
       </div>
     </div>
 
