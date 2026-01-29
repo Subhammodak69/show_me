@@ -118,10 +118,10 @@ def get_product_items_data(item_id):
         'product_subcategory_description':product_item.product.subcategory.description,
         'product_category_name':product_item.product.subcategory.category.name,
         'product_category_description':product_item.product.subcategory.category.description,
-        'offer':offer.title,
+        'offer':offer.title if offer else '',
         'discount':discount_amount,
         'sale_price':(product_item.price)-(discount_amount),
-        'offer_description':offer.description,
+        'offer_description':offer.description if offer else '',
         'availibility':availibility ,
         'rating':rating,
         'rating_count': len(ratings)
