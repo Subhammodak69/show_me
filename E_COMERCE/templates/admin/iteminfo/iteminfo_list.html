@@ -1,0 +1,104 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+
+{% block title %}Item Info List | Show_me{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">All Item Infos</h2>
+
+  <div class="mb-3 text-end">
+    <a href="{% url 'iteminfo_create' %}" class="btn btn-success">+ Add Item Info</a>
+  </div>
+
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Product</th>
+        <th>Photo</th>
+        <th>Size</th>
+        <th>Color</th>
+        <th>Stock</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in iteminfos %}
+      <tr>
+        <td>{{ item.id }}</td>
+        <td>{{ item.product_item.id|default:"—" }}</td>
+        <td>
+          {% if item.photo_url %}
+            <img src="{{ item.photo_url }}" alt="Photo" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+          {% else %}
+            No Image
+          {% endif %}
+        </td>
+        <td>{{ item.get_size_display|default:item.size }}</td>
+        <td>{{ item.get_color_display|default:item.color }}</td>
+        <td>{{ item.stock }}</td>
+        <td>
+          <span id="status-badge-{{ item.id }}" class="badge {% if item.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if item.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td class="d-flex">
+          <!-- Update Button -->
+          <a href="{% url 'iteminfo_update' item.id %}" class="btn btn-sm btn-warning me-1">
+            Update
+          </a>
+
+          <button id="toggle-btn-{{ item.id }}"
+                  class="btn btn-sm {% if item.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="toggleItemInfoStatus({{ item.id }}, {{ item.is_active|yesno:'true,false' }})">
+            {% if item.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center">No item infos found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function toggleItemInfoStatus(itemId, currentStatus) {
+  try {
+    const response = await fetch(`/admin/iteminfo/toggle-status/${itemId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const newStatus = result.new_status;
+
+      // Update badge
+      const badge = document.getElementById(`status-badge-${itemId}`);
+      badge.textContent = newStatus ? 'Active' : 'Inactive';
+      badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+      // Update button
+      const button = document.getElementById(`toggle-btn-${itemId}`);
+      button.textContent = newStatus ? 'Deactivate' : 'Activate';
+      button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+      button.setAttribute('onclick', `toggleItemInfoStatus(${itemId}, ${newStatus})`);
+    } else {
+      alert(result.error || 'Status update failed.');
+    }
+  } catch (error) {
+    alert('Server error occurred.');
+  }
+}
+</script>
+{% endblock %}

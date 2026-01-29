@@ -119,6 +119,12 @@ urlpatterns = [
     path('admin/orderitems/update/<int:pk>/', views.AdminOrderItemUpdateView.as_view(), name='admin_orderitem_update'),
     path('admin/orderitems/toggle-status/<int:pk>/', views.AdminOrderItemToggleStatusView.as_view(), name='admin_orderitem_toggle_status'),
 
+    #admin item Info
+    path('admin/iteminfo/', views.ItemInfoListView.as_view(), name='iteminfo_list'),
+    path('admin/iteminfo/create/', views.ItemInfoCreateView.as_view(), name='iteminfo_create'),
+    path('admin/iteminfo/update/<int:iteminfo_id>/', views.ItemInfoUpdateView.as_view(), name='iteminfo_update'),
+    path('admin/iteminfo/toggle-status/<int:iteminfo_id>/', views.ItemInfoToggleStatusView.as_view(), name='iteminfo_toggle_status'),
+
     path('track_order/<int:order_id>/',views.TrackOrderView.as_view(), name='track_order'),
     path('payment/create/<int:order_id>/',views.PaymentCreateView.as_view(), name='payment_create'),
     path('order/delete/<int:order_id>/', views.OrderDeleteView.as_view(), name='order-delete'),

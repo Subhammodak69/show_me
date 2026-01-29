@@ -1,9 +1,10 @@
-from E_COMERCE.models import Product, ProductItem,Offer,Rating
+from E_COMERCE.models import Product, ProductItem,Offer,Rating,ItemInfo
 from E_COMERCE.constants.default_values import Size,Color
 import cloudinary
 import cloudinary.uploader
 from uuid import uuid4
 from collections import defaultdict
+from E_COMERCE.services import product_info_service
 
 
 def get_average_rating(ratings):
@@ -81,7 +82,7 @@ def get_colour_choices_dict():
     return {colour.name: colour.value for colour in Color}
 
 def get_product_items_availibility(product_item):
-    return ProductItem.objects.filter(product = product_item.product).count()
+    return ItemInfo.objects.filter(product_item = product_item).count()
 
 def get_product_items_data(item_id):
     product_item = ProductItem.objects.filter(id=item_id, is_active=True).select_related('product', 'product__subcategory__category').first()
@@ -101,15 +102,12 @@ def get_product_items_data(item_id):
 
     if not product_item:
         return {}
-
+    product_info_data = product_info_service.get_product_info_details(product_item.id)
     item_data = {
         'id': product_item.id,
         'photo': product_item.photo_url,
         'price': product_item.price,
-        'size': product_item.size,
-        'display_size': Size(product_item.size).name,
-        'color': product_item.color,
-        'display_color': Color(product_item.color).name,
+        'product_infos':product_info_data,
         'created_at': product_item.created_at,
         'product_id': product_item.product.id,
         'product_description':product_item.product.description,
@@ -136,8 +134,6 @@ def get_all_rating_by_product(product):
 def create_productitem(request, file):
     try:
         product_id = request.POST.get('product')
-        size = int(request.POST.get('size'))
-        color = int(request.POST.get('colour'))
         price = int(request.POST.get('price'))
 
         product = Product.objects.get(id=product_id, is_active=True)
@@ -159,8 +155,6 @@ def create_productitem(request, file):
 
         item = ProductItem.objects.create(
             product=product,
-            size=size,
-            color=color,
             price=price,
             photo_url=photo_url,  # Full Cloudinary CDN URL
         )
@@ -176,8 +170,6 @@ def update_productitem(item_id, data, file=None):
     try:
         item = ProductItem.objects.get(id=item_id)
         item.product = Product.objects.get(id=data.get('product'))
-        item.size = Size[data.get('size')].value
-        item.color = Color[data.get('colour')].value
         item.price = int(data.get('price'))
         
         # ✅ NEW PHOTO + OLD PHOTO DELETE (SAME AS OTHERS)
@@ -238,11 +230,6 @@ def delete_productitem(item_id):
     
 def get_all_productitems():
     items = ProductItem.objects.select_related('product').all().order_by('id')
-
-    for item in items:
-        item.size = Size(item.size).name
-        item.color = Color(item.color).name
-
     return items
 
 def get_active_products():
@@ -287,18 +274,6 @@ def get_product_item_by_id(item_id):
         "product_name": item.product.name,
         "price": (item.price),
         "photo_url": item.photo_url,
-        "size": item.size,
-        "size_name": get_size_name(item.size),
-        "color": item.color,
-        "color_name": get_color_name(item.color),
-        "available_sizes": [
-            {"value": s.value, "name": s.name}
-            for s in Size
-        ],
-        "available_colors": [
-            {"value": c.value, "name": c.name}
-            for c in Color
-        ] if item.color is not None else [],
         'discount_amount':discount_amount,
         'total':(item.price)-(discount_amount),
     }

@@ -45,18 +45,18 @@
         ⭐ {{product_item_data.rating}} | {{product_item_data.rating_count}} ratings & reviews
       </div>
 
-      <p><strong>Size:</strong> {{ product_item_data.display_size }}</p>
+      <p><strong>Size:</strong> {{ product_item_data.product_infos.display_size }}</p>
 
       <p>
         <strong>Availability:</strong>
           In stock ({{ product_item_data.availibility }} available)
       </p>
 
-      <p><strong>Color:</strong> {{ product_item_data.display_color }}</p>
+      <p><strong>Color:</strong> {{ product_item_data.product_infos.display_color }}</p>
 
       <div class="d-flex gap-3 mt-3">
         <button class="btn btn-warning" 
-          onclick="{% if user.is_authenticated %}addToCart({{ product_item_data.id }}, '{{ product_item_data.size }}', '{{ product_item_data.color }}'){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
+          onclick="{% if user.is_authenticated %}addToCart({{ product_item_data.id }}, '{{ product_item_data.product_infos.size }}', '{{ product_item_data.product_infos.color }}'){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
           <i class="bi bi-cart-plus"></i> Add to Cart
         </button>
 

@@ -20,37 +20,11 @@
       </select>
     </div>
 
-    <!-- Size Dropdown -->
     <div class="mb-3">
-      <label for="size">Size</label>
-      <select id="size" name="size" class="form-control" required>
-        <option value="">-- Select Size --</option>
-        {% for label, value in sizes.items %}
-          <option value="{{ value }}">{{ label }}</option>
-        {% endfor %}
-      </select>
+      <label class="form-label">Price</label>
+      <input type="number" name="price" class="form-control" required>
     </div>
 
-    <!-- Color Dropdown -->
-    <div class="mb-3">
-      <label for="colour">Colour</label>
-      <select id="colour" name="colour" class="form-control" required>
-        <option value="">-- Select Colour --</option>
-        {% for label, value in colours.items %}
-          <option value="{{ value }}">{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <input 
-      class="form-control mb-2" 
-      placeholder="Price" 
-      type="number" 
-      id="price" 
-      name="price" 
-      required 
-      min="0"
-    />
   <!-- Image File Input -->
     <label for="photo">Upload Photo</label>
     <input 
