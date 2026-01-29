@@ -35,7 +35,11 @@
         {{ product_item_data.product_category_name }} <br>
         {{ product_item_data.product_subcategory_name }} 
       </p>
-      <h4 class="text-success">₹{{ product_item_data.price }}</h4>
+      <h4 class="text-success">
+        <span style="text-decoration: line-through; color: #dc3545;">₹{{ product_item_data.price }}</span>  
+        ₹{{ product_item_data.sale_price }}
+      </h4>
+
 
       <div class="mb-2">
         ⭐ {{product_item_data.rating}} | {{product_item_data.rating_count}} ratings & reviews
@@ -65,18 +69,18 @@
      </div>
     </div>
 
-          <div class="mt-4">
+      <div class="mt-4">
         <h5>Description</h5>
-        <p>{{ product_item_data.product_description }}</p>
-        <p>{{ product_item_data.product_subcategory_description }}</p>
-        <p>{{ product_item_data.product_category_description }}</p>
+        <p style="font-size:14px">{{ product_item_data.product_description }}</p>
+        <p style="font-size:14px">{{ product_item_data.product_subcategory_description }}</p>
+        <p style="font-size:14px">{{ product_item_data.product_category_description }}</p>
       </div>
 
       <div class="mt-4">
         <h6 class="fw-bold">Available Offers</h6>
         <ul class="list-unstyled">
-          {% if product_item_data.offer > 0 %}
-          <li class="text-success">The offered amount is rs.{{product_item_data.offer}}</li>
+          {% if product_item_data.offer %}
+          <li class="text-success"style="font-size: 12px; font-style: italic; font-family: system-ui;">{{product_item_data.offer}}({{product_item_data.offer_description}} up to ₹{{product_item_data.discount}})</li>
           {% else %}
           <p class="text-danger"> Offer not found yet.</p>
           {% endif %}
@@ -87,7 +91,9 @@
       <div class="mt-4">
         <div class="d-flex justify-content-between">
           <h4>Reviews</h4>
+          {% if user.is_authenticated %}
           <button class="btn btn-primary" onclick="openreviewmodal()">Give your's Reviews</button>
+          {% endif %}
         </div>
 
         <!-- Review Modal -->
@@ -130,43 +136,43 @@
 
         <!-- Reviews List -->
         {% if ratings %}
-  <div class="reviews-container space-y-4">
-    <div id="reviews-show"></div>
-    {% for rating in ratings %}
-      <div>
-        <div class="d-flex justify-content-between items-center justify-between">
-          <div class=" d-flex gap-2 font-bold">
-            <p style="font-weight: bold; margin:0px!important;">
-            {{ rating.created_by_fullname|default:"Anonymous" }}
-            </p>
-            <div>
-          {{ rating.created_at|date:"M d, Y H:i" }}
-            </div>
+          <div class="reviews-container space-y-4">
+            <div id="reviews-show"></div>
+            {% for rating in ratings %}
+              <div>
+                <div class="d-flex justify-content-between items-center justify-between divhel">
+                  <div class=" d-flex gap-2 font-bold helstar">
+                    <p style="font-weight: bold; margin:0px!important;">
+                    {{ rating.created_by_fullname|default:"Anonymous" }}
+                    </p>
+                    <div id="ratingTime" data-timestamp="{{ rating.created_at|date:'c' }}"style="font-size: medium;color: #75716d;">
+                      <!-- JS will replace this -->
+                    </div>
+                  </div>
+                  {% for i in rating.rating_range %}
+                    ⭐
+                  {% endfor %}
+                  {% for i in rating.empty_range %}
+                    ☆
+                  {% endfor %}
+
+                </div>
+                <p class="text-gray-700 mb-2 m-auto" style="width:96%;">{{ rating.review }}</p>
+                {% if rating.photo %}
+                  <img src="{{ rating.photo }}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />
+                {% endif %}
+              </div>
+            {% endfor %}
           </div>
-         {% for i in rating.rating_range %}
-  ⭐
-{% endfor %}
-{% for i in rating.empty_range %}
-  ☆
-{% endfor %}
-
-        </div>
-        <p class="text-gray-700 mb-2 m-auto" style="width:96%;">{{ rating.review }}</p>
-        {% if rating.photo %}
-          <img src="{{ rating.photo }}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />
-        {% endif %}
+        {% else %}
       </div>
-    {% endfor %}
+      <div id="reviews-show"></div>
+      <p id="noReview" class="text-red-600 font-semibold">No reviews found yet.</p>
+    {% endif %}
+    {% else %}
+      <h3>Product not found</h3>
+    {% endif %}
   </div>
-{% else %}
-  <div id="reviews-show"></div>
-  <p id="noReview" class="text-red-600 font-semibold">No reviews found yet.</p>
-{% endif %}
-
-  </div>
-  {% else %}
-    <h3>Product not found</h3>
-  {% endif %}
 </div>
 
 <style>
@@ -182,6 +188,14 @@
   }
   .star.selected {
     color: gold;
+  }
+  @media(max-width:480px){
+    .helstar{
+          justify-content: space-between;
+    }
+    .divhel{
+      flex-direction: column;
+    }
   }
 </style>
 
@@ -354,7 +368,10 @@ function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
             <div class="d-flex justify-content-between items-center">
               <div class="d-flex gap-2 font-bold">
                 <p style="font-weight: bold; margin:0px!important;">${createdByFullname}</p>
-                <div>${createdAt}</div>
+                <div id="ratingTime" 
+                  data-timestamp="${createdAt}"
+                  style="font-size: medium;color: #75716d;">
+                </div>
               </div>
               <div>${starsHtml}</div>
             </div>

@@ -87,25 +87,25 @@ def get_product_items_data(item_id):
     product_item = ProductItem.objects.filter(id=item_id, is_active=True).select_related('product', 'product__subcategory__category').first()
     availibility = get_product_items_availibility(product_item)
     
-    discount= Offer.objects.filter(product = item_id, is_active =True).first()
+    offer = Offer.objects.filter(product = product_item.product, is_active =True).first()
+    print("discout",offer)
     discount_amount = 0
     ratings = get_all_rating_by_product(product_item.product)
     if ratings:  # Check if ratings exist
         rating = sum(rating.rating for rating in ratings) / len(ratings)
     else:
         rating = 0
-        if discount:
-            discount_amount = discount.discount_value
+    if offer:
+        discount_amount = offer.discount_value
         
 
     if not product_item:
         return {}
 
-    # Main product item details
     item_data = {
         'id': product_item.id,
         'photo': product_item.photo_url,
-        'price': (product_item.price)-(discount_amount),
+        'price': product_item.price,
         'size': product_item.size,
         'display_size': Size(product_item.size).name,
         'color': product_item.color,
@@ -118,7 +118,10 @@ def get_product_items_data(item_id):
         'product_subcategory_description':product_item.product.subcategory.description,
         'product_category_name':product_item.product.subcategory.category.name,
         'product_category_description':product_item.product.subcategory.category.description,
-        'offer':discount_amount,
+        'offer':offer.title,
+        'discount':discount_amount,
+        'sale_price':(product_item.price)-(discount_amount),
+        'offer_description':offer.description,
         'availibility':availibility ,
         'rating':rating,
         'rating_count': len(ratings)
