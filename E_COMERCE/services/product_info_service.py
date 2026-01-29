@@ -5,25 +5,45 @@ import cloudinary.uploader
 from uuid import uuid4
 
 def get_product_info_details(product_item):
-    items = ItemInfo.objects.filter(product_item = product_item, is_active = True)
+    items = ItemInfo.objects.filter(product_item=product_item, is_active=True)
     item_data = []
     if items:
         item_data = [
             {
-                'id':item.id,
-                'size':item.size,
-                'display_size':Size(item.size).name,
-                'color':item.color,
-                'display_color':Color(item.color).name,
-                'image':item.photo_url,
+                'id': item.id,
+                'size': item.size,
+                'display_size': Size(item.size).name,
+                'color': item.color,
+                'display_color': Color(item.color).name,
+                'image': item.photo_url,
+                'stock': item.stock 
             }
             for item in items
         ]
     return item_data
 
 
+
 def get_all_iteminfos():
-    return ItemInfo.objects.select_related('product_item').all().order_by('-created_at')
+    infos = ItemInfo.objects.all().order_by('-created_at')
+    data = []
+    if infos:
+        data = [
+            {
+                'id':i.id,
+                'size':i.size,
+                'color':i.color,
+                'display_color':Color(i.color).name,
+                'display_size':Size(i.size).name,
+                'stock':i.stock,
+                'created_at':i.created_at,
+                'is_active':i.is_active,
+                'product_item':i.product_item,
+                'photo_url':i.photo_url
+            }
+            for i in infos
+        ]
+    return data
 
 def get_iteminfo_object(iteminfo_id):
     return ItemInfo.objects.select_related('product_item').get(id=iteminfo_id)

@@ -44,16 +44,24 @@
       <div class="mb-2">
         ⭐ {{product_item_data.rating}} | {{product_item_data.rating_count}} ratings & reviews
       </div>
-
-      <p><strong>Size:</strong> {{ product_item_data.product_infos.display_size }}</p>
-
-      <p>
-        <strong>Availability:</strong>
-          In stock ({{ product_item_data.availibility }} available)
-      </p>
-
-      <p><strong>Color:</strong> {{ product_item_data.product_infos.display_color }}</p>
-
+      <!-- ✅ CORRECT field name -->
+      <script id="product-variants" type="application/json">{{ product_item_data.product_infos_json|safe }}</script>
+      <div class="mb-3">
+        <strong>Size</strong>
+        <!-- Selectors with populated options -->
+        <select name="size" id="size-select" class="form-control">
+            <option value="">Select Size</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <strong>Color</strong>
+        <select name="color" id="color-select" class="form-control">
+            <option value="">Select Color</option>
+        </select>
+      </div>
+      <div id="product-info">
+        <p><strong>Availability:</strong> <span id="display-availability">Not Selected yet.</span></p>
+      </div>
       <div class="d-flex gap-3 mt-3">
         <button class="btn btn-warning" 
           onclick="{% if user.is_authenticated %}addToCart({{ product_item_data.id }}, '{{ product_item_data.product_infos.size }}', '{{ product_item_data.product_infos.color }}'){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
@@ -198,6 +206,62 @@
     }
   }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const variantsScript = document.getElementById('product-variants');
+    const sizeSelect = document.getElementById('size-select');
+    const colorSelect = document.getElementById('color-select');
+    
+    let variants = [];
+    try {
+        variants = JSON.parse(variantsScript.textContent);
+    } catch (e) {
+        console.error('JSON Parse Error:', e);
+        return;
+    }
+
+    // ✅ POPULATE SELECT OPTIONS (sorted)
+    if (variants.length > 0) {
+        const uniqueSizes = [...new Set(variants.map(v => v.display_size))].sort();
+        const uniqueColors = [...new Set(variants.map(v => v.display_color))].sort();
+        
+        uniqueSizes.forEach(size => {
+            sizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
+        });
+        uniqueColors.forEach(color => {
+            colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
+        });
+    }
+
+    function updateProductInfo() {
+        const selectedSize = sizeSelect.value;
+        const selectedColor = colorSelect.value;
+        
+        const matchingVariant = variants.find(v => 
+            v.display_size === selectedSize && v.display_color === selectedColor
+        );
+
+        const availabilitySpan = document.getElementById('display-availability');
+        if (matchingVariant && matchingVariant.stock > 0) {
+            availabilitySpan.innerHTML = `In stock (${matchingVariant.stock} available)`;
+            availabilitySpan.className = 'text-success';
+        } else if (matchingVariant && matchingVariant.stock === 0) {
+            availabilitySpan.innerHTML = 'Out of stock';
+            availabilitySpan.className = 'text-danger';
+        } else {
+            availabilitySpan.innerHTML = 'Not Selected yet.';
+            availabilitySpan.className = '';
+        }
+    }
+
+    sizeSelect.addEventListener('change', updateProductInfo);
+    colorSelect.addEventListener('change', updateProductInfo);
+    updateProductInfo();
+});
+</script>
+
+
 
 <script>
   // Open review modal function

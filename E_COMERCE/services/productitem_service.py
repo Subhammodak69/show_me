@@ -5,7 +5,8 @@ import cloudinary.uploader
 from uuid import uuid4
 from collections import defaultdict
 from E_COMERCE.services import product_info_service
-
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 def get_average_rating(ratings):
     if ratings:
@@ -84,47 +85,68 @@ def get_colour_choices_dict():
 def get_product_items_availibility(product_item):
     return ItemInfo.objects.filter(product_item = product_item).count()
 
+
+
 def get_product_items_data(item_id):
     product_item = ProductItem.objects.filter(id=item_id, is_active=True).select_related('product', 'product__subcategory__category').first()
     availibility = get_product_items_availibility(product_item)
     
-    offer = Offer.objects.filter(product = product_item.product, is_active =True).first()
-    print("discout",offer)
+    offer = Offer.objects.filter(product=product_item.product, is_active=True).first()
     discount_amount = 0
     ratings = get_all_rating_by_product(product_item.product)
-    if ratings:  # Check if ratings exist
+    if ratings:
         rating = sum(rating.rating for rating in ratings) / len(ratings)
     else:
         rating = 0
+    
     if offer:
         discount_amount = offer.discount_value
-        
 
     if not product_item:
         return {}
+
     product_info_data = product_info_service.get_product_info_details(product_item.id)
+    
+    # ✅ FIXED JSON LOGIC - Only one if statement
+    product_infos_json = '[]'  # Default empty array
+    if product_info_data and len(product_info_data) > 0:
+        variants_list = [
+            {
+                'id': item['id'],
+                'display_size': item['display_size'],
+                'stock': item.get('stock', 0),  # Will be 0 until you add stock field
+                'display_color': item['display_color'],
+                'image': item.get('image', '')
+            }
+            for item in product_info_data
+        ]
+        product_infos_json = json.dumps(variants_list)
+
     item_data = {
         'id': product_item.id,
         'photo': product_item.photo_url,
         'price': product_item.price,
-        'product_infos':product_info_data,
+        'product_infos': product_info_data,
+        'product_infos_json': product_infos_json,  # ✅ This is what template uses
+        # ... rest of your fields unchanged
         'created_at': product_item.created_at,
         'product_id': product_item.product.id,
-        'product_description':product_item.product.description,
-        'product_name':product_item.product.name,
-        'product_subcategory_name':product_item.product.subcategory.name,
-        'product_subcategory_description':product_item.product.subcategory.description,
-        'product_category_name':product_item.product.subcategory.category.name,
-        'product_category_description':product_item.product.subcategory.category.description,
-        'offer':offer.title if offer else '',
-        'discount':discount_amount,
-        'sale_price':(product_item.price)-(discount_amount),
-        'offer_description':offer.description if offer else '',
-        'availibility':availibility ,
-        'rating':rating,
+        'product_description': product_item.product.description,
+        'product_name': product_item.product.name,
+        'product_subcategory_name': product_item.product.subcategory.name,
+        'product_subcategory_description': product_item.product.subcategory.description,
+        'product_category_name': product_item.product.subcategory.category.name,
+        'product_category_description': product_item.product.subcategory.category.description,
+        'offer': offer.title if offer else '',
+        'discount': discount_amount,
+        'sale_price': (product_item.price) - (discount_amount),
+        'offer_description': offer.description if offer else '',
+        'availibility': availibility,
+        'rating': rating,
         'rating_count': len(ratings)
     }
     return item_data
+
 
 def get_all_rating_by_product(product):
     return Rating.objects.filter(product = product,is_active=True)
