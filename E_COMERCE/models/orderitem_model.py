@@ -11,6 +11,7 @@ class OrderItem(models.Model):
         blank=False,
         null=False
     )
+    price = models.IntegerField(blank= False,null=False)
 
     is_active = models.BooleanField(default=True)
 

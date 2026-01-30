@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid" style="height: 100%; margin-bottom: 20px; padding: 0px !important;">
+<div class="container-fluid" style="height: 100%; margin-bottom: 20px; padding: 0px !important;max-width: 1000px !important;">
   <h2 class="mb-3 text-center fw-bold">Your Order Summary</h2>
 
   <form id="direct-order-form"
@@ -17,90 +17,95 @@
     style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
 
     <!-- Product Item -->
-    <div class="cart-item border p-3 rounded text-center w-md-50 mb-3 mb-md-0 d-flex flex-column align-items-center"
-      style="max-width:400px; margin:1rem auto;">
-      <img src="{{ product_item.photo_url }}"
+    <div class="w-100 cart-item p-3 text-center w-md-50 mb-3 mb-md-0 d-flex flex-column align-items-center">
+      <img src="{{ item_data.product_photo }}"
         class="mb-3 rounded" alt="Product Image"
         style="width: 100%; max-width: 170px; height: auto;">
 
-      <h5 class="fw-semibold mb-3">{{ product_item.product_name }}</h5>
-      <div class="d-flex justify-content-center gap-3 flex-wrap mt-2">
+      <h5 class="fw-semibold mb-3">{{ item_data.product_name }}</h5>
+      <div class="d-flex flex-column justify-content-center gap-3 flex-wrap mt-2">
 
         <!-- Quantity -->
-        <div>
+        <div class="d-flex gap-4">
           <label class="d-block">Quantity:</label>
-          <input type="number" id="quantity" class="form-control w-auto text-center" value="1" min="1">
-        </div>
+          <input type="number" id="quantity" class="form-control w-100 text-center" value="1" min="1">
+        </div class="d-flex gap-4">
 
         <!-- Size -->
-        <div>
+        <div class="d-flex gap-4">
           <label class="d-block">Size:</label>
-          <select id="size" class="form-select w-auto">
-            {% for s in product_item.available_sizes %}
-              <option value="{{ s.value }}" {% if s.value == product_item.size %}selected{% endif %}>{{ s.name }}</option>
+          <select id="size" class="form-select text-center w-100">
+            {% for s in item_data.size_options %}
+              <option value="{{ s.value }}" {% if s.value == item_data.size %}selected{% endif %}>{{ s.name }}</option>
             {% endfor %}
           </select>
         </div>
 
         <!-- Color (if applicable) -->
-        {% if product_item.available_colors %}
-        <div>
+        {% if item_data.color_options %}
+        <div class="d-flex gap-4">
           <label class="d-block">Color:</label>
-          <select id="color" class="form-select w-auto">
-            {% for c in product_item.available_colors %}
-              <option value="{{ c.value }}" {% if c.value == product_item.color %}selected{% endif %}>{{ c.name }}</option>
+          <select id="color" class="form-select text-center w-100">
+            {% for c in item_data.color_options %}
+              <option value="{{ c.value }}" {% if c.value == item_data.color %}selected{% endif %}>{{ c.name }}</option>
             {% endfor %}
           </select>
         </div>
         {% endif %}
       </div>
     </div>
-    <input type="hidden" value={{product_item.id}} id="product_id">
+    <input type="hidden" value={{item_data.id}} id="product_id">
     <div id="pay-de" style="width:55%;">
       <div class="w-100">
-        <div class="border rounded p-3 mb-3 bg-light">
-          <h4>Payable Amount</h4>
-          <div class="d-flex align-items-center w-100 justify-content-between">
-            <div>Product item-- </div>
-            <div class="text-secondary">{{ product_item.price|floatformat:2 }}</div>
-          </div>
-          <div class="d-flex align-items-center w-100 justify-content-between">
-            <div>Discount Amount-- </div>
-            <div class="text-danger">-{{ product_item.discount_amount }}</div>
-          </div>
-          <br>
-          <hr>
-          <div class="d-flex align-items-center w-100 justify-content-between">
-            <div>Total-- </div>
-            <div class="text-success">{{ product_item.total|floatformat:2 }}</div>
+        <div class="border rounded mb-3  ">
+          <h4 class="p-3 bg-primary text-light">Payable Amount</h4>
+          <div class="p-3">
+            <div class="d-flex align-items-center w-100 justify-content-between">
+              <div>Product item-- </div>
+              <div class="text-secondary">{{ item_data.price|floatformat:2 }}</div>
+            </div>
+            <div class="d-flex align-items-center w-100 justify-content-between">
+              <div>Discount Amount-- </div>
+              <div class="text-danger">-{{ item_data.discount }}</div>
+            </div>
+            <br>
+            <hr>
+            <div class="d-flex align-items-center w-100 justify-content-between">
+              <div>Total-- </div>
+              <div class="text-success">{{ item_data.total_price|floatformat:2 }}</div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- User + Address Info -->
       <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0">
-        <div class="border rounded p-3 mb-3 bg-light">
-          <h4 class="mb-3">User Details</h4>
-          <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
-          <p><strong>Email:</strong> {{ user.email }}</p>
-          {% if user.phone %}
-            <p><strong>Phone:</strong> {{ user.phone }}</p>
-          {% endif %}
-          {% if user.address %}
-            <p><strong>Address:</strong> {{ user.address }}</p>
-          {% endif %}
+        <div class="border rounded mb-3">
+          <h4 class="p-3 bg-primary text-light">User Details</h4>
+          <div class="p-3">
+            <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            {% if user.address %}
+              <p><strong>Address:</strong> {{ user.address }}</p>
+            {% endif %}
+          </div>
         </div>
-        <label for="delivery-address" class="mt-2"><strong>Mobile Number*</strong></label>
-        <input class="form-control" name="phone" value="{{user.phone}}" id="phone" required>
-        <label for="delivery-address" class="mt-2"><strong>Delivery Address</strong></label>
-        <textarea id="delivery-address" name="address" class="form-control mb-2"
-          placeholder="Enter delivery address manually..." required>{{user.address}}</textarea>
+        <div class="  border rounded ">
+          <h4 class="p-3 bg-primary text-light">Order Details</h4>
+          <div class="p-3">
+            <label for="delivery-address" class="mt-2"><strong>Mobile Number*</strong></label>
+            <input class="form-control" name="phone" value="{{user.phone}}" id="phone" required>
+            <label for="delivery-address" class="mt-2"><strong>Delivery Address</strong></label>
+            <textarea id="delivery-address" name="address" class="form-control mb-2"
+              placeholder="Enter delivery address manually..." required>{{user.address}}</textarea>
 
-        <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
-          Use My Current Location
-        </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
+              Use My Current Location
+            </button>
 
-        <button type="submit" class="btn btn-success d-block mt-auto">Place Order</button>
+            <button type="submit" class="btn btn-success d-block mt-auto">Place Order</button>
+          </div>
+        </div>
       </div>
     </div>
   </form>

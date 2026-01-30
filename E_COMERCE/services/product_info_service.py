@@ -3,6 +3,10 @@ from E_COMERCE.constants.default_values import Size,Color
 import cloudinary
 import cloudinary.uploader
 from uuid import uuid4
+from E_COMERCE.services import cart_service
+
+def get_varient_object(varient_id):
+    return ItemInfo.objects.filter(id = varient_id, is_active = True).first()
 
 def get_product_info_details(product_item):
     items = ItemInfo.objects.filter(product_item=product_item, is_active=True)
@@ -47,6 +51,59 @@ def get_all_iteminfos():
 
 def get_iteminfo_object(iteminfo_id):
     return ItemInfo.objects.select_related('product_item').get(id=iteminfo_id)
+
+def get_item_data_by_varient(variant_id):
+    variant = get_iteminfo_object(variant_id)
+    data = {}
+    discount = 0
+    if variant:
+        discount = cart_service.get_discount_by_id(variant.product_item)
+        sale_price = (variant.product_item.price)-(discount)
+        data = {
+            'id':variant.id,
+            'size':variant.size,
+            'size_display':Size(variant.size).name,
+            'color':variant.color,
+            'color_display':Color(variant.color),
+            'size_options':get_all_size_options_by_info_id(variant.id),
+            'color_options':get_all_color_options_by_info_id(variant.id),
+            'product_name':variant.product_item.product.name,
+            'product_price':variant.product_item.price,
+            'product_photo':variant.product_item.photo_url,
+            'price':variant.product_item.price,
+            'total_price': sale_price,
+            'discount':discount
+            
+        }
+    return data
+
+def get_all_size_options_by_info_id(variant_id):
+    variant = get_iteminfo_object(variant_id)
+    options = ItemInfo.objects.filter(product_item = variant.product_item,is_active = True)
+    data = []
+    if options:
+        data = [
+            {   
+                'name': Size(option.size).name,
+                'value': Size(option.size).value
+            }
+            for option in options if option.stock > 0
+        ]
+    return data
+
+def get_all_color_options_by_info_id(variant_id):
+    variant = get_iteminfo_object(variant_id)
+    options = ItemInfo.objects.filter(product_item = variant.product_item,is_active = True)
+    data = []
+    if options:
+        data = [
+            {   
+                'name': Color(option.color).name,
+                'value': Color(option.color).value
+            }
+            for option in options if option.stock > 0
+        ]
+    return data
 
 def get_active_products():
     return ProductItem.objects.filter(is_active=True)

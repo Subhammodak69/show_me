@@ -34,6 +34,10 @@
       </select>
     </div>
     <div class="mb-3">
+      <label>Price:</label>
+      <input type="number" name="price" class="form-control" min="1" value="{{ orderitem.price }}" required />
+    </div>
+    <div class="mb-3">
       <label>Quantity:</label>
       <input type="number" name="quantity" class="form-control" value="{{ orderitem.quantity }}" required />
     </div>

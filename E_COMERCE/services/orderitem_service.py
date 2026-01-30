@@ -17,6 +17,7 @@ def create_orderitem(data):
         order_id=order,
         product_item=product_item,
         quantity=data['quantity'],
+        price=data['price'],
         size=data['size'],
         is_active=data['is_active']
     )
@@ -36,7 +37,11 @@ def update_orderitem(pk, data):
     item.order_id_id = data['order_id']
     item.product_item_id = data['product_item']
     item.quantity = data['quantity']
+    item.price = data['price']
     item.size = data['size']
     item.is_active = data['is_active']
     item.save()
     return item
+
+def get_all_order_items_by_order_id(order):
+    return OrderItem.objects.filter(order_id = order, is_active = True)

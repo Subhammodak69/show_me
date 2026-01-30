@@ -94,7 +94,7 @@ urlpatterns = [
     #order
     path('orders/', views.OrderListView.as_view(), name='orders'),
     path('order/create/', views.OrderCreateView.as_view(), name='order_create'),
-    path('direct-order/create/<int:item_id>/', views.DirectOrderView.as_view(), name='direct_order'),
+    path('direct-order/create/', views.DirectOrderView.as_view(), name='direct_order'),
     path('cart/update/<int:pk>/', views.CartItemUpdateView.as_view(), name='cart_item_update'),
     path('cart/remove/<int:pk>/', views.CartItemRemoveView.as_view(), name='cart_item_remove'),
 

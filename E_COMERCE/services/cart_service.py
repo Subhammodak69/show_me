@@ -1,7 +1,7 @@
 from E_COMERCE.models import Cart, CartItem, ProductItem,User,Offer
 from django.shortcuts import get_object_or_404
 from E_COMERCE.constants.default_values import Size, Color
-from E_COMERCE.services import productitem_service
+from E_COMERCE.services import productitem_service,product_info_service
 
 def get_or_create_cart(user):
     cart, created = Cart.objects.get_or_create(user=user, defaults={"is_active": True})
@@ -9,6 +9,8 @@ def get_or_create_cart(user):
 from E_COMERCE.constants.default_values import Size, Color
 
 def get_cart_details(user):
+#hello
+
     cart = Cart.objects.filter(user=user, is_active=True).first()
     
     if not cart:
@@ -40,20 +42,22 @@ def get_discount_by_id(item_id):
         
     return discount_amount
 
-def add_item_to_cart(user, product_item_id, size, color, quantity):
+def add_item_to_cart(user, varient_id, quantity):
+    # print("user = ",user,"varient_id = ",varient_id, "quantity = ",quantity)
     cart = get_or_create_cart(user)
-    product_item = get_object_or_404(ProductItem, id=product_item_id)
+    varient = product_info_service.get_varient_object(varient_id)
 
+    product_item = get_object_or_404(ProductItem, id=varient.product_item.id)
     # Try to find a soft-deleted (inactive) CartItem and reactivate it
     try:
         item = CartItem.objects.get(
             cart=cart,
             product_item=product_item,
-            size=size,
+            size=varient.size,
             is_active=False  # inactive item
         )
         item.is_active = True  # reactivate
-        item.color = color
+        item.color = varient.color
         item.quantity = quantity  # reset quantity or add? Choose logic as needed
         item.save()
         created = False
@@ -62,9 +66,9 @@ def add_item_to_cart(user, product_item_id, size, color, quantity):
         item, created = CartItem.objects.get_or_create(
             cart=cart,
             product_item=product_item,
-            size=size,
+            size=varient.size,
             is_active=True,  # only active items
-            defaults={'quantity': quantity, 'color': color}
+            defaults={'quantity': quantity, 'color': varient.color}
         )
         if not created:
             # If found, increase quantity

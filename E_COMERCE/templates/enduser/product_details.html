@@ -64,15 +64,20 @@
       </div>
       <div class="d-flex gap-3 mt-3">
         <button class="btn btn-warning" 
-          onclick="{% if user.is_authenticated %}addToCart({{ product_item_data.id }}, '{{ product_item_data.product_infos.size }}', '{{ product_item_data.product_infos.color }}'){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
+                id="addToCartBtn"
+                disabled
+                onclick="{% if user.is_authenticated %}addToCartDynamic({{ product_item_data.id }}, event){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
           <i class="bi bi-cart-plus"></i> Add to Cart
         </button>
 
         <button class="btn btn-danger"
-          onclick="{% if user.is_authenticated %}window.location.href='{% url 'direct_order' item_id=product_item_data.id %}'{% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
+                id="buyNowBtn"
+                disabled
+                onclick="{% if user.is_authenticated %}buyNowDynamic(event){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
           Buy Now
         </button>
       </div>
+
 
      </div>
     </div>
@@ -212,8 +217,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const variantsScript = document.getElementById('product-variants');
     const sizeSelect = document.getElementById('size-select');
     const colorSelect = document.getElementById('color-select');
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const buyNowBtn = document.getElementById('buyNowBtn');
     
     let variants = [];
+    let selectedVariantId = null;
+    
     try {
         variants = JSON.parse(variantsScript.textContent);
     } catch (e) {
@@ -243,21 +252,61 @@ document.addEventListener('DOMContentLoaded', function() {
         );
 
         const availabilitySpan = document.getElementById('display-availability');
+        
+        // Reset buttons to disabled state
+        addToCartBtn.disabled = true;
+        buyNowBtn.disabled = true;
+        addToCartBtn.classList.remove('btn-warning');
+        addToCartBtn.classList.add('btn-secondary');
+        buyNowBtn.classList.remove('btn-danger');
+        buyNowBtn.classList.add('btn-secondary');
+        
+        selectedVariantId = null;
+
         if (matchingVariant && matchingVariant.stock > 0) {
             availabilitySpan.innerHTML = `In stock (${matchingVariant.stock} available)`;
             availabilitySpan.className = 'text-success';
+            
+            // ✅ Enable buttons only when stock > 0
+            addToCartBtn.disabled = false;
+            buyNowBtn.disabled = false;
+            addToCartBtn.classList.remove('btn-secondary');
+            addToCartBtn.classList.add('btn-warning');
+            buyNowBtn.classList.remove('btn-secondary');
+            buyNowBtn.classList.add('btn-danger');
+            
+            // ✅ Store the correct variant ID
+            selectedVariantId = matchingVariant.id;
+            
         } else if (matchingVariant && matchingVariant.stock === 0) {
             availabilitySpan.innerHTML = 'Out of stock';
             availabilitySpan.className = 'text-danger';
         } else {
-            availabilitySpan.innerHTML = 'Not Selected yet.';
-            availabilitySpan.className = '';
+            availabilitySpan.innerHTML = 'Please select size and color.';
+            availabilitySpan.className = 'text-muted';
         }
     }
 
+    // Event listeners
     sizeSelect.addEventListener('change', updateProductInfo);
     colorSelect.addEventListener('change', updateProductInfo);
     updateProductInfo();
+
+    // ✅ Dynamic Add to Cart function - passes correct variant ID
+    window.addToCartDynamic = function(event) {
+        event.preventDefault();
+        if (selectedVariantId) {
+            addToCart(selectedVariantId);
+        }
+    };
+
+    // ✅ Dynamic Buy Now function - passes correct variant ID
+    window.buyNowDynamic = function(event) {
+        event.preventDefault();
+        if (selectedVariantId) {
+            window.location.href = `{% url 'direct_order' %}?variant_id=${encodeURIComponent(selectedVariantId)}`;
+        }
+    };
 });
 </script>
 
@@ -465,7 +514,7 @@ function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
 
 
   // Add to Cart function (unchanged)
-  function addToCart(productItemId, size, color) {
+  function addToCart(ItemInfoId) {
     const csrftoken = getCookie('csrftoken');
 
     fetch('/cart/create/', {
@@ -475,9 +524,7 @@ function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
         'X-CSRFToken': 'csrfToken',
       },
       body: JSON.stringify({
-        product_item_id: productItemId,
-        size: size,
-        color: color,
+        varient_id: ItemInfoId,
         quantity: 1,
       }),
     })

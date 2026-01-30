@@ -1,7 +1,7 @@
 from django.views import View
 from django.shortcuts import render,redirect
 from django.http import JsonResponse
-from E_COMERCE.services import cart_service,order_service,productitem_service
+from E_COMERCE.services import cart_service,order_service,product_info_service
 from E_COMERCE.constants.decorators import EnduserRequiredMixin
 import json
 from E_COMERCE.constants.decorators import AdminRequiredMixin
@@ -57,19 +57,19 @@ class OrderCreateView(EnduserRequiredMixin,View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DirectOrderView(EnduserRequiredMixin, View):
-    def get(self, request, item_id):
-        product_item = productitem_service.get_product_item_by_id(item_id)
-
-        if not product_item:
+    def get(self, request):
+        variant_id = request.GET.get('variant_id')
+        item_data = product_info_service.get_item_data_by_varient(variant_id) 
+        if not item_data:
             return render(request, "404.html", status=404)
 
         return render(request, 'enduser/order_summary_singly.html', {
-            'product_item': product_item,
+            'item_data': item_data,
             'user': request.user
         })
     
     
-    def post(self, request,item_id):
+    def post(self, request):
         data = json.loads(request.body)
         # print("data=>" ,data)
         product_item_id = data.get("product_item_id")

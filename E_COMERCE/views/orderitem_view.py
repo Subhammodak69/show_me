@@ -34,6 +34,7 @@ class AdminOrderItemCreateView(AdminRequiredMixin, View):
             'order_id': request.POST.get('order_id'),
             'product_item': request.POST.get('product_item'),
             'quantity': request.POST.get('quantity'),
+            'price': request.POST.get('price'),
             'size': request.POST.get('size'),
             'is_active': request.POST.get('is_active') == 'on'
         }
@@ -69,6 +70,7 @@ class AdminOrderItemUpdateView(AdminRequiredMixin, View):
             'order_id': request.POST.get('order_id'),
             'product_item': request.POST.get('product_item'),
             'quantity': request.POST.get('quantity'),
+            'price': request.POST.get('price'),
             'size': request.POST.get('size'),
             'is_active': request.POST.get('is_active') == 'on'
         }

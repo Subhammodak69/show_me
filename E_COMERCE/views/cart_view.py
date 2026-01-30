@@ -64,7 +64,6 @@ class AdminCartUpdateView(AdminRequiredMixin, View):
         
 
 #enduser
-
 class CartDetailsView(EnduserRequiredMixin, View):
     def get(self, request):
         cart_items = cart_service.get_cart_details(request.user)
@@ -99,12 +98,10 @@ class CartCreateView(EnduserRequiredMixin,View):
         try:
             data = json.loads(request.body)
             user = request.user
-            product_item_id = data.get('product_item_id')
-            size = data.get('size')
-            color = data.get('color')
+            varient_id = data.get('varient_id')
             quantity = int(data.get('quantity', 1))
 
-            item = cart_service.add_item_to_cart(user, product_item_id, size, color, quantity)
+            item = cart_service.add_item_to_cart(user, varient_id, quantity)
             return JsonResponse({'status': 'success', 'message': 'Item added to cart', 'item_id': item.id})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
