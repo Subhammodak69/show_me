@@ -76,13 +76,15 @@ class DirectOrderView(EnduserRequiredMixin, View):
         product_item_id = data.get("product_item_id")
         quantity = int(data.get("quantity", 1))
         size = int(data.get("size"))
+        color = int(data.get("color"))
         address = data.get("address")
         phone = data.get("phone")
+        print("color",color,"size",size)
 
-        if not all([product_item_id, quantity, size, address,phone]):
+        if not all([product_item_id, quantity, size,color, address,phone]):
             return JsonResponse({'error': 'Missing fields'}, status=400)
 
-        order = order_service.create_direct_order(request.user, product_item_id, quantity, size, address,phone)
+        order = order_service.create_direct_order(request.user, product_item_id, quantity, size,color, address,phone)
         return JsonResponse({'success': True, 'order_id': order.id})
 
     

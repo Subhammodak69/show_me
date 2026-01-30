@@ -2,7 +2,8 @@ from E_COMERCE.models import CartItem
 
 def get_cart_items():
     return CartItem.objects.select_related('cart', 'product_item__product').all()
-
+def get_cart_items_by_cart(cart):
+    return CartItem.objects.filter(cart = cart, is_active = True)
 def cartitem_create(cart_id,product_item_id,size,color,quantity):
     return CartItem.objects.create(
             cart_id=cart_id,

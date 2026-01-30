@@ -28,12 +28,19 @@
                 style="cursor: pointer;">
                 {{ item.product_item.product.name }}
               </h6>
+              <div class="d-flex gap-4">
+                <p class="mb-1 text-muted">Size: {{ item.display_size }}</p>
+                <p class="mb-1 text-muted">Color: {{ item.display_color }}</p>
+                <div>
+                  {% if item.stock <= 9 %}
+                    <div class="text-danger small mt-1 text-center fw-semibold">Harry!({{item.stock}} stocks available)</div>
+                    {% else %}
+                    <div class="text-success mt-1 text-center fw-semibold">(Stocks available)</div>
+                  {% endif %}
+                </div>
+              </div>
               
-              <p class="mb-1">Size: {{ item.display_size }}</p>
-              <p class="mb-1">Color: {{ item.display_color }}</p>
-               {% if item.availibility <= 5 %}
-                  <div class="text-danger small mt-1 text-center fw-semibold">Harry!({{item.availibility}} stocks available)</div>
-                {% endif %}
+              <p class="mb-1 text-muted">Price: {{ item.price }}</p>
             </div>
           </div>
 

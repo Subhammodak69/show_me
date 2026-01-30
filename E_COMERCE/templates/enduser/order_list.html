@@ -14,11 +14,11 @@
       <div>
         <span class="badge bg-secondary me-2">Order #{{ order.id }}</span>
         {% if order.status == 5 %}
-        <span class="badge bg-danger ms-1">{{ order.get_status_display }}</span>
+        <span class="badge bg-danger ms-1">{{ order.status_display }}</span>
         {% elif order.status == 4 %}
-        <span class="badge bg-success ms-1">{{ order.get_status_display }}</span>
+        <span class="badge bg-success ms-1">{{ order.status_display }}</span>
         {% else %}
-        <span class="badge bg-info text-dark ms-1">{{ order.get_status_display }}</span>
+        <span class="badge bg-info text-dark ms-1">{{ order.status_display }}</span>
         {% endif %}
       </div>
       <div class="small text-muted">

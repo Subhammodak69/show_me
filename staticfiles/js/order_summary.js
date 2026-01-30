@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(res => res.json())
         .then(data => {
           if (data.success && data.order_id) {
-            window.location.href = `/payment/create/${data.order_id}/`;
+            window.location.href = `/orders/`;
           } else {
             alert("Order not placed: " + (data.error || "Unknown error"));
           }

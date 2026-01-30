@@ -102,13 +102,28 @@
             <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
               Use My Current Location
             </button>
-
-            <button type="submit" class="btn btn-success d-block mt-auto">Place Order</button>
+            <div class="mb-3">
+              <label>Select Payment Options</label>
+              <select id="paymentSelect" name="select" class="form-control" required>
+                <option value="">--Select--</option>
+                <option value="cod">Cash On Delivery</option>
+              </select>
+            </div>
+            <button id="orderBtn" type="submit" class="btn btn-success d-block mt-auto" disabled>Place Order</button>
           </div>
         </div>
       </div>
     </div>
   </form>
 </div>
-
+<script>
+  document.getElementById('paymentSelect').addEventListener('change', function() {
+    const btn = document.getElementById('orderBtn');
+    if (this.value === 'cod') {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
+    }
+  });
+</script>
 {% endblock %}

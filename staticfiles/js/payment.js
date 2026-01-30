@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     try {
-      const resp = await fetch(`/payment/create/${data.order_id}/`, {
+      const resp = await fetch(`/orders/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

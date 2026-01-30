@@ -66,7 +66,7 @@
         <button class="btn btn-warning" 
                 id="addToCartBtn"
                 disabled
-                onclick="{% if user.is_authenticated %}addToCartDynamic({{ product_item_data.id }}, event){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
+                onclick="{% if user.is_authenticated %}addToCartDynamic(event){% else %}window.location.href='{% url 'log_in' %}'{% endif %}">
           <i class="bi bi-cart-plus"></i> Add to Cart
         </button>
 

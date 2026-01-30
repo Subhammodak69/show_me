@@ -1,7 +1,7 @@
 from E_COMERCE.models import Cart, CartItem, ProductItem,User,Offer
 from django.shortcuts import get_object_or_404
 from E_COMERCE.constants.default_values import Size, Color
-from E_COMERCE.services import productitem_service,product_info_service
+from E_COMERCE.services import productitem_service,product_info_service,cartitem_service
 
 def get_or_create_cart(user):
     cart, created = Cart.objects.get_or_create(user=user, defaults={"is_active": True})
@@ -9,10 +9,8 @@ def get_or_create_cart(user):
 from E_COMERCE.constants.default_values import Size, Color
 
 def get_cart_details(user):
-#hello
-
     cart = Cart.objects.filter(user=user, is_active=True).first()
-    
+    cart_items = cartitem_service.get_cart_items_by_cart(cart)
     if not cart:
         return []
 
@@ -23,12 +21,13 @@ def get_cart_details(user):
             'quantity': item.quantity,
             'size': item.size,
             'color': item.color,
+            'price':item.product_item.price,
             'discount':get_discount_by_id(item.product_item),
             'display_size': Size(item.size).name,
             'display_color': Color(item.color).name,
-            'availibility': productitem_service.get_product_items_availibility(item.product_item)
+            'stock': product_info_service.get_stock_by_product_details(item.product_item, item.color, item.size)
         }
-        for item in cart.items.filter(is_active=True).select_related('product_item')
+        for item in cart_items
     ]
     
     

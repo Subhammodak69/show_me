@@ -39,7 +39,7 @@ def create_order_from_cart(user, address,phone):
 
 
 
-def create_direct_order(user, product_item_id, quantity, size, address,phone):
+def create_direct_order(user, product_item_id, quantity, size,color, address,phone):
     item = ProductItem.objects.get(id=product_item_id)
 
     order = Order.objects.create(
@@ -52,6 +52,7 @@ def create_direct_order(user, product_item_id, quantity, size, address,phone):
         order_id=order,
         product_item=item,
         price = item.price,
+        color = color,
         quantity=quantity,
         size=size
     )
@@ -72,7 +73,9 @@ def get_user_orders(user):
                 'total_price':order.total_price,
                 'phone':order.phone,
                 'created_at':order.created_at,
-                'items':orderitem_service.get_all_order_items_by_order_id(order)                
+                'items':orderitem_service.get_all_order_items_by_order_id(order) ,
+                'status':order.status,
+                'status_display':Status(order.status).name               
             }
             for order in orders
         ]

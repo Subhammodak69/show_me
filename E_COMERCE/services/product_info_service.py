@@ -4,9 +4,19 @@ import cloudinary
 import cloudinary.uploader
 from uuid import uuid4
 from E_COMERCE.services import cart_service
+from django.db.models import Sum
 
 def get_varient_object(varient_id):
     return ItemInfo.objects.filter(id = varient_id, is_active = True).first()
+
+def get_stock_by_product_details(product_item, color, size):
+    total_stock = ItemInfo.objects.filter(
+        product_item=product_item, 
+        color=color, 
+        size=size, 
+        is_active=True
+    ).aggregate(stock=Sum('stock'))['stock'] or 0
+    return total_stock
 
 def get_product_info_details(product_item):
     items = ItemInfo.objects.filter(product_item=product_item, is_active=True)
