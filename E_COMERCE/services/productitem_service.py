@@ -47,10 +47,7 @@ def get_product_items_by_category(category_id):
             {
                 'id':item.id,
                 'photo_url':item.photo_url,
-                'size':item.size,
-                'color':item.color,
-                'display_size':Size(item.size).name,
-                'display_color':Color(item.color).name,
+                
                 'product_name': item.product.name,
                 'price': item.price,
                 'rating_count':len(get_all_rating_by_product(item.product)),
