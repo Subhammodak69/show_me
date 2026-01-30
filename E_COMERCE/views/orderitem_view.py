@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse
-from E_COMERCE.constants.default_values import Size
+from E_COMERCE.constants.default_values import Size,Color
 from E_COMERCE.services import orderitem_service
 from E_COMERCE.constants.decorators import AdminRequiredMixin
 from django.views.decorators.csrf import csrf_exempt
@@ -26,7 +26,8 @@ class AdminOrderItemCreateView(AdminRequiredMixin, View):
         return render(request, 'admin/orderitem/orderitem_create.html', {
             'orders': orderitem_service.get_all_orders(),
             'product_items':product_items,
-            'sizes': [(s.value, s.name) for s in Size]
+            'sizes': [(s.value, s.name) for s in Size],
+            'colors': [(s.value, s.name) for s in Color]
         })
 
     def post(self, request):
@@ -35,6 +36,7 @@ class AdminOrderItemCreateView(AdminRequiredMixin, View):
             'product_item': request.POST.get('product_item'),
             'quantity': request.POST.get('quantity'),
             'price': request.POST.get('price'),
+            'color': request.POST.get('color'),
             'size': request.POST.get('size'),
             'is_active': request.POST.get('is_active') == 'on'
         }
@@ -62,7 +64,8 @@ class AdminOrderItemUpdateView(AdminRequiredMixin, View):
             'orderitem': item,
             'orders': orderitem_service.get_all_orders(),
             'product_items': orderitem_service.get_all_product_items(),
-            'sizes': [(s.value, s.name) for s in Size]
+            'sizes': [(s.value, s.name) for s in Size],
+            'colors': [(s.value, s.name) for s in Color]
         })
 
     def post(self, request, pk):
@@ -71,6 +74,7 @@ class AdminOrderItemUpdateView(AdminRequiredMixin, View):
             'product_item': request.POST.get('product_item'),
             'quantity': request.POST.get('quantity'),
             'price': request.POST.get('price'),
+            'color':request.POST.get('color'),
             'size': request.POST.get('size'),
             'is_active': request.POST.get('is_active') == 'on'
         }

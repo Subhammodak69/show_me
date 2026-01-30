@@ -17,6 +17,7 @@
         <th>Order</th>
         <th>Product</th>
         <th>Size</th>
+        <th>Color</th>
         <th>Price</th>
         <th>Quantity</th>
         <th>Created</th>
@@ -32,6 +33,7 @@
         <td>#{{ item.order_id.id }}</td>
         <td>{{ item.product_item.product.name }}</td>
         <td>{{ item.get_size_display }}</td>
+        <td>{{ item.get_color_display }}</td>
         <td>{{ item.price }}</td>
         <td>{{ item.quantity }}</td>
         <td>{{ item.created_at }}</td>

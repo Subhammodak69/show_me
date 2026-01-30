@@ -34,6 +34,14 @@
       </select>
     </div>
     <div class="mb-3">
+      <label>Color:</label>
+      <select name="color" class="form-control" required>
+        {% for value, name in colors %}
+          <option value="{{ value }}" {% if value == orderitem.color %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
       <label>Price:</label>
       <input type="number" name="price" class="form-control" min="1" value="{{ orderitem.price }}" required />
     </div>

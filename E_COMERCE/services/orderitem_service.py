@@ -18,6 +18,7 @@ def create_orderitem(data):
         product_item=product_item,
         quantity=data['quantity'],
         price=data['price'],
+        color = data['color'],
         size=data['size'],
         is_active=data['is_active']
     )
@@ -38,6 +39,7 @@ def update_orderitem(pk, data):
     item.product_item_id = data['product_item']
     item.quantity = data['quantity']
     item.price = data['price']
+    item.color = data['color']
     item.size = data['size']
     item.is_active = data['is_active']
     item.save()

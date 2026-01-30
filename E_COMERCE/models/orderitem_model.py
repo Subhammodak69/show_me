@@ -1,6 +1,6 @@
 from django.db import models
 from E_COMERCE.models import ProductItem,Order
-from E_COMERCE.constants.default_values import Size
+from E_COMERCE.constants.default_values import Size,Color
 
 class OrderItem(models.Model):
     product_item = models.ForeignKey(ProductItem, on_delete=models.CASCADE, related_name='orderitems')
@@ -8,6 +8,11 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(blank=False,null=False,default= 1)
     size = models.IntegerField(
         choices=[(s.value, s.name) for s in Size],
+        blank=False,
+        null=False
+    )
+    color = models.IntegerField(
+        choices=[(c.value, c.name) for c in Color],
         blank=False,
         null=False
     )

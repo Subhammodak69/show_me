@@ -46,8 +46,7 @@ def get_product_items_by_category(category_id):
         data = [
             {
                 'id':item.id,
-                'photo_url':item.photo_url,
-                
+                'photo_url':item.photo_url,  
                 'product_name': item.product.name,
                 'price': item.price,
                 'rating_count':len(get_all_rating_by_product(item.product)),

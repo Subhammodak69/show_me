@@ -24,6 +24,7 @@ def create_order_from_cart(user, address,phone):
             order_id=order,
             product_item=item.product_item,
             quantity=item.quantity,
+            price = item.product_item.price,
             size=item.size
         )
         total += item.product_item.price * item.quantity
@@ -50,6 +51,7 @@ def create_direct_order(user, product_item_id, quantity, size, address,phone):
     OrderItem.objects.create(
         order_id=order,
         product_item=item,
+        price = item.price,
         quantity=quantity,
         size=size
     )
