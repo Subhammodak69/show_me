@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from datetime import timedelta
 from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.default_values import Status
-from E_COMERCE.services import orderitem_service
+from E_COMERCE.services import orderitem_service,product_info_service
 
 def create_order_from_cart(user, address,phone):
     cart_items = CartItem.objects.filter(cart__user=user, is_active=True)
@@ -39,8 +39,9 @@ def create_order_from_cart(user, address,phone):
 
 
 
-def create_direct_order(user, product_item_id, quantity, size,color, address,phone):
-    item = ProductItem.objects.get(id=product_item_id)
+def create_direct_order(user, item_info_id, quantity, size,color, address,phone):
+    item_info = product_info_service.get_iteminfo_by_id(item_info_id)
+    item = ProductItem.objects.get(id=item_info.product_item.id, is_active = True)
 
     order = Order.objects.create(
         created_by=user,

@@ -61,6 +61,8 @@ def get_all_iteminfos():
 
 def get_iteminfo_object(iteminfo_id):
     return ItemInfo.objects.select_related('product_item').get(id=iteminfo_id)
+def get_iteminfo_by_id(info_id):
+    return ItemInfo.objects.filter(id = info_id, is_active = True).first()
 
 def get_item_data_by_varient(variant_id):
     variant = get_iteminfo_object(variant_id)
