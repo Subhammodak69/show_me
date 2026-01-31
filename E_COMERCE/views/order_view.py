@@ -15,7 +15,6 @@ from django.utils.decorators import method_decorator
 class OrderListView(EnduserRequiredMixin, View):    
     def get(self, request):
         orders = order_service.get_user_orders(request.user)
-        print("orders",orders)
         return render(request, 'enduser/order_list.html', {
             'orders': orders,
         })

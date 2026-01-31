@@ -26,7 +26,7 @@ class ProfileView(EnduserRequiredMixin,View):
         user.gender = request.POST.get('gender', '')
         user.save()
         
-        print(f"Updated: {user.first_name} {user.last_name}")
+        # print(f"Updated: {user.first_name} {user.last_name}")
         return redirect('/profile/')
     
 class UserListView(AdminRequiredMixin, View):

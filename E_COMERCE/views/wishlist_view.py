@@ -19,7 +19,7 @@ class ApiIsLikedStatusCheckView(EnduserRequiredMixin, View):
     def get(self,request):
         wishlist_items = wishlist_service.get_wishlist_by_user(request.user)
         data = [{'product_item_id': item.product_item.id} for item in wishlist_items]
-        print(data)
+        # print(data)
         return JsonResponse(data, safe=False)
     
 @method_decorator(csrf_exempt, name='dispatch')

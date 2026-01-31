@@ -3,7 +3,7 @@
 {% block title %}OrderItems | Show_me{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container">
   <h2 class="mb-4">All OrderItems</h2>
   <div class="mb-3 text-end">
     <a href="{% url 'admin_orderitem_create' %}" class="btn btn-success">+ Add OrderItem</a>
@@ -16,6 +16,7 @@
         <th>Created_by</th>
         <th>Order</th>
         <th>Product</th>
+        <th>Product Item</th>
         <th>Size</th>
         <th>Color</th>
         <th>Price</th>
@@ -32,6 +33,7 @@
         <td>{{item.order_id.created_by.get_full_name}}</td>
         <td>#{{ item.order_id.id }}</td>
         <td>{{ item.product_item.product.name }}</td>
+        <td><img src="{{ item.product_item.photo_url }}" alt="Product Image" style="    object-fit: cover;width: 70px;height: 70px;"></td>
         <td>{{ item.get_size_display }}</td>
         <td>{{ item.get_color_display }}</td>
         <td>{{ item.price }}</td>
@@ -42,7 +44,7 @@
             {% if item.is_active %}Active{% else %}Inactive{% endif %}
           </span>
         </td>
-        <td>
+        <td class="d-flex">
           <a href="{% url 'admin_orderitem_update' item.id %}" class="btn btn-sm btn-warning me-1">Update</a>
           <button id="toggle-btn-{{ item.id }}"
                   class="btn btn-sm {% if item.is_active %}btn-danger{% else %}btn-success{% endif %}"
