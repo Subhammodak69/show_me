@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views import View
-from  E_COMERCE.services import cart_service,user_service
+from  E_COMERCE.services import cart_service,user_service,cartitem_service,product_info_service
 from E_COMERCE.constants.decorators import EnduserRequiredMixin,AdminRequiredMixin
 import json
 from django.http import JsonResponse
@@ -61,7 +61,72 @@ class AdminCartUpdateView(AdminRequiredMixin, View):
             return JsonResponse({'message': 'Cart updated successfully!', 'id': updated_cart.id})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
-        
+
+
+@method_decorator(csrf_exempt,name='dispatch')
+class ApiCartUpdateView(EnduserRequiredMixin, View):
+    def post(self, request):
+        try:
+            # Parse JSON data from frontend
+            data = json.loads(request.body)
+            cart_item_id = data.get('cart_item_id')
+            quantity = data.get('quantity')
+            size = data.get('size')
+            color = data.get('color')
+
+            # Validate input
+            if not cart_item_id or not quantity or quantity <= 0:
+                return JsonResponse({'success': False, 'error': 'Invalid quantity or item ID'})
+
+            # ✅ FIX 1: Get cart item AND validate user ownership
+            cart_item = cartitem_service.get_cart_item_object(cart_item_id)
+            if not cart_item or cart_item.cart.user != request.user:
+                return JsonResponse({'success': False, 'error': 'Cart item not found'})
+
+            # ✅ FIX 2: Convert to int
+            quantity = int(quantity)
+            size = int(size) if size else None
+            color = int(color) if color else None
+
+            # ✅ FIX 3: Get variant with NEW size/color
+            variant = product_info_service.get_iteminfo_by_product_item(
+                cart_item.product_item, size, color
+            )
+            
+            # ✅ FIX 4: Proper stock validation
+            if not variant or variant.stock < quantity:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Insufficient stock (Available: {variant.stock if variant else 0})'
+                })
+
+            # Update cart item
+            cart_item.size = size
+            cart_item.color = color
+            cart_item.quantity = quantity
+            cart_item.save()
+
+            # ✅ FIX 5: Update stock AND save
+            variant.stock -= quantity
+            variant.save()  # ← MISSING IN YOUR CODE
+
+            return JsonResponse({
+                'success': True, 
+                'message': 'Cart updated successfully',
+                'cart_item': {
+                    'id': cart_item.id,
+                    'quantity': cart_item.quantity,
+                    'size': cart_item.size,
+                    'color': cart_item.color
+                }
+            })
+
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Invalid data format'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'})
+
+
 
 #enduser
 class CartDetailsView(EnduserRequiredMixin, View):

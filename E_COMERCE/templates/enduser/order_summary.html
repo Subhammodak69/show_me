@@ -29,13 +29,20 @@
           <!-- Quantity -->
           <div>
             <label>Quantity:</label>
-            <input type="text" name="quantity" value = "{{item.quantity}}" required>
+            <input type="text" 
+                  id="quantity-{{ item.id }}" 
+                  name="quantity" 
+                  value="{{ item.quantity }}" 
+                  required 
+                  class="form-control w-50 mx-auto">
           </div>
+          
           <!-- Size -->
           {% if item.size_options %}
           <div class="d-flex gap-4">
             <label class="d-block">Size:</label>
-            <select id="size" class="form-select text-center w-100">
+            <select id="size-{{ item.id }}" class="form-select text-center w-100">
+              <option value="">Select Size</option>
               {% for s in item.size_options %}
                 <option value="{{ s.value }}" {% if s.value == item_data.size %}selected{% endif %}>{{ s.name }}</option>
               {% endfor %}
@@ -43,11 +50,12 @@
           </div>
           {% endif %}
 
-          <!-- Color (if applicable) -->
+          <!-- Color -->
           {% if item.color_options %}
           <div class="d-flex gap-4">
             <label class="d-block">Color:</label>
-            <select id="color" class="form-select text-center w-100">
+            <select id="color-{{ item.id }}" class="form-select text-center w-100">
+              <option value="">Select Color</option>
               {% for c in item.color_options %}
                 <option value="{{ c.value }}" {% if c.value == item_data.color %}selected{% endif %}>{{ c.name }}</option>
               {% endfor %}
@@ -55,6 +63,7 @@
           </div>
           {% endif %}
         </div>
+        
         <!-- Remove Button -->
         <div>
           <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem({{ item.id }})">Remove</button>
@@ -63,8 +72,7 @@
       {% endfor %}
     </div>
 
-    
-
+  
     <!-- User + Address Info -->
     <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0">
       <div class="border rounded p-3 mb-3 bg-light">
@@ -121,5 +129,88 @@
       btn.disabled = true;
     }
   });
+
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle ALL cart item updates
+  document.querySelectorAll('.cart-item').forEach(function(cartItem) {
+    const itemId = cartItem.dataset.id;
+    
+    // Quantity input
+    const quantityInput = document.getElementById(`quantity-${itemId}`);
+    if (quantityInput) {
+      quantityInput.addEventListener('change', function() { updateCartItem(itemId); });
+      quantityInput.addEventListener('blur', function() { updateCartItem(itemId); });
+    }
+    
+    // Size select
+    const sizeSelect = document.getElementById(`size-${itemId}`);
+    if (sizeSelect) {
+      sizeSelect.addEventListener('change', function() { updateCartItem(itemId); });
+    }
+    
+    // Color select
+    const colorSelect = document.getElementById(`color-${itemId}`);
+    if (colorSelect) {
+      colorSelect.addEventListener('change', function() { updateCartItem(itemId); });
+    }
+  });
+});
+
+function updateCartItem(itemId) {
+  const quantity = document.getElementById(`quantity-${itemId}`).value;
+  const size = document.getElementById(`size-${itemId}`)?.value || '';
+  const color = document.getElementById(`color-${itemId}`)?.value || '';
+
+  if (!quantity || parseInt(quantity) <= 0) {
+    showMessage('error', 'Please enter valid quantity');
+    return;
+  }
+
+  fetch('api/cart/update/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({
+      cart_item_id: parseInt(itemId),
+      quantity: parseInt(quantity),
+      size: size ? parseInt(size) : null,
+      color: color ? parseInt(color) : null
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      showMessage('success', 'Cart updated successfully!');
+      setTimeout(() => location.reload(), 1000); // Refresh after success
+    } else {
+      showMessage('error', data.error || 'Update failed');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showMessage('error', 'Network error. Please try again.');
+  });
+}
+
+// CSRF Helper
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 </script>
 {% endblock %}

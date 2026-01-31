@@ -15,6 +15,11 @@ class Size(Enum):
     L = 3
     XL = 4
     XXL = 5
+    SIZE_26 = 13
+    SIZE_28 = 14
+    SIZE_30 = 15
+    SIZE_32 = 16
+    SIZE_34 = 17
     
 class Status(Enum):
     PENDING = 1
@@ -36,11 +41,7 @@ class Color(Enum):
     PURPLE = 10
     BROWN = 11
     BEIGE = 12
-    26 = 13
-    28 = 14
-    30 = 15
-    32 = 16
-    34 = 17
+    
 
 class PaymentStatus(Enum):
     PENDING = 1
