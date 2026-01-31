@@ -4,7 +4,7 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-    <div class="container">
+    <div class="">
         <header class="profile-header mb-4">
             {% if request.user.profile_photo_url %}
             <img src="{{ request.user.profile_photo_url }}" id="pro-pic" class="rounded-circle" width="40"
@@ -21,9 +21,6 @@
             <ul>
                 <li><a href="/profile/" class="nav-active">Personal Info</a></li>
                 <li><a href="/orders/">Order History</a></li>
-                <li><a href="/cart/">Cart Items</a></li>
-                <li><a href="/wishlist/">Wishlist</a></li>
-                <li><a href="#">Settings</a></li>
             </ul>
         </nav>
 
@@ -46,9 +43,21 @@
                         <input type="email" value="{{request.user.email}}" readonly>
                     </div>
                     <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" name="phone" value="{{request.user.phone|default:''}}" required>
+                        <label>Phone <small class="text-muted">(10 digits only)</small></label>
+                        <input type="tel" 
+                            name="phone" 
+                            value="{{request.user.phone|default:''}}" 
+                            maxlength="10"
+                            pattern="[0-9]{10}"
+                            title="Please enter exactly 10 digits"
+                            inputmode="numeric"
+                            autocomplete="tel"
+                            class="form-control"
+                            placeholder="1234567890"
+                            required>
+                        <div class="form-text">Enter 10-digit mobile number without spaces or special characters.</div>
                     </div>
+
                     <div class="form-group mb-3">
                         <label class="form-label">Address</label>
                         <textarea class="form-control" name="address" rows="3" required>{{request.user.address|default:''}}</textarea>

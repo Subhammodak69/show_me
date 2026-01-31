@@ -17,7 +17,6 @@ class ProfileView(EnduserRequiredMixin,View):
         return render(request,'enduser/profile.html',{'gender_options':gender_options})
     def post(self, request):
         user = request.user
-        
         # Update user fields
         user.first_name = request.POST.get('first_name', '')
         user.last_name = request.POST.get('last_name', '')
