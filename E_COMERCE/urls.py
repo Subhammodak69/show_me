@@ -99,6 +99,11 @@ urlpatterns = [
     path('api/cart/update/', views.ApiCartUpdateView.as_view(), name='api_cart_update'),
     path('cart/remove/<int:pk>/', views.CartItemRemoveView.as_view(), name='cart_item_remove'),
 
+    #admin review
+    path('admin/reviews/',views.AdminReviewListView.as_view(), name='admin_review_list'),
+    path('admin/review/create/',views.AdminReviewCreateView.as_view(), name='admin_review_create'),
+    path('admin/review/update/<int:review_id>/',views.AdminReviewUpdateView.as_view(), name='admin_review_update'),
+    path('admin/review/toggle-status/<int:review_id>/',views.AdminreviewToggleStatusView.as_view(), name='admin_review_update'),
 
     #admin order
 

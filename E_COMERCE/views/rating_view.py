@@ -71,3 +71,33 @@ class RatingUpdateView(View,EnduserRequiredMixin):
         
 
         
+#admin
+
+class AdminReviewListView(AdminRequiredMixin,View):
+    def get(self,request):
+        reviews_data = get_all_reviews_for_admin()
+        return render(request,'admin/review/review_list.html',{'reviews':reviews_data})
+    
+class AdminReviewCreateView(AdminRequiredMixin,View):
+    def get(self,request):
+        return
+    
+class AdminReviewUpdateView(AdminRequiredMixin,View):
+    def get(self,request):
+        return
+    
+@method_decorator(csrf_exempt, name='dispatch')
+class AdminreviewToggleStatusView(AdminRequiredMixin, View):
+    def post(self, request, review_id):
+        try:
+            body = json.loads(request.body)
+            is_active = body.get('is_active')
+
+            new_status = toggle_review_active_status(review_id, is_active)
+
+            return JsonResponse({'success': True, 'new_status': new_status})
+        except ValueError as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+        except Exception:
+            return JsonResponse({'success': False, 'error': 'Something went wrong'})
+        

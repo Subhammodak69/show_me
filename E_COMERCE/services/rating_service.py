@@ -1,7 +1,9 @@
 from E_COMERCE.models import Rating,ProductItem,Product
-import os
+import cloudinary
+import cloudinary.uploader
 from uuid import uuid4
-from django.core.files.storage import default_storage
+from E_COMERCE.models import Product, Rating
+from django.shortcuts import get_object_or_404
 
 
 def get_all_ratings_by_product_item_id(item_id):
@@ -39,10 +41,14 @@ def get_rating_by_id(pk):
         return None
 
 
-import cloudinary
-import cloudinary.uploader
-from uuid import uuid4
-from E_COMERCE.models import Product, Rating
+def get_all_reviews_for_admin():
+    return Rating.objects.all()
+
+def toggle_review_active_status(pk, is_active):
+    review = get_object_or_404(Rating, pk=pk)
+    review.is_active = is_active
+    review.save()
+    return review.is_active
 
 def create_rating(data, file, user):
     try:

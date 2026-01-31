@@ -1,0 +1,136 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Reviews List | Show_me{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">All Reviews</h2>
+
+  <div class="mb-3 text-end">
+  </div>
+
+  <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Product</th>
+        <th>Reviewed By</th>
+        <th>Rating Star</th>
+        <th>Review</th>
+        <th>Photo</th>
+        <th>Created At</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for review in reviews %}
+      <tr>
+        <td>{{ review.id }}</td>
+        <td>{{ review.product.name }}</td>
+        <td>{{ review.user.first_name }} {{ review.user.last_name }}</td>
+        <td>
+          {% if review.rating %}
+            <div class="star-review d-flex align-items-center">
+              {% for i in "12345"|make_list %}
+                <i class="bi {% if forloop.counter <= review.rating %}bi-star-fill text-warning{% else %}bi-star text-muted{% endif %} fs-6 me-1"></i>
+              {% endfor %}
+              <small class="text-muted">{{ review.rating }}/5</small>
+            </div>
+          {% else %}
+            <span class="text-muted">No rating</span>
+          {% endif %}
+        </td>
+        <td>{{ review.review|truncatechars:50|default:"No review" }}</td>
+        <td>
+          {% if review.photo_url %}
+            <a href="{{ review.photo_url }}" target="_blank" class="btn btn-sm btn-outline-info">
+              <i class="bi bi-image"></i> View
+            </a>
+          {% else %}
+            <span class="text-muted">-</span>
+          {% endif %}
+        </td>
+        <td>{{ review.created_at|date:"M d, Y H:i" }}</td>
+        <td>
+          <span id="status-badge-{{ review.id }}" class="badge {% if review.is_active %}bg-success{% else %}bg-danger{% endif %}">
+            {% if review.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
+        </td>
+        <td class="d-flex gap-1">
+          <a href="{% url 'admin_review_update' review.id %}" class="btn btn-sm btn-warning">Update</a>
+          
+          <button id="toggle-btn-{{ review.id }}"
+                  class="btn btn-sm {% if review.is_active %}btn-danger{% else %}btn-success{% endif %}"
+                  onclick="togglereviewStatus({{ review.id }}, {{ review.is_active|yesno:'true,false' }})">
+            {% if review.is_active %}Deactivate{% else %}Activate{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" class="text-center">No reviews found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Move ALL JavaScript to BOTTOM - OUTSIDE DOMContentLoaded -->
+<script>
+// ✅ FIXED: Define function in GLOBAL scope (outside any event listener)
+async function togglereviewStatus(reviewId, currentStatus) {
+  try {
+    const response = await fetch(`/admin/review/toggle-status/${reviewId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.getAttribute('value') || getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const newStatus = result.new_status;
+
+      // Update badge
+      const badge = document.getElementById(`status-badge-${reviewId}`);
+      badge.textContent = newStatus ? 'Active' : 'Inactive';
+      badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+
+      // Update button
+      const button = document.getElementById(`toggle-btn-${reviewId}`);
+      button.textContent = newStatus ? 'Deactivate' : 'Activate';
+      button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+      button.setAttribute('onclick', `togglereviewStatus(${reviewId}, ${newStatus})`);
+      
+      //showToast(`Review status updated successfully!`, 'success');
+    } else {
+      alert(result.error || 'Status update failed.');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Server error occurred.');
+  }
+}
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+</script>
+{% endblock %}
