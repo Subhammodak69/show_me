@@ -44,7 +44,7 @@
             <select id="size-{{ item.id }}" class="form-select text-center w-100">
               <option value="">Select Size</option>
               {% for s in item.size_options %}
-                <option value="{{ s.value }}" {% if s.value == item_data.size %}selected{% endif %}>{{ s.name }}</option>
+                <option value="{{ s.value }}" {% if s.value == item.size %}selected{% endif %}>{{ s.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -57,7 +57,7 @@
             <select id="color-{{ item.id }}" class="form-select text-center w-100">
               <option value="">Select Color</option>
               {% for c in item.color_options %}
-                <option value="{{ c.value }}" {% if c.value == item_data.color %}selected{% endif %}>{{ c.name }}</option>
+                <option value="{{ c.value }}" {% if c.value == item.color %}selected{% endif %}>{{ c.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -169,7 +169,7 @@ function updateCartItem(itemId) {
     return;
   }
 
-  fetch('api/cart/update/', {
+  fetch('/api/cart/update/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
