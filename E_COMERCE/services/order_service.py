@@ -5,59 +5,94 @@ from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.default_values import Status
 from E_COMERCE.services import orderitem_service,product_info_service
 
-def create_order_from_cart(user, address,phone):
+from django.db import transaction
+
+@transaction.atomic
+def create_order_from_cart(user, address, phone):
     cart_items = CartItem.objects.filter(cart__user=user, is_active=True)
     if not cart_items.exists():
         raise ValueError("Cart is empty.")
 
-    # Set initial total_price=0 to avoid IntegrityError
+    # First pass: check stock for all items and collect valid ones
+    valid_items = []
+    for item in cart_items:
+        item_info = product_info_service.get_iteminfo_by_product_item(item.product_item, item.size, item.color)
+        if item_info and item_info.stock >= item.quantity:  # Check quantity, not just >0
+            valid_items.append((item, item_info))
+
+    # If no valid items with sufficient stock, don't create order
+    if not valid_items:
+        raise ValueError("No items in cart have sufficient stock.")
+
+    # Create order only if there are valid items
     order = Order.objects.create(
         created_by=user,
-        phone = phone,
+        phone=phone,
         delivery_address=address,
-        total_price=0  # ✅ required
+        total_price=0  # Initial value
     )
 
     total = 0
-    for item in cart_items:
+    for item, item_info in valid_items:
         OrderItem.objects.create(
             order_id=order,
             product_item=item.product_item,
             quantity=item.quantity,
-            price = item.product_item.price,
-            size=item.size
+            price=item.product_item.price,
+            size=item_info.size,
+            color=item_info.color
         )
         total += item.product_item.price * item.quantity
+        
+        # Reduce stock
+        item_info.stock -= item.quantity
+        item_info.save()
 
     order.total_price = total
     order.save()
 
-    # Mark all cart items inactive
+    # Mark all cart items (including out-of-stock ones) as inactive
     cart_items.update(is_active=False)
 
     return order
 
 
-
-def create_direct_order(user, item_info_id, quantity, size,color, address,phone):
+@transaction.atomic
+def create_direct_order(user, item_info_id, quantity, size, color, address, phone):
+    # Fetch and validate item info and product item
     item_info = product_info_service.get_iteminfo_by_id(item_info_id)
-    item = ProductItem.objects.get(id=item_info.product_item.id, is_active = True)
-
+    if not item_info:
+        raise ValueError("Item info not found.")
+    
+    if not item_info.stock >= quantity:
+        raise ValueError(f"Insufficient stock. Available: {item_info.stock}, Requested: {quantity}")
+    
+    item = ProductItem.objects.get(id=item_info.product_item.id, is_active=True)
+    
+    # Create order with validated total
+    total_price = item.price * quantity
     order = Order.objects.create(
         created_by=user,
-        phone = phone,
+        phone=phone,
         delivery_address=address,
-        total_price=item.price * quantity
+        total_price=total_price
     )
+    
     OrderItem.objects.create(
         order_id=order,
         product_item=item,
-        price = item.price,
-        color = color,
+        price=item.price,
+        color=color,
         quantity=quantity,
         size=size
     )
+    
+    # Reduce stock atomically
+    item_info.stock -= quantity
+    item_info.save()
+    
     return order
+
 
 
 

@@ -24,12 +24,18 @@ class Status(Enum):
     CANCELLED = 5
 
 class Color(Enum):
-    RED = 1
-    BLUE = 2
-    GREEN = 3
-    BLACK = 4
-    YELLOW = 5
-
+    BLACK = 1
+    WHITE = 2
+    GREY = 3
+    RED = 4
+    BLUE = 5
+    GREEN = 6
+    YELLOW = 7
+    ORANGE = 8
+    PINK = 9
+    PURPLE = 10
+    BROWN = 11
+    BEIGE = 12
 
 class PaymentStatus(Enum):
     PENDING = 1

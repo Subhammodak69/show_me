@@ -22,38 +22,45 @@ class OrderListView(EnduserRequiredMixin, View):
   
     
 @method_decorator(csrf_exempt, name='dispatch')
-class OrderCreateView(EnduserRequiredMixin,View):
+class OrderCreateView(EnduserRequiredMixin, View):
     def get(self, request):
         user = request.user
         cart_items = cart_service.get_user_cart_items(user.id)
+        if not cart_items:
+            return JsonResponse({'error': 'Your cart is empty.'}, status=400)
+            
         price = sum(item['total_price'] for item in cart_items)
-        total_discount = sum((item.get('discount') or 0) for item in cart_items) # NEW LINE
-        total = price-total_discount
+        total_discount = sum((item.get('discount') or 0) for item in cart_items)
+        total = price - total_discount
 
         return render(request, 'enduser/order_summary.html', {
             'cart_items': cart_items,
             'price': price,
-            'discount': total_discount,  # UPDATED KEY
+            'discount': total_discount,
             'user': user,
-            'total':total,
+            'total': total,
         })
-
 
     def post(self, request):
         address = request.POST.get("address")
         phone = request.POST.get("phone")
+        
         if not address:
-            return JsonResponse({'error': 'Address is required.'}, status=400)
+            return JsonResponse({'error': 'Delivery address is required.'}, status=400)
+            
         if not phone:
-            return JsonResponse({'error': 'Phone No. is required.'}, status=400)
+            return JsonResponse({'error': 'Phone number is required.'}, status=400)
         
         try:
-            order = order_service.create_order_from_cart(request.user, address,phone)
+            order = order_service.create_order_from_cart(request.user, address, phone)
+            return JsonResponse({
+                'success': True, 
+                'order_id': order.id,
+                'message': f'Order #{order.id} created successfully!'
+            })
+            
         except ValueError as e:
             return JsonResponse({'error': str(e)}, status=400)
-
-        return JsonResponse({'success': True, 'order_id': order.id})
-
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -61,31 +68,61 @@ class DirectOrderView(EnduserRequiredMixin, View):
     def get(self, request):
         variant_id = request.GET.get('variant_id')
         item_data = product_info_service.get_item_data_by_varient(variant_id) 
+        
         if not item_data:
-            return render(request, "404.html", status=404)
+            return JsonResponse({'error': 'Product variant not found.'}, status=404)
 
         return render(request, 'enduser/order_summary_singly.html', {
             'item_data': item_data,
             'user': request.user
         })
     
-    
     def post(self, request):
-        data = json.loads(request.body)
-        # print("data=>" ,data)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        
         product_item_id = data.get("product_item_id")
         quantity = int(data.get("quantity", 1))
         size = int(data.get("size"))
         color = int(data.get("color"))
         address = data.get("address")
         phone = data.get("phone")
-        print("color",color,"size",size)
 
-        if not all([product_item_id, quantity, size,color, address,phone]):
-            return JsonResponse({'error': 'Missing fields'}, status=400)
+        # Specific field validation
+        missing_fields = []
+        if not product_item_id:
+            missing_fields.append("product")
+        if not quantity or quantity <= 0:
+            missing_fields.append("quantity")
+        if not size:
+            missing_fields.append("size")
+        if not color:
+            missing_fields.append("color")
+        if not address:
+            missing_fields.append("address")
+        if not phone:
+            missing_fields.append("phone number")
 
-        order = order_service.create_direct_order(request.user, product_item_id, quantity, size,color, address,phone)
-        return JsonResponse({'success': True, 'order_id': order.id})
+        if missing_fields:
+            return JsonResponse({
+                'error': f'Missing required fields: {", ".join(missing_fields)}'
+            }, status=400)
+
+        try:
+            order = order_service.create_direct_order(
+                request.user, product_item_id, quantity, size, color, address, phone
+            )
+            return JsonResponse({
+                'success': True, 
+                'order_id': order.id,
+                'message': f'Direct order #{order.id} created successfully!'
+            })
+            
+        except ValueError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
 
     
 @method_decorator(csrf_exempt, name='dispatch')

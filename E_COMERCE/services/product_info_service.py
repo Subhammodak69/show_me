@@ -9,6 +9,10 @@ from django.db.models import Sum
 def get_varient_object(varient_id):
     return ItemInfo.objects.filter(id = varient_id, is_active = True).first()
 
+
+def get_iteminfo_by_product_item(product_item,size,color):
+    return ItemInfo.objects.filter(product_item=product_item,size = size,color = color,is_active = True).first()
+
 def get_stock_by_product_details(product_item, color, size):
     total_stock = ItemInfo.objects.filter(
         product_item=product_item, 

@@ -38,28 +38,31 @@ document.addEventListener('DOMContentLoaded', function() {
         address: document.getElementById('delivery-address').value,
         phone: document.getElementById('phone').value
       };
+      
       fetch("", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': 'csrfToken'
+          'X-CSRFToken': getCookie('csrftoken')  // ✅ Fixed
         },
         body: JSON.stringify(data)
       })
       .then(res => res.json())
       .then(data => {
         if (data.success && data.order_id) {
-          window.location.href = `/orders/`;
+          showMessage('success', data.message || `Order #${data.order_id} created successfully!`, '/orders/');
         } else {
-          alert("Error: " + (data.error || "Unknown error"));
+          showMessage('error', data.error || "Unknown error occurred");
         }
       })
-      .catch(() => {
-        alert("Network or server error. Please try again.");
+      .catch(error => {
+        console.error('Order error:', error);
+        showMessage('error', "Network or server error. Please try again.");
       });
     });
   }
 });
+
 
 // Get CSRF token from cookies
 function getCookie(name) {

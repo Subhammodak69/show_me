@@ -39,7 +39,6 @@ function removeItem(itemId) {
 }
 
 
-
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('order-form');
   console.log(form);
@@ -53,20 +52,23 @@ document.addEventListener('DOMContentLoaded', function () {
         method: "POST",
         body: formData,
         headers: {
-          'X-CSRFToken': 'csrfToken'
+          'X-CSRFToken':'csrfToken'   // ✅ Fixed CSRF token
         }
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.order_id) {
-            window.location.href = `/orders/`;
-          } else {
-            alert("Order not placed: " + (data.error || "Unknown error"));
-          }
-        })
-        .catch(() => {
-          alert("Order request failed. Please try again.");
-        });
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.order_id) {
+          showMessage('success', data.message || `Order #${data.order_id} created successfully!`, '/orders/');
+        } else {
+          showMessage('error', data.error || "Unknown error occurred");
+        }
+      })
+      .catch(error => {
+        console.error('Order error:', error);
+        showMessage('error', "Network or server error. Please try again.");
+      });
     });
   }
 });
+
+

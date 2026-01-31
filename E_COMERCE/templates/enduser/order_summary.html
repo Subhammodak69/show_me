@@ -25,22 +25,35 @@
         <h5 class="fw-semibold mb-2">{{ item.product_name }}</h5>
 
         <!-- Selectors -->
-        <div class="d-flex flex-wrap gap-2 justify-content-center align-items-end mb-2">
+        <div class="d-flex flex-wrap gap-2 justify-content-center mb-2" style="flex-direction: column; width: 100%;">
           <!-- Quantity -->
           <div>
             <label>Quantity:</label>
             {{item.quantity}}
           </div>
           <!-- Size -->
-          <div>
-            <label>Size:</label>
-            {{item.size_display}}
+          {% if item.size_options %}
+          <div class="d-flex gap-4">
+            <label class="d-block">Size:</label>
+            <select id="size" class="form-select text-center w-100">
+              {% for s in item.size_options %}
+                <option value="{{ s.value }}" {% if s.value == item_data.size %}selected{% endif %}>{{ s.name }}</option>
+              {% endfor %}
+            </select>
           </div>
-          <!-- Color -->
-          <div>
-            <label>Color:</label>
-            {{item.color_display}}
+          {% endif %}
+
+          <!-- Color (if applicable) -->
+          {% if item.color_options %}
+          <div class="d-flex gap-4">
+            <label class="d-block">Color:</label>
+            <select id="color" class="form-select text-center w-100">
+              {% for c in item.color_options %}
+                <option value="{{ c.value }}" {% if c.value == item_data.color %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
           </div>
+          {% endif %}
         </div>
         <!-- Remove Button -->
         <div>
@@ -76,23 +89,37 @@
         <h4 class="mb-3">User Details</h4>
         <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
-        {% if user.phone %}
-        <p><strong>Phone:</strong> {{ user.phone }}</p>
-        {% endif %}
         {% if user.address %}
         <p><strong>Address:</strong> {{ user.address }}</p>
         {% endif %}
       </div>
       <label for="delivery-address" class="mt-2"><strong>Mobile Number*</strong></label>
-        <input class="form-control" name="phone" id="phone" required>
+        <input class="form-control" name="phone" id="phone" value={{request.user.phone}} required>
       <label for="delivery-address" class="mt-2"><strong>Delivery Address</strong></label>
       <textarea id="delivery-address" name="address" class="form-control mb-2" placeholder="Enter delivery address manually..."
-        required></textarea>
+        required>{{request.user.address}}</textarea>
       <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
         Use My Current Location
       </button>
-      <button type="submit" class="btn btn-success d-block mt-auto">Place Order</button>
+      <div class="mb-3">
+        <label>Select Payment Options</label>
+        <select id="paymentSelect" name="select" class="form-control" required>
+          <option value="">--Select--</option>
+          <option value="cod">Cash On Delivery</option>
+        </select>
+      </div>
+      <button id="orderBtn" type="submit" class="btn btn-success d-block mt-auto" disabled>Place Order</button>
     </div>
   </form>
 </div>
+<script>
+  document.getElementById('paymentSelect').addEventListener('change', function() {
+    const btn = document.getElementById('orderBtn');
+    if (this.value === 'cod') {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
+    }
+  });
+</script>
 {% endblock %}

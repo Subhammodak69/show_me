@@ -10,10 +10,7 @@ function removeCartItem(itemId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const itemElement = document.getElementById(`cart-item-${itemId}`);
-            if (itemElement) {
-                itemElement.remove();
-            }
+            window.location.reload();           
         } else {
             alert(data.error || "Failed to remove item.");
         }

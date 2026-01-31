@@ -1,7 +1,7 @@
 from E_COMERCE.models import Cart, CartItem, ProductItem,User,Offer
 from django.shortcuts import get_object_or_404
 from E_COMERCE.constants.default_values import Size, Color
-from E_COMERCE.services import productitem_service,product_info_service,cartitem_service
+from E_COMERCE.services import product_info_service,product_info_service,cartitem_service
 
 def get_or_create_cart(user):
     cart, created = Cart.objects.get_or_create(user=user, defaults={"is_active": True})
@@ -191,18 +191,29 @@ def get_user_cart_items(user_id):
     result = []
     for item in cart_items:
         product_item = item.product_item
+        
+        # ✅ Fixed: Get variant info with size/color parameters
+        variant = product_info_service.get_iteminfo_by_product_item(
+            item.product_item, item.size, item.color
+        )
+        
+        if not variant:
+            continue
+            
         result.append({
             'id': item.id,
             'product_name': product_item.product.name,
             'photo': product_item.photo_url,
             'quantity': item.quantity,
-            'size': item.size,
-            'color':item.color,
-            'color_display':Color(item.color).name,
-            'size_display': Size(item.size).name,
+            'size': variant.size,
+            'color': variant.color,
+            'color_display': Color(variant.color).name,
+            'size_display': Size(variant.size).name,
             'price_per_unit': product_item.price,
+            'color_options': product_info_service.get_all_color_options_by_info_id(variant.id),
+            'size_options': product_info_service.get_all_size_options_by_info_id(variant.id),
             'total_price': product_item.price * item.quantity,
-            'discount':get_discount_by_id(item.product_item)
+            'discount': get_discount_by_id(item.product_item)
         })
     
     return result
