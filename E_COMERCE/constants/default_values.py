@@ -41,7 +41,7 @@ class Color(Enum):
     PURPLE = 10
     BROWN = 11
     BEIGE = 12
-    
+    CREAM = 13    
 
 class PaymentStatus(Enum):
     PENDING = 1
