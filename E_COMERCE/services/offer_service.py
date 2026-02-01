@@ -1,5 +1,6 @@
 from E_COMERCE.models import Offer
 from E_COMERCE.models import Product
+from django.utils import timezone
 
 def get_all_offers():
     return Offer.objects.select_related('product').order_by('-created_at')
@@ -28,3 +29,15 @@ def toggle_offer_status(offer, is_active):
 
 def get_all_products():
     return Product.objects.all()
+
+
+def get_offer_by_product(product):
+    now = timezone.now()
+    return Offer.objects.filter(
+        product=product,
+        is_active=True,
+        start_date__lte=now,
+        end_date__gte=now
+    ).first()
+
+

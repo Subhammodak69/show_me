@@ -27,9 +27,13 @@ class OrderCreateView(EnduserRequiredMixin, View):
         cart_items = cart_service.get_user_cart_items(user.id)
         if not cart_items:
             return JsonResponse({'error': 'Your cart is empty.'}, status=400)
-            
+        
+        # Calculate totals safely
         price = sum(item['total_price'] for item in cart_items)
-        total_discount = sum((item.get('discount') or 0) for item in cart_items)
+        total_discount = sum(
+            (item.get('discount') or 0) * item.get('quantity', 1) 
+            for item in cart_items
+        )
         total = price - total_discount
 
         return render(request, 'enduser/order_summary.html', {
@@ -39,6 +43,7 @@ class OrderCreateView(EnduserRequiredMixin, View):
             'user': user,
             'total': total,
         })
+
 
     def post(self, request):
         address = request.POST.get("address")

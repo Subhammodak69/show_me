@@ -3,9 +3,9 @@ from django.shortcuts import get_object_or_404
 from datetime import timedelta
 from django.core.exceptions import ObjectDoesNotExist
 from E_COMERCE.constants.default_values import Status
-from E_COMERCE.services import orderitem_service,product_info_service
-
+from E_COMERCE.services import orderitem_service,product_info_service,offer_service
 from django.db import transaction
+
 
 @transaction.atomic
 def create_order_from_cart(user, address, phone):
@@ -13,64 +13,66 @@ def create_order_from_cart(user, address, phone):
     if not cart_items.exists():
         raise ValueError("Cart is empty.")
 
-    # First pass: check stock for all items and collect valid ones
     valid_items = []
     for item in cart_items:
-        item_info = product_info_service.get_iteminfo_by_product_item(item.product_item, item.size, item.color)
-        if item_info and item_info.stock >= item.quantity:  # Check quantity, not just >0
-            valid_items.append((item, item_info))
+        item_info = product_info_service.get_iteminfo_by_product_item(
+            item.product_item, item.size, item.color
+        )
+        if item_info and item_info.stock >= item.quantity:
+            product = item.product_item.product
+            offer = offer_service.get_offer_by_product(product)
+            valid_items.append((item, item_info, offer))
 
-    # If no valid items with sufficient stock, don't create order
     if not valid_items:
         raise ValueError("No items in cart have sufficient stock.")
 
-    # Create order only if there are valid items
     order = Order.objects.create(
         created_by=user,
         phone=phone,
         delivery_address=address,
-        total_price=0  # Initial value
+        total_price=0
     )
 
     total = 0
-    for item, item_info in valid_items:
+    for item, item_info, offer in valid_items:
+        item_price = item.product_item.price
+        discount = offer.discount_value if offer else 0
+        discounted_price = item_price - discount  # ✅ Per unit discounted price
+        
         OrderItem.objects.create(
             order_id=order,
             product_item=item.product_item,
             quantity=item.quantity,
-            price=item.product_item.price,
+            price=discounted_price,  # ✅ SAVES DISCOUNTED PRICE AS REQUESTED
             size=item_info.size,
             color=item_info.color
         )
-        total += item.product_item.price * item.quantity
+        total += discounted_price * item.quantity  # ✅ Consistent
         
-        # Reduce stock
         item_info.stock -= item.quantity
         item_info.save()
 
     order.total_price = total
     order.save()
-
-    # Mark all cart items (including out-of-stock ones) as inactive
     cart_items.update(is_active=False)
-
     return order
-
 
 @transaction.atomic
 def create_direct_order(user, item_info_id, quantity, size, color, address, phone):
-    # Fetch and validate item info and product item
     item_info = product_info_service.get_iteminfo_by_id(item_info_id)
     if not item_info:
         raise ValueError("Item info not found.")
     
-    if not item_info.stock >= quantity:
+    if item_info.stock < quantity:
         raise ValueError(f"Insufficient stock. Available: {item_info.stock}, Requested: {quantity}")
     
     item = ProductItem.objects.get(id=item_info.product_item.id, is_active=True)
+    offer = offer_service.get_offer_by_product(item_info.product_item.product)
+    discount = offer.discount_value if offer else 0
+    discounted_price = item.price - discount  # ✅ Per unit discounted price
     
-    # Create order with validated total
-    total_price = item.price * quantity
+    total_price = discounted_price * quantity
+    
     order = Order.objects.create(
         created_by=user,
         phone=phone,
@@ -81,19 +83,15 @@ def create_direct_order(user, item_info_id, quantity, size, color, address, phon
     OrderItem.objects.create(
         order_id=order,
         product_item=item,
-        price=item.price,
+        price=discounted_price,
         color=color,
         quantity=quantity,
         size=size
     )
     
-    # Reduce stock atomically
     item_info.stock -= quantity
     item_info.save()
-    
     return order
-
-
 
 
 
