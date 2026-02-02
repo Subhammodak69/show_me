@@ -58,38 +58,64 @@
 </div>
 
 <script>
-  async function toggleProductStatus(productId, currentStatus) {
-    try {
-      const response = await fetch(`/product/toggle-status/${productId}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': 'csrfToken',
-        },
-        body: JSON.stringify({ is_active: !currentStatus })
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        const newStatus = result.new_status;
-
-        // Update badge
-        const badge = document.getElementById(`status-badge-${productId}`);
-        badge.textContent = newStatus ? 'Active' : 'Inactive';
-        badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
-
-        // Update button
-        const button = document.getElementById(`toggle-btn-${productId}`);
-        button.textContent = newStatus ? 'Deactivate' : 'Activate';
-        button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
-        button.setAttribute('onclick', `toggleProductStatus(${productId}, ${newStatus})`);
-      } else {
-        alert(result.error || 'Status update failed.');
+  // Get CSRF token from cookies (standard Django approach)
+  function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
       }
-    } catch (error) {
-      alert('Server error occurred.');
-    }
+      return cookieValue;
+  }
+
+  async function toggleProductStatus(productId, currentStatus) {
+      try {          
+          const response = await fetch(`/product/toggle-status/${productId}/`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': 'csrfToken',
+              },
+              body: JSON.stringify({ is_active: !currentStatus })
+          });
+
+          if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+
+          if (result.success) {
+              const newStatus = result.new_status;
+
+              // Update badge
+              const badge = document.getElementById(`status-badge-${productId}`);
+              if (badge) {
+                  badge.textContent = newStatus ? 'Active' : 'Inactive';
+                  badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+              }
+
+              // Update button
+              const button = document.getElementById(`toggle-btn-${productId}`);
+              if (button) {
+                  button.textContent = newStatus ? 'Deactivate' : 'Activate';
+                  button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+                  button.setAttribute('onclick', `toggleProductStatus(${productId}, ${newStatus})`);
+              }
+          } else {
+              alert(result.error || 'Status update failed.');
+          }
+      } catch (error) {
+          console.error('Toggle error:', error);
+          alert(`Update failed: ${error.message}`);
+      }
   }
 </script>
+
 {% endblock %}

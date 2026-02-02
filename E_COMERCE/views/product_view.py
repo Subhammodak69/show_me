@@ -72,9 +72,19 @@ class ProductUpdateView(AdminRequiredMixin,View):
       
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ProductToggleStatusView(EnduserRequiredMixin,View):
+class ProductToggleStatusView(AdminRequiredMixin, View):
     def post(self, request, product_id):
-        product = product_service.get_product_by_id(product_id)
-        product.is_active = not product.is_active
-        product.save()
-        return JsonResponse({'is_active': product.is_active})
+        try:
+            product = product_service.get_product_by_id(product_id)
+            if not product:
+                return JsonResponse({'success': False, 'error': 'Product not found'}, status=404)
+            
+            product.is_active = not product.is_active
+            product.save()
+            
+            return JsonResponse({
+                'success': True, 
+                'new_status': product.is_active
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
