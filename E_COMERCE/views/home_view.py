@@ -30,6 +30,7 @@ class HomeView(View):
 
         # ----- Product/Best Deals Data -----
         products_by_category = productitem_service.get_all_productitems_by_category()
+        # print(products_by_category)
 
         # Flatten for best deals or other logic if needed
         all_products = [item for products in products_by_category.values() for item in products]

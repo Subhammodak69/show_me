@@ -4,9 +4,8 @@ import cloudinary
 import cloudinary.uploader
 from uuid import uuid4
 from collections import defaultdict
-from E_COMERCE.services import product_info_service
+from E_COMERCE.services import product_info_service,offer_service,productitem_service
 import json
-from django.core.serializers.json import DjangoJSONEncoder
 
 def get_average_rating(ratings):
     if ratings:
@@ -32,6 +31,8 @@ def get_all_productitems_by_category():
     
     for item in productitems:
         category = item.product.subcategory.category
+        item.price = productitem_service.get_prduct_sale_and_orignal_price_by_product_item(item)
+        # print(item.price)
         category_to_products[category].append(item)
     
     return category_to_products
@@ -39,6 +40,15 @@ def get_all_productitems_by_category():
 def get_total_is_not_active_items():
     return ProductItem.objects.filter(is_active = False)
 
+def get_prduct_sale_and_orignal_price_by_product_item(product_item):
+    item = ProductItem.objects.filter(id = product_item.id,is_active = True).first()
+    offer = offer_service.get_offer_by_product(item.product)
+    sale_price = item.price - offer.discount_value if offer and offer.discount_value else item.price
+    data = {
+        'original_price':item.price,
+        'sale_price':sale_price
+    }
+    return data
 def get_product_items_by_category(category_id):
     items = ProductItem.objects.filter(product__subcategory__category__id= category_id, is_active =True)
     data = []
@@ -48,7 +58,7 @@ def get_product_items_by_category(category_id):
                 'id':item.id,
                 'photo_url':item.photo_url,  
                 'product_name': item.product.name,
-                'price': item.price,
+                'price_data': get_prduct_sale_and_orignal_price_by_product_item(item),
                 'rating_count':len(get_all_rating_by_product(item.product)),
                 'rating':get_average_rating(get_all_rating_by_product(item.product))
             }

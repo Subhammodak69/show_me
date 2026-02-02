@@ -20,9 +20,9 @@
       {% if related_products_data %}
       <div>
         <h6 class="text-muted mb-2">Other Available Items</h6>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="row overflow-x-auto flex-nowrap gap-2">
           {% for item in related_products_data %}
-          <div class="border p-2 text-center" style="width: 100px; cursor: pointer;" onclick="window.location.href='{% url 'product_details' item.id %}'">
+          <div class="border p-2 text-center flex-shrink-0" style="width: 100px; cursor: pointer;" onclick="window.location.href='{% url 'product_details' item.id %}'">
             <img src="{{ item.photo }}" class="img-fluid mb-1" style="height: 70px; object-fit: contain;">
           </div>
           {% endfor %}
@@ -36,8 +36,12 @@
         {{ product_item_data.product_subcategory_name }} 
       </p>
       <h4 class="text-success">
+        {% if product_item_data.sale_price == product_item_data.price  %}
+          ₹{{ product_item_data.sale_price }}
+        {% else %}
         <span style="text-decoration: line-through; color: #dc3545;">₹{{ product_item_data.price }}</span>  
-        ₹{{ product_item_data.sale_price }}
+          ₹{{ product_item_data.sale_price }}
+        {% endif %}
       </h4>
 
 
@@ -252,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
 
         const availabilitySpan = document.getElementById('display-availability');
+        const productImage = document.querySelector('.col-md-4 img');
         
         // Reset buttons to disabled state
         addToCartBtn.disabled = true;
@@ -263,27 +268,52 @@ document.addEventListener('DOMContentLoaded', function() {
         
         selectedVariantId = null;
 
-        if (matchingVariant && matchingVariant.stock > 0) {
-            availabilitySpan.innerHTML = `In stock (${matchingVariant.stock} available)`;
-            availabilitySpan.className = 'text-success';
+        if (matchingVariant) {
+            // ✅ UPDATE PRODUCT IMAGE
+            if (matchingVariant.image && productImage) {
+                productImage.src = matchingVariant.image;
+                productImage.alt = matchingVariant.display_color + ' - ' + matchingVariant.display_size;
+            }
             
-            // ✅ Enable buttons only when stock > 0
-            addToCartBtn.disabled = false;
-            buyNowBtn.disabled = false;
-            addToCartBtn.classList.remove('btn-secondary');
-            addToCartBtn.classList.add('btn-warning');
-            buyNowBtn.classList.remove('btn-secondary');
-            buyNowBtn.classList.add('btn-danger');
+            // ✅ NEW STOCK LOGIC
+            if (matchingVariant.stock > 10) {
+                availabilitySpan.innerHTML = 'Stock available';
+                availabilitySpan.className = 'text-success';
+            } else if (matchingVariant.stock > 0) {
+                availabilitySpan.innerHTML = `Hurry! Limited stock available (${matchingVariant.stock})`;
+                availabilitySpan.className = 'text-warning';
+            } else {
+                availabilitySpan.innerHTML = 'Out of stock';
+                availabilitySpan.className = 'text-danger';
+            }
             
-            // ✅ Store the correct variant ID
-            selectedVariantId = matchingVariant.id;
-            
-        } else if (matchingVariant && matchingVariant.stock === 0) {
-            availabilitySpan.innerHTML = 'Out of stock';
-            availabilitySpan.className = 'text-danger';
+            // Enable buttons only if stock > 0
+            if (matchingVariant.stock > 0) {
+                addToCartBtn.disabled = false;
+                buyNowBtn.disabled = false;
+                addToCartBtn.classList.remove('btn-secondary');
+                addToCartBtn.classList.add('btn-warning');
+                buyNowBtn.classList.remove('btn-secondary');
+                buyNowBtn.classList.add('btn-danger');
+                
+                selectedVariantId = matchingVariant.id;
+            }
         } else {
-            availabilitySpan.innerHTML = 'Please select size and color.';
-            availabilitySpan.className = 'text-muted';
+            // ✅ NEW: Check if both are selected or not
+            if (selectedSize && selectedColor) {
+                availabilitySpan.innerHTML = 'Please select available color and size both';
+                availabilitySpan.className = 'text-danger'; 
+            } else {
+                availabilitySpan.innerHTML = 'Please select color and size';
+                availabilitySpan.className = 'text-muted';
+
+            }
+            
+            // Reset to original image
+            if (productImage) {
+                productImage.src = "{{ product_item_data.photo }}";
+                productImage.alt = "{{ product_item_data.product_name }}";
+            }
         }
     }
 
@@ -308,6 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 });
+
 </script>
 
 
