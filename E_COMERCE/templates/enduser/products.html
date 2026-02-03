@@ -7,11 +7,11 @@
 <div class="home-container" style="gap: 20px;display: flex;">
   <section class="d-flex flex-column" style="width: 100%; overflow-y: auto; gap:10px;">
     {% if product_items %}
-    <div class="d-flex flex-wrap gap-5 justify-content-center overflow-auto pb-3" 
+    <div class="d-flex flex-wrap justify-content-center overflow-auto pb-3" 
          style="min-height: 280px;">
         {% for product in product_items %}
-            <div class="card p-2 text-center position-relative flex-shrink-0" 
-                 style="min-width:170px;max-width:180px;height:300px;">
+            <div class="card pro-cards p-2 text-center position-relative flex-shrink-0" 
+                 style="min-width:170px;max-width:180px;height:300px;margin: 15px;">
                 <!-- Wishlist Heart Icon -->
                 <i id="wishlist-icon-{{ product.id }}" 
                 class="bi bi-heart position-absolute top-0 end-0 m-2 p-1 wishlist-icon"
@@ -43,9 +43,9 @@
                       {{ product.product_name }}
                   </div>
                   {% if product.price_data.sale_price == product.price_data.original_price  %}
-                    <div class="card-text text-muted" style="font-size:14px;">Price ₹{{ product.price_data.original_price }}</div>
+                    <div class="card-text text-muted" style="font-size:14px;">₹{{ product.price_data.original_price }}</div>
                   {% else %}
-                  <span style="text-decoration: line-through;font-size:14px; color: #dc3545;">Price ₹{{ product.price_data.original_price }}</span>  
+                  <span style="text-decoration: line-through;font-size:14px; color: #dc3545;">₹{{ product.price_data.original_price }}</span>  
                     <span style="font-size:14px;">₹{{ product.price_data.sale_price }}</span>
                   {% endif %}
                 </div>
@@ -78,6 +78,17 @@
 
 .wishlist-bounce {
     animation: wishlist-bounce 0.5s ease-in-out;
+}
+
+@media(max-width:480px){
+  .pro-cards{
+    margin:10px!important;
+    min-width: 130px!important;
+    max-width: 130px!important;
+  }
+  .home-container{
+    padding:0px!important;
+  }
 }
 </style>
 <script>
