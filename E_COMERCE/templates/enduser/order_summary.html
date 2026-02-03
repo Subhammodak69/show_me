@@ -13,68 +13,82 @@
 <div class="container-fluid" style="height: 100%;padding:0px !important; margin-bottom: 20px;">
   <h2 class="mb-3 text-center fw-bold">Your Order Summary</h2>
 
-  <form id="order-form" class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-4"
+  <form id="order-form" class="d-flex flex-column flex-md-row justify-content-center align-items-stretch gap-4"
     style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
-    <!-- Cart Items -->
-    <div id="cart-items" class="w-100 w-md-50">
+    <!-- Cart Items - UPDATED with dynamic variants -->
+    <div id="cart-items" class="w-100 w-md-50"style="max-width:400px;">
       {% for item in cart_items %}
-      <div class="cart-item border p-3 rounded text-center mb-3" data-id="{{ item.id }}">
-        <!-- Product Image -->
-        <img src="{{ item.photo }}" class="mb-3 rounded" alt="Product Image" style="width: 100%; max-width: 135px; height: auto;">
-        <!-- Product Info -->
-        <h5 class="fw-semibold mb-2">{{ item.product_name }}</h5>
+      <!-- Add these data attributes to each cart-item div -->
+      <div class="cart-item border p-5 rounded text-center mb-3" 
+          data-id="{{ item.id }}"
+          data-size-display="{{ item.size_display }}"
+          data-color-display="{{ item.color_display }}">
 
+        <!-- Product Image - DYNAMIC -->
+        <div class="mb-3">
+          <img id="product-image-{{ item.id }}" 
+              src="{{ item.photo }}" 
+              class="rounded" 
+              alt="Product Image" 
+              style="width: 100%; max-width: 135px; height: 140px; object-fit: contain;">
+        </div>
+        
+        <!-- Product Info -->
+        <p class="fw-semibold mb-2" style="width: 100%; font-size:20px;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">{{ item.product_name }}</p>
+        
+        <!-- Variant JSON Data -->
+        <script id="variants-{{ item.id }}" type="application/json">{{ item.all_variants_json|safe }}</script>
+        
+        <!-- Current Variant Info -->
+        <div id="availability-{{ item.id }}" class="mb-2">
+          <strong>Availability:</strong> 
+          <span id="display-availability-{{ item.id }}" class="badge bg-secondary">
+            Loading...
+          </span>
+        </div>
+        
         <!-- Selectors -->
-        <div class="d-flex flex-wrap gap-2 justify-content-center mb-2" style="flex-direction: column; width: 100%;">
+        <div class="d-flex flex-wrap gap-2 justify-content-center mb-2" style="margin: auto;max-width: 250px; flex-direction: column; width: 100%;">
           <!-- Quantity -->
-          <div>
+          <div class="d-flex align-items-center justify-content-center gap-4 w-100">
             <label>Quantity:</label>
-            <input type="text" 
+            <input type="number" 
                   id="quantity-{{ item.id }}" 
                   name="quantity" 
                   value="{{ item.quantity }}" 
+                  min="1"
                   required 
                   class="form-control w-50 mx-auto">
           </div>
           
           <!-- Size -->
-          {% if item.size_options %}
-          <div class="d-flex gap-4">
+          <div class="d-flex align-items-center justify-content-center gap-4 w-100">
             <label class="d-block">Size:</label>
             <select id="size-{{ item.id }}" class="form-select text-center w-100">
               <option value="">Select Size</option>
-              {% for s in item.size_options %}
-                <option value="{{ s.value }}" {% if s.value == item.size %}selected{% endif %}>{{ s.name }}</option>
-              {% endfor %}
             </select>
           </div>
-          {% endif %}
 
           <!-- Color -->
-          {% if item.color_options %}
-          <div class="d-flex gap-4">
+          <div class="d-flex align-items-center justify-content-center gap-4 w-100">
             <label class="d-block">Color:</label>
             <select id="color-{{ item.id }}" class="form-select text-center w-100">
               <option value="">Select Color</option>
-              {% for c in item.color_options %}
-                <option value="{{ c.value }}" {% if c.value == item.color %}selected{% endif %}>{{ c.name }}</option>
-              {% endfor %}
             </select>
           </div>
-          {% endif %}
         </div>
         
         <!-- Remove Button -->
-        <div>
-          <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem({{ item.id }})">Remove</button>
-        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem({{ item.id }})" style="margin: auto; max-width: 250px;">
+          Remove
+        </button>
       </div>
       {% endfor %}
     </div>
 
   
     <!-- User + Address Info -->
-    <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0">
+    <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0" style="max-width:600px;">
       <div class="border rounded p-3 mb-3 bg-light">
       <h4>Payable Amount</h4>
       <div class="d-flex align-items-center w-100 justify-content-between">
@@ -121,54 +135,222 @@
   </form>
 </div>
 <script>
-  document.getElementById('paymentSelect').addEventListener('change', function() {
-    const btn = document.getElementById('orderBtn');
-    if (this.value === 'cod') {
-      btn.disabled = false;
-    } else {
-      btn.disabled = true;
-    }
-  });
+let updateTimeout = {}; // Debounce timer for each cart item
 
-</script>
-
-<script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Handle ALL cart item updates
+  // Initialize each cart item
   document.querySelectorAll('.cart-item').forEach(function(cartItem) {
     const itemId = cartItem.dataset.id;
-    
-    // Quantity input
-    const quantityInput = document.getElementById(`quantity-${itemId}`);
-    if (quantityInput) {
-      quantityInput.addEventListener('change', function() { updateCartItem(itemId); });
-      quantityInput.addEventListener('blur', function() { updateCartItem(itemId); });
-    }
-    
-    // Size select
-    const sizeSelect = document.getElementById(`size-${itemId}`);
-    if (sizeSelect) {
-      sizeSelect.addEventListener('change', function() { updateCartItem(itemId); });
-    }
-    
-    // Color select
-    const colorSelect = document.getElementById(`color-${itemId}`);
-    if (colorSelect) {
-      colorSelect.addEventListener('change', function() { updateCartItem(itemId); });
-    }
+    initCartItemVariants(itemId);
+  });
+
+  // Payment select
+  document.getElementById('paymentSelect').addEventListener('change', function() {
+    const btn = document.getElementById('orderBtn');
+    btn.disabled = this.value !== 'cod';
   });
 });
 
-function updateCartItem(itemId) {
-  const quantity = document.getElementById(`quantity-${itemId}`).value;
-  const size = document.getElementById(`size-${itemId}`)?.value || '';
-  const color = document.getElementById(`color-${itemId}`)?.value || '';
+function initCartItemVariants(itemId) {
+  const cartItemDiv = document.querySelector(`[data-id="${itemId}"]`);
+  const variantsScript = document.getElementById(`variants-${itemId}`);
+  const sizeSelect = document.getElementById(`size-${itemId}`);
+  const colorSelect = document.getElementById(`color-${itemId}`);
+  const quantityInput = document.getElementById(`quantity-${itemId}`);
+  const productImage = document.getElementById(`product-image-${itemId}`);
+  const availabilitySpan = document.getElementById(`display-availability-${itemId}`);
+  
+  let variants = [];
+  let selectedVariantId = null;
+  
+  // Get initial values FIRST
+  const initialSize = cartItemDiv.dataset.sizeDisplay;
+  const initialColor = cartItemDiv.dataset.colorDisplay;
+  
+  console.log(`Item ${itemId}: Initial Size="${initialSize}", Color="${initialColor}"`);
+  
+  try {
+    variants = JSON.parse(variantsScript.textContent);
+  } catch (e) {
+    console.error('JSON Parse Error for item', itemId, e);
+    availabilitySpan.textContent = 'Error loading variants';
+    availabilitySpan.className = 'badge bg-danger';
+    return;
+  }
 
-  if (!quantity || parseInt(quantity) <= 0) {
+  // Store original image
+  productImage.dataset.originalSrc = productImage.src;
+
+  // Populate sizes
+  if (variants.length > 0) {
+    const uniqueSizes = [...new Set(variants.map(v => v.display_size))].sort();
+    
+    uniqueSizes.forEach(size => {
+      const option = document.createElement('option');
+      option.value = size;
+      option.textContent = size;
+      sizeSelect.appendChild(option);
+    });
+    
+    // Set initial size
+    if (initialSize && uniqueSizes.includes(initialSize)) {
+      sizeSelect.value = initialSize;
+      console.log(`✅ Set initial size: ${initialSize}`);
+    }
+  }
+
+  function updateColorOptions() {
+    const selectedSize = sizeSelect.value;
+    colorSelect.innerHTML = '<option value="">Select Color</option>';
+    
+    if (selectedSize && variants.length > 0) {
+      const availableColors = [...new Set(
+        variants
+          .filter(v => v.display_size === selectedSize && v.stock > 0)
+          .map(v => v.display_color)
+      )].sort();
+      
+      availableColors.forEach(color => {
+        const option = document.createElement('option');
+        option.value = color;
+        option.textContent = color;
+        colorSelect.appendChild(option);
+      });
+      
+      // Set initial color
+      if (initialColor && availableColors.includes(initialColor)) {
+        colorSelect.value = initialColor;
+        console.log(`✅ Set initial color: ${initialColor}`);
+      }
+    }
+  }
+
+  function updateVariantInfo() {
+    const selectedSize = sizeSelect.value;
+    const selectedColor = colorSelect.value;
+    
+    const matchingVariant = variants.find(v => 
+      v.display_size === selectedSize && v.display_color === selectedColor
+    );
+
+    // Reset styles
+    selectedVariantId = null;
+    sizeSelect.classList.remove('border-success', 'border-warning', 'border-danger');
+    colorSelect.classList.remove('border-success', 'border-warning', 'border-danger');
+    
+    if (matchingVariant) {
+      // Update image
+      if (matchingVariant.image) {
+        productImage.src = matchingVariant.image;
+        productImage.alt = `${matchingVariant.display_color} - ${matchingVariant.display_size}`;
+      }
+      
+      // Update availability
+      if (matchingVariant.stock > 10) {
+        availabilitySpan.textContent = 'In Stock';
+        availabilitySpan.className = 'badge bg-success';
+        sizeSelect.classList.add('border-success');
+        colorSelect.classList.add('border-success');
+      } else if (matchingVariant.stock > 0) {
+        availabilitySpan.textContent = `Low Stock (${matchingVariant.stock})`;
+        availabilitySpan.className = 'badge bg-warning';
+        sizeSelect.classList.add('border-warning');
+        colorSelect.classList.add('border-warning');
+      } else {
+        availabilitySpan.textContent = 'Out of Stock';
+        availabilitySpan.className = 'badge bg-danger';
+        sizeSelect.classList.add('border-danger');
+        colorSelect.classList.add('border-danger');
+      }
+      
+      selectedVariantId = matchingVariant.id;
+    } else if (selectedSize && selectedColor) {
+      availabilitySpan.textContent = 'Combination not available';
+      availabilitySpan.className = 'badge bg-danger';
+      productImage.src = productImage.dataset.originalSrc;
+    } else {
+      availabilitySpan.textContent = 'Select size & color';
+      availabilitySpan.className = 'badge bg-secondary';
+      productImage.src = productImage.dataset.originalSrc;
+    }
+    
+    // 🔥 AUTO UPDATE CART when variant changes
+    debounceUpdateCart(itemId);
+  }
+
+  // 🔥 DEBOUNCE AUTO-UPDATE (300ms delay)
+  function debounceUpdateCart(itemId) {
+    // Clear existing timeout
+    if (updateTimeout[itemId]) {
+      clearTimeout(updateTimeout[itemId]);
+    }
+    
+    // Set new timeout
+    updateTimeout[itemId] = setTimeout(() => {
+      updateCartItem(itemId);
+    }, 300);
+  }
+
+  // Event listeners - ALL trigger auto-update
+  sizeSelect.addEventListener('change', () => {
+    updateColorOptions();
+    updateVariantInfo();
+  });
+  
+  colorSelect.addEventListener('change', updateVariantInfo);
+  
+  quantityInput.addEventListener('change', () => debounceUpdateCart(itemId));
+  quantityInput.addEventListener('input', () => debounceUpdateCart(itemId)); // Real-time as user types
+
+  // Initial load
+  updateColorOptions();
+  updateVariantInfo();
+}
+
+// 🔥 MAIN AUTO-UPDATE FUNCTION
+function updateCartItem(itemId) {
+  const quantityInput = document.getElementById(`quantity-${itemId}`);
+  const sizeSelect = document.getElementById(`size-${itemId}`);
+  const colorSelect = document.getElementById(`color-${itemId}`);
+  
+  const quantity = parseInt(quantityInput.value);
+  const sizeDisplay = sizeSelect.value;
+  const colorDisplay = colorSelect.value;
+
+  // Validations
+  if (!quantity || quantity <= 0) {
     showMessage('error', 'Please enter valid quantity');
     return;
   }
 
+  if (!sizeDisplay || !colorDisplay) {
+    showMessage('error', 'Please select size and color');
+    return;
+  }
+
+  const variantsScript = document.getElementById(`variants-${itemId}`);
+  const variants = JSON.parse(variantsScript.textContent);
+  const matchingVariant = variants.find(v => 
+    v.display_size === sizeDisplay && v.display_color === colorDisplay
+  );
+
+  if (!matchingVariant) {
+    showMessage('error', 'Invalid variant selected');
+    return;
+  }
+
+  if (matchingVariant.stock === 0) {
+    showMessage('error', 'Selected variant is out of stock');
+    return;
+  }
+
+  if (quantity > matchingVariant.stock) {
+    showMessage('error', `Only ${matchingVariant.stock} items available`);
+    quantityInput.value = matchingVariant.stock; // Auto-correct
+    return;
+  }
+
+  // 🔥 AUTO CALL API
   fetch('/api/cart/update/', {
     method: 'POST',
     headers: {
@@ -177,27 +359,57 @@ function updateCartItem(itemId) {
     },
     body: JSON.stringify({
       cart_item_id: parseInt(itemId),
-      quantity: parseInt(quantity),
-      size: size ? parseInt(size) : null,
-      color: color ? parseInt(color) : null
+      quantity: quantity,
+      size: matchingVariant.size_value,
+      color: matchingVariant.color_value
     })
   })
   .then(response => response.json())
   .then(data => {
     if (data.success) {
-      showMessage('success', 'Cart updated successfully!');
-      setTimeout(() => location.reload(), 1000); // Refresh after success
+      console.log('✅ Cart auto-updated for item:', itemId);
+      // No reload - stays smooth!
     } else {
       showMessage('error', data.error || 'Update failed');
+      location.reload(); // Reload on error
     }
   })
   .catch(error => {
-    console.error('Error:', error);
-    showMessage('error', 'Network error. Please try again.');
+    console.error('Auto-update error:', error);
+    showMessage('error', 'Network error');
   });
 }
 
-// CSRF Helper
+function showMessage(type, message) {
+  alert(`${type.toUpperCase()}: ${message}`);
+}
+
+function removeItem(itemId) {
+  if (confirm('Remove this item from cart?')) {
+    fetch(`/cart/remove/${itemId}/`, { // Fixed URL - match your backend
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ cart_item_id: parseInt(itemId) })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showMessage('success', 'Item removed!');
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showMessage('error', data.error || 'Remove failed');
+      }
+    })
+    .catch(error => {
+      console.error('Remove error:', error);
+      showMessage('error', 'Network error');
+    });
+  }
+}
+
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -213,4 +425,7 @@ function getCookie(name) {
   return cookieValue;
 }
 </script>
+
+
+
 {% endblock %}

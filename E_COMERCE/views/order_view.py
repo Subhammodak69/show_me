@@ -26,7 +26,7 @@ class OrderCreateView(EnduserRequiredMixin, View):
         user = request.user
         cart_items = cart_service.get_user_cart_items(user.id)
         if not cart_items:
-            return JsonResponse({'error': 'Your cart is empty.'}, status=400)
+            return redirect('/cart/')
         
         # Calculate totals safely
         price = sum(item['total_price'] for item in cart_items)
