@@ -1,5 +1,6 @@
 {% extends "enduser/base.html" %}
 {% load static %}
+
 {% block title %}Order | Show_me{% endblock %}
 {% block extra_js %}
   <script src="{% static 'js/order_summary_singly.js' %}"></script>
@@ -7,123 +8,529 @@
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/order_summary_singly.css' %}">
 {% endblock %}
-
 {% block content %}
+<!-- Delivery Address Modal -->
+<div class="modal fade" id="deliveryAddressModal" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deliveryModalLabel">Delivery Address</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="deliveryAddressForm">
+         <div class="row">
+           <!-- State -->
+           <div class="col-md-6 mb-3">
+             <label class="form-label">State <span class="text-danger">*</span></label>
+             <select class="form-select" id="stateSelect" required>
+               <option value="">Select State</option>
+             </select>
+           </div>
+           <!-- City -->
+           <div class="col-md-6 mb-3">
+             <label class="form-label">City <span class="text-danger">*</span></label>
+             <select class="form-select" id="citySelect" required disabled>
+               <option value="">Select City</option>
+             </select>
+           </div>
+         </div>
+         <!-- PIN Code -->
+         <div class="col-12 mb-3">
+           <label class="form-label">PIN Code <span class="text-danger">*</span></label>
+           <input type="number" class="form-control" id="pinCode" placeholder="110001" required maxlength="6">
+         </div>
+         <!-- Village/Locality -->
+         <div class="col-12 mb-3">
+           <label class="form-label">Village/Locality <span class="text-danger">*</span></label>
+           <input type="text" class="form-control" id="locality" placeholder="Enter village/locality" required>
+         </div>
+         <!-- Road/Landmark -->
+         <div class="col-12 mb-3">
+           <label class="form-label">Road/Street/Landmark <span class="text-danger">*</span></label>
+           <input type="text" class="form-control" id="road" placeholder="House no, street, landmark" required>
+         </div>
+         <!-- Phone Number -->
+         <div class="col-12 mb-3">
+           <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+           <input type="tel" class="form-control" id="phoneNumber" placeholder="98XXXXXXXX" required maxlength="10">
+         </div>
+       </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveAddressBtn">
+          <span class="spinner-border spinner-border-sm d-none" id="saveSpinner"></span>
+          Place Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="container-fluid" style="height: 100%; margin-bottom: 20px; padding: 0px !important;max-width: 1000px !important;">
   <h2 class="mb-3 text-center fw-bold">Your Order Summary</h2>
 
-  <form id="direct-order-form"
-    class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-4"
+  <!-- 🔥 FIXED FORM - method="POST" + CSRF -->
+  <form id="direct-order-form" method="POST" action="" class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-4"
     style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
-
+    {% csrf_token %}
+    
     <!-- Product Item -->
     <div class="w-100 cart-item p-3 text-center w-md-50 mb-3 mb-md-0 d-flex flex-column align-items-center">
       <img src="{{ item_data.product_photo }}"
-        class="mb-3 rounded" alt="Product Image"
-        style="width: 100%; max-width: 170px; height: auto;">
+           id="product-image"
+           class="mb-3 rounded" alt="Product Image"
+           style="width: 100%; max-width: 170px; height: auto;">
 
       <h5 class="fw-semibold mb-3">{{ item_data.product_name }}</h5>
-      <div class="d-flex flex-column justify-content-center gap-3 flex-wrap mt-2">
+      
+      <!-- Variant JSON Data -->
+      <script id="variants-data" type="application/json">
+        {{ item_data.variants_json|safe }}
+      </script>
+      
+      <!-- Availability -->
+      <div id="availability" class="mb-2">
+        <strong>Availability:</strong> 
+        <span id="display-availability" class="badge bg-secondary">Loading...</span>
+      </div>
 
-        <!-- Quantity -->
+      <div class="d-flex flex-column justify-content-center gap-3 flex-wrap mt-2" style="width: 100%; max-width: 250px;">
+        <!-- Quantity 🔥 UPDATED WITH MAX ATTRIBUTE -->
         <div class="d-flex gap-4">
-          <label class="d-block">Quantity:</label>
-          <input type="number" id="quantity" class="form-control w-100 text-center" value="1" min="1">
-        </div class="d-flex gap-4">
+         <label class="d-block">Quantity:</label>
+         <input type="number" id="quantity" class="form-control w-100 text-center" 
+                value="{{ item_data.quantity|default:'1' }}" min="1" max="999">
+        </div>
 
         <!-- Size -->
         <div class="d-flex gap-4">
-          <label class="d-block">Size:</label>
-          <select id="size" class="form-select text-center w-100">
-            {% for s in item_data.size_options %}
-              <option value="{{ s.value }}" {% if s.value == item_data.size %}selected{% endif %}>{{ s.name }}</option>
-            {% endfor %}
-          </select>
+         <label class="d-block">Size:</label>
+         <select id="size" class="form-select text-center w-100" data-initial-size="{{ item_data.size }}">
+           <option value="">Select Size</option>
+           {% for s in item_data.size_options %}
+             <option value="{{ s.value }}" data-display="{{ s.name }}" 
+                     {% if s.value == item_data.size %}selected{% endif %}>
+               {{ s.name }}
+             </option>
+           {% endfor %}
+         </select>
         </div>
 
-        <!-- Color (if applicable) -->
+        <!-- Color -->
         {% if item_data.color_options %}
         <div class="d-flex gap-4">
-          <label class="d-block">Color:</label>
-          <select id="color" class="form-select text-center w-100">
-            {% for c in item_data.color_options %}
-              <option value="{{ c.value }}" {% if c.value == item_data.color %}selected{% endif %}>{{ c.name }}</option>
-            {% endfor %}
-          </select>
+         <label class="d-block">Color:</label>
+         <select id="color" class="form-select text-center w-100" data-initial-color="{{ item_data.color }}">
+           <option value="">Select Color</option>
+           {% for c in item_data.color_options %}
+             <option value="{{ c.value }}" data-display="{{ c.name }}" 
+                     {% if c.value == item_data.color %}selected{% endif %}>
+               {{ c.name }}
+             </option>
+           {% endfor %}
+         </select>
         </div>
         {% endif %}
       </div>
     </div>
-    <input type="hidden" value={{item_data.id}} id="product_id">
+    
+    <!-- 🔥 FIXED: Correct product_item value -->
+    <input type="hidden" name="product_item_id" value="{{ item_data.product_item }}" id="product_item_id">
+
     <div id="pay-de" style="width:55%;">
-      <div class="w-100">
-        <div class="border rounded mb-3  ">
-          <h4 class="p-3 bg-primary text-light">Payable Amount</h4>
-          <div class="p-3">
-            <div class="d-flex align-items-center w-100 justify-content-between">
-              <div>Product item-- </div>
-              <div class="text-secondary">{{ item_data.price|floatformat:2 }}</div>
-            </div>
-            <div class="d-flex align-items-center w-100 justify-content-between">
-              <div>Discount Amount-- </div>
-              <div class="text-danger">-{{ item_data.discount }}</div>
-            </div>
-            <br>
-            <hr>
-            <div class="d-flex align-items-center w-100 justify-content-between">
-              <div>Total-- </div>
-              <div class="text-success">{{ item_data.total_price|floatformat:2 }}</div>
-            </div>
-          </div>
+      <!-- Summary -->
+      <div class="border rounded mb-3">
+        <h4 class="p-3 bg-primary text-light">Payable Amount</h4>
+        <div class="p-3">
+         <div class="d-flex align-items-center w-100 justify-content-between">
+           <div>Product item-- </div>
+           <div class="text-secondary" id="summary-price">{{ item_data.price|floatformat:2 }}</div>
+         </div>
+         <div class="d-flex align-items-center w-100 justify-content-between">
+           <div>Discount Amount-- </div>
+           <div class="text-danger" id="summary-discount">-{{ item_data.discount|floatformat:2 }}</div>
+         </div>
+         <br>
+         <hr>
+         <div class="d-flex align-items-center w-100 justify-content-between">
+           <div>Total-- </div>
+           <div class="text-success" id="summary-total">{{ item_data.total_price|floatformat:2 }}</div>
+         </div>
         </div>
       </div>
 
-      <!-- User + Address Info -->
-      <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0">
-        <div class="border rounded mb-3">
-          <h4 class="p-3 bg-primary text-light">User Details</h4>
-          <div class="p-3">
-            <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            {% if user.address %}
-              <p><strong>Address:</strong> {{ user.address }}</p>
-            {% endif %}
-          </div>
-        </div>
-        <div class="  border rounded ">
-          <h4 class="p-3 bg-primary text-light">Order Details</h4>
-          <div class="p-3">
-            <label for="delivery-address" class="mt-2"><strong>Mobile Number*</strong></label>
-            <input class="form-control" name="phone" value="{{user.phone}}" id="phone" required>
-            <label for="delivery-address" class="mt-2"><strong>Delivery Address</strong></label>
-            <textarea id="delivery-address" name="address" class="form-control mb-2"
-              placeholder="Enter delivery address manually..." required>{{user.address}}</textarea>
-
-            <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
-              Use My Current Location
-            </button>
-            <div class="mb-3">
-              <label>Select Payment Options</label>
-              <select id="paymentSelect" name="select" class="form-control" required>
-                <option value="">--Select--</option>
-                <option value="cod">Cash On Delivery</option>
-              </select>
-            </div>
-            <button id="orderBtn" type="submit" class="btn btn-success d-block mt-auto" disabled>Place Order</button>
-          </div>
-        </div>
+      <!-- User Details -->
+      <div class="border rounded p-3 mb-3 bg-light">
+        <h4 class="mb-3">User Details</h4>
+        <p><strong>Full Name:</strong> {{ user.get_full_name }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        {% if user.address %}
+        <p><strong>Address:</strong> {{ user.address }}</p>
+        {% endif %}
       </div>
+      
+      <label>Select Payment Options</label>
+      <select id="paymentSelect" class="form-control mb-3" required>
+        <option value="">--Select--</option>
+        <option value="cod">Cash On Delivery</option>
+      </select>
+      <button type="button" id="orderBtn" class="btn btn-success d-block mt-4" disabled>Proceed</button>
     </div>
   </form>
 </div>
+
 <script>
-  document.getElementById('paymentSelect').addEventListener('change', function() {
-    const btn = document.getElementById('orderBtn');
-    if (this.value === 'cod') {
-      btn.disabled = false;
+let updateTimeout = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // 🔥 Initialize FIRST
+  initSingleProductVariants();
+  
+  // Elements
+  const orderBtn = document.getElementById('orderBtn');
+  const paymentSelect = document.getElementById('paymentSelect');
+  const saveAddressBtn = document.getElementById('saveAddressBtn');
+  const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryAddressModal'));
+
+  // Payment select
+  paymentSelect.addEventListener('change', function() {
+    orderBtn.disabled = this.value !== 'cod';
+  });
+
+  // Proceed → Open modal
+  orderBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    deliveryModal.show();
+  });
+
+  // 🔥 FIXED: AJAX POST for Place Order WITH STOCK VALIDATION
+  saveAddressBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (!validateAddressForm()) return;
+
+    // 🔥 FINAL STOCK CHECK BEFORE ORDER
+    const quantity = parseInt(document.getElementById('quantity').value) || 1;
+    const size = document.getElementById('size').value;
+    const color = document.getElementById('color')?.value;
+    const variantsScript = document.getElementById('variants-data');
+    
+    let variants = [];
+    try {
+      const jsonText = variantsScript.textContent.trim();
+      if (jsonText && jsonText !== 'null' && jsonText !== '[]') {
+        variants = JSON.parse(jsonText);
+      }
+    } catch(e) {
+      console.error('Variant parse error:', e);
+    }
+    
+    const matchingVariant = variants.find(v => 
+      v.size_value == size && (!color || v.color_value == color)
+    );
+    
+    if (matchingVariant && quantity > matchingVariant.stock) {
+      showMessage('error', `Cannot order ${quantity}. Only ${matchingVariant.stock} available!`);
+      return;
+    }
+
+    // Show spinner
+    document.getElementById('saveSpinner').classList.remove('d-none');
+    this.disabled = true;
+
+    // Collect ALL order data
+    const orderData = {
+      product_item_id: parseInt(document.getElementById('product_item_id').value),
+      quantity: quantity,
+      size: parseInt(size),
+      color: color ? parseInt(color) : null,
+      address: [
+        document.getElementById('stateSelect').value,
+        document.getElementById('citySelect').value,
+        document.getElementById('locality').value,
+        document.getElementById('road').value,
+        document.getElementById('pinCode').value
+      ].filter(Boolean).join(', '),
+      phone: document.getElementById('phoneNumber').value
+    };
+
+    console.log('Order data:', orderData); // Debug
+
+    // 🔥 AJAX POST to SAME URL (DirectOrderView)
+    fetch('', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(orderData)
+    })
+    .then(response => {
+      if (response.redirected) {
+        window.location.href = response.url; // Follow backend redirect
+      } else {
+        return response.json();
+      }
+    })
+    .then(data => {
+      if (data && data.success) {
+        showMessage('success', data.message || 'Order placed successfully!');
+        setTimeout(() => {
+          window.location.href = `/track_order/${data.order_id}/`;
+        }, 1500);
+      } else {
+        showMessage('error', data?.error || 'Order failed');
+        document.getElementById('saveSpinner').classList.add('d-none');
+        this.disabled = false;
+      }
+    })
+    .catch(error => {
+      console.error('Order error:', error);
+      showMessage('error', 'Network error - please try again');
+      document.getElementById('saveSpinner').classList.add('d-none');
+      this.disabled = false;
+    });
+  });
+
+  initStateCityDropdowns();
+});
+
+// 🔥 UPDATED Variant System WITH STOCK QUANTITY VALIDATION
+function initSingleProductVariants() {
+  const variantsScript = document.getElementById('variants-data');
+  const sizeSelect = document.getElementById('size');
+  const colorSelect = document.getElementById('color');
+  const quantityInput = document.getElementById('quantity');
+  const productImage = document.getElementById('product-image');
+  const availabilitySpan = document.getElementById('display-availability');
+  
+  let variants = [];
+  
+  try {
+    const jsonText = variantsScript.textContent.trim();
+    if (jsonText && jsonText !== 'null' && jsonText !== '[]') {
+      variants = JSON.parse(jsonText);
+    }
+  } catch (e) {
+    console.error('JSON Parse Error:', e);
+    availabilitySpan.textContent = 'Variant data unavailable';
+    return;
+  }
+
+  productImage.dataset.originalSrc = productImage.src;
+
+  // Set initial values
+  if (sizeSelect.dataset.initialSize) {
+    sizeSelect.value = sizeSelect.dataset.initialSize;
+  }
+  if (colorSelect && colorSelect.dataset.initialColor) {
+    colorSelect.value = colorSelect.dataset.initialColor;
+  }
+
+  function updateVariantInfo() {
+    const selectedSize = sizeSelect.value;
+    const selectedColor = colorSelect ? colorSelect.value : null;
+    
+    const matchingVariant = variants.find(v => 
+      v.size_value == selectedSize && (!selectedColor || v.color_value == selectedColor)
+    );
+
+    // Clear previous border classes
+    [sizeSelect, colorSelect].forEach(el => {
+      if (el) el.classList.remove('border-success', 'border-warning', 'border-danger');
+    });
+    quantityInput.classList.remove('border-warning', 'border-danger');
+    
+    if (matchingVariant) {
+      if (matchingVariant.image) productImage.src = matchingVariant.image;
+      
+      const stock = matchingVariant.stock;
+      const currentQty = parseInt(quantityInput.value) || 1;
+      
+      // 🔥 DYNAMIC MAX ATTRIBUTE
+      quantityInput.max = stock;
+      
+      // 🔥 AUTO-CORRECT QUANTITY IF EXCEEDS STOCK
+      if (currentQty > stock) {
+        quantityInput.value = stock;
+        availabilitySpan.textContent = `Max ${stock} available`;
+        availabilitySpan.className = 'badge bg-warning';
+        quantityInput.classList.add('border-warning');
+        sizeSelect.classList.add('border-warning');
+        if (colorSelect) colorSelect.classList.add('border-warning');
+        showMessage('warning', `Quantity adjusted to ${stock} (max available)`);
+      } else if (stock > 10) {
+        availabilitySpan.textContent = 'In Stock'; 
+        availabilitySpan.className = 'badge bg-success';
+        sizeSelect.classList.add('border-success');
+        if (colorSelect) colorSelect.classList.add('border-success');
+      } else if (stock > 0) {
+        availabilitySpan.textContent = `Low Stock (${stock})`; 
+        availabilitySpan.className = 'badge bg-warning';
+        sizeSelect.classList.add('border-warning');
+        if (colorSelect) colorSelect.classList.add('border-warning');
+      } else {
+        availabilitySpan.textContent = 'Out of Stock'; 
+        availabilitySpan.className = 'badge bg-danger';
+        sizeSelect.classList.add('border-danger');
+        if (colorSelect) colorSelect.classList.add('border-danger');
+        quantityInput.classList.add('border-danger');
+        quantityInput.value = 0;
+        quantityInput.disabled = true;
+      }
+      debounceUpdateOrder();
     } else {
-      btn.disabled = true;
+      availabilitySpan.textContent = 'Select valid combination';
+      availabilitySpan.className = 'badge bg-secondary';
+      productImage.src = productImage.dataset.originalSrc;
+      quantityInput.disabled = true;
+    }
+  }
+
+  // 🔥 NEW: Real-time quantity validation against stock
+  quantityInput.addEventListener('input', function() {
+    const matchingVariant = variants.find(v => 
+      v.size_value == sizeSelect.value && 
+      (!colorSelect || v.color_value == colorSelect.value)
+    );
+    
+    if (matchingVariant) {
+      const stock = matchingVariant.stock;
+      quantityInput.max = stock;
+      
+      if (parseInt(this.value) > stock) {
+        this.value = stock;
+        showMessage('warning', `Maximum ${stock} available`);
+        quantityInput.classList.add('border-warning');
+      } else {
+        quantityInput.classList.remove('border-warning', 'border-danger');
+      }
     }
   });
+
+  function debounceUpdateOrder() {
+    if (updateTimeout) clearTimeout(updateTimeout);
+    updateTimeout = setTimeout(updateOrder, 300);
+  }
+
+  sizeSelect.addEventListener('change', updateVariantInfo);
+  if (colorSelect) colorSelect.addEventListener('change', updateVariantInfo);
+  quantityInput.addEventListener('input', debounceUpdateOrder);
+  quantityInput.addEventListener('change', debounceUpdateOrder);
+
+  updateVariantInfo();
+}
+
+function updateOrder() {
+  // Price update API call (unchanged)
+  const quantity = parseInt(document.getElementById('quantity').value) || 1;
+  const size = document.getElementById('size').value;
+  const productItemId = document.getElementById('product_item_id').value;
+  
+  if (!size || !productItemId) return;
+  
+  fetch('/api/single-order/update/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({
+      product_item_id: parseInt(productItemId),
+      quantity: quantity,
+      size: parseInt(size),
+      color: document.getElementById('color')?.value ? parseInt(document.getElementById('color').value) : null
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success && data.summary) {
+      showMessage('success',data.message);
+      updateOrderSummary(data.summary);
+    }else{
+      showMessage('error',data.error);
+    }
+  })
+  .catch(console.error);
+}
+
+function updateOrderSummary(summary) {
+  const formatPrice = (value) => (parseFloat(value) || 0).toFixed(2);
+  document.getElementById('summary-price').textContent = formatPrice(summary.original_price);
+  document.getElementById('summary-discount').textContent = `-${formatPrice(summary.discount)}`;
+  document.getElementById('summary-total').textContent = formatPrice(summary.total);
+}
+
+function validateAddressForm() {
+  const fields = ['stateSelect', 'citySelect', 'pinCode', 'locality', 'road', 'phoneNumber'];
+  let isValid = true;
+  fields.forEach(id => {
+    const field = document.getElementById(id);
+    if (!field.value.trim()) {
+      field.classList.add('is-invalid');
+      isValid = false;
+    } else {
+      field.classList.remove('is-invalid');
+    }
+  });
+  if (!isValid) showMessage('error', 'Please fill all fields');
+  return isValid;
+}
+
+function initStateCityDropdowns() {
+  const states = ['West Bengal', 'Delhi', 'Maharashtra', 'Uttar Pradesh', 'Kerala'];
+  const stateSelect = document.getElementById('stateSelect');
+  
+  states.forEach(state => {
+    const option = document.createElement('option');
+    option.value = state; 
+    option.textContent = state;
+    stateSelect.appendChild(option);
+  });
+
+  stateSelect.addEventListener('change', function() {
+    const citySelect = document.getElementById('citySelect');
+    citySelect.innerHTML = '<option value="">Select City</option>';
+    citySelect.disabled = false;
+    
+    const cities = {
+      'West Bengal': ['Kolkata', 'Siliguri', 'Durgapur', 'Asansol'],
+      'Delhi': ['New Delhi', 'Delhi'],
+      'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
+      'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra'],
+      'Kerala': ['Kochi', 'Thiruvananthapuram', 'Kozhikode']
+    };
+    
+    if (cities[this.value]) {
+      cities[this.value].forEach(city => {
+        const option = document.createElement('option');
+        option.value = city; 
+        option.textContent = city;
+        citySelect.appendChild(option);
+      });
+    }
+  });
+}
+
+function showMessage(type, message) { 
+  alert(`${type.toUpperCase()}: ${message}`); 
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 </script>
 {% endblock %}

@@ -3,8 +3,15 @@ from E_COMERCE.constants.default_values import Size,Color
 import cloudinary
 import cloudinary.uploader
 from uuid import uuid4
-from E_COMERCE.services import cart_service
+from E_COMERCE.services import cart_service,product_info_service
 from django.db.models import Sum
+import json
+
+def get_iteminfo_objects_by_product_item(product_item_id):
+    """
+    Get all variants for a ProductItem (size/color combinations)
+    """
+    return ItemInfo.objects.filter(product_item_id=product_item_id)
 
 def get_varient_object(varient_id):
     return ItemInfo.objects.filter(id = varient_id, is_active = True).first()
@@ -70,28 +77,57 @@ def get_iteminfo_by_id(info_id):
 
 def get_item_data_by_varient(variant_id):
     variant = get_iteminfo_object(variant_id)
+    # print(variant)
     data = {}
     discount = 0
+    
     if variant:
         discount = cart_service.get_discount_by_id(variant.product_item)
-        sale_price = (variant.product_item.price)-(discount)
+        sale_price = (variant.product_item.price) - (discount)
+        
+        # 🔥 Get ALL variants for this product for live selection
+        all_variants = product_info_service.get_iteminfo_objects_by_product_item(variant.product_item.id)
+        variants_json = []
+        
+        for v in all_variants:
+            variants_json.append({
+                'id': v.id,
+                'size_value': v.size,
+                'display_size': Size(v.size).name,
+                'color_value': v.color,
+                'display_color': Color(v.color).name if v.color else None,
+                'stock': v.stock,
+                'price': v.product_item.price,
+                'image': v.product_item.photo_url,
+                'product_item': v.product_item.id
+            })
+        
+        # 🔥 Convert to JSON STRING - THIS IS THE FIX
+        variants_json_string = json.dumps(variants_json, ensure_ascii=False)
+        
+        # 🔥 Size options (unique sizes with stock)
+        size_options = get_all_size_options_by_info_id(variant.id)
+        
         data = {
-            'id':variant.id,
-            'size':variant.size,
-            'size_display':Size(variant.size).name,
-            'color':variant.color,
-            'color_display':Color(variant.color),
-            'size_options':get_all_size_options_by_info_id(variant.id),
-            'color_options':get_all_color_options_by_info_id(variant.id),
-            'product_name':variant.product_item.product.name,
-            'product_price':variant.product_item.price,
-            'product_photo':variant.product_item.photo_url,
-            'price':variant.product_item.price,
+            'id': variant.id,
+            'quantity': 1,
+            'size': variant.size,
+            'size_display': Size(variant.size).name,
+            'color': variant.color,
+            'color_display': Color(variant.color),
+            'size_options': size_options,
+            'color_options': get_all_color_options_by_info_id(variant.id),
+            'variants_json': variants_json_string,  # ✅ NOW VALID JSON
+            'product_name': variant.product_item.product.name,
+            'product_price': variant.product_item.price,
+            'product_photo': variant.product_item.photo_url,
+            'price': variant.product_item.price,
+            'discount': discount,
             'total_price': sale_price,
-            'discount':discount
-            
+            'product_item': variant.product_item.id,
         }
     return data
+
 
 def get_all_size_options_by_info_id(variant_id):
     variant = get_iteminfo_object(variant_id)

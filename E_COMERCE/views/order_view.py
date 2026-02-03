@@ -69,8 +69,9 @@ class OrderCreateView(EnduserRequiredMixin, View):
 class DirectOrderView(EnduserRequiredMixin, View):
     def get(self, request):
         variant_id = request.GET.get('variant_id')
+        # print(variant_id)
         item_data = product_info_service.get_item_data_by_varient(variant_id) 
-        
+        # print(item_data)
         if not item_data:
             return JsonResponse({'error': 'Product variant not found.'}, status=404)
 
@@ -80,19 +81,22 @@ class DirectOrderView(EnduserRequiredMixin, View):
         })
     
     def post(self, request):
+        print("comeee=========================>")
         try:
             data = json.loads(request.body)
+            print(data)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
         
+        # 🔥 Extract with proper defaults
         product_item_id = data.get("product_item_id")
         quantity = int(data.get("quantity", 1))
-        size = int(data.get("size"))
-        color = int(data.get("color"))
+        size = int(data.get("size")) if data.get("size") else None
+        color = int(data.get("color")) if data.get("color") else None  # 🔥 FIX: Handle null
         address = data.get("address")
         phone = data.get("phone")
 
-        # Specific field validation
+        # 🔥 Specific field validation
         missing_fields = []
         if not product_item_id:
             missing_fields.append("product")
@@ -100,8 +104,6 @@ class DirectOrderView(EnduserRequiredMixin, View):
             missing_fields.append("quantity")
         if not size:
             missing_fields.append("size")
-        if not color:
-            missing_fields.append("color")
         if not address:
             missing_fields.append("address")
         if not phone:
@@ -113,18 +115,83 @@ class DirectOrderView(EnduserRequiredMixin, View):
             }, status=400)
 
         try:
-            order = order_service.create_direct_order(
-                request.user, product_item_id, quantity, size, color, address, phone
+            # 🔥 ADD STOCK VALIDATION
+            variant = product_info_service.get_iteminfo_by_product_item(
+                product_item_id, size, color
             )
+            if not variant:
+                return JsonResponse({'error': 'Selected variant not found'})
+            
+            if variant.stock < quantity:
+                return JsonResponse({
+                    'error': f'Insufficient stock. Available: {variant.stock}'
+                })
+
+            # 🔥 Create order
+            order = order_service.create_direct_order(
+                request.user, product_item_id, quantity, size, color, 
+                address, phone
+            )
+            print(order)
             return JsonResponse({
-                'success': True, 
-                'order_id': order.id,
-                'message': f'Direct order #{order.id} created successfully!'
-            })
+            'success': True,
+            'message': 'Order placed successfully!',
+            'order_id': order.id
+        })
             
         except ValueError as e:
             return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
 
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SingleOrderUpdateView(EnduserRequiredMixin, View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            product_item_id = data.get('product_item_id')  # variant.product_item.id
+            quantity = int(data.get('quantity', 1))
+            size = int(data.get('size')) if data.get('size') else None
+            color = int(data.get('color')) if data.get('color') else None
+
+            # 🔥 Get variant with selected size/color
+            variant = product_info_service.get_iteminfo_by_product_item(
+                product_item_id, size, color
+            )
+            
+            if not variant:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Variant not found'
+                })
+
+            # 🔥 Stock validation
+            if variant.stock < quantity:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Insufficient stock (Available: {variant.stock})'
+                })
+
+            # 🔥 Calculate fresh summary
+            original_price = variant.product_item.price * quantity
+            discount = (cart_service.get_discount_by_id(variant.product_item) or 0) * quantity
+            total = original_price - discount
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Order updated successfully',
+                'summary': {
+                    'original_price': float(original_price),
+                    'discount': float(discount),
+                    'total': float(total)
+                }
+            })
+
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Invalid data format'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'})
 
     
 @method_decorator(csrf_exempt, name='dispatch')
