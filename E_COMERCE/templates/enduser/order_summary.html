@@ -10,10 +10,69 @@
 {% endblock %}
 
 {% block content %}
+<!--modal-->
+<div class="modal fade" id="deliveryAddressModal" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deliveryModalLabel">Delivery Address</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="deliveryAddressForm">
+          <div class="row">
+            <!-- State -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label">State <span class="text-danger">*</span></label>
+              <select class="form-select" id="stateSelect" required>
+                <option value="">Select State</option>
+              </select>
+            </div>
+            <!-- City -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label">City <span class="text-danger">*</span></label>
+              <select class="form-select" id="citySelect" required disabled>
+                <option value="">Select City</option>
+              </select>
+            </div>
+          </div>
+          <!-- PIN Code -->
+          <div class="col-12 mb-3">
+            <label class="form-label">PIN Code <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="pinCode" placeholder="110001" required maxlength="6">
+          </div>
+          <!-- Village/Locality -->
+          <div class="col-12 mb-3">
+            <label class="form-label">Village/Locality <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="locality" placeholder="Enter village/locality" required>
+          </div>
+          <!-- Road/Landmark -->
+          <div class="col-12 mb-3">
+            <label class="form-label">Road/Street/Landmark <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="road" placeholder="House no, street, landmark" required>
+          </div>
+          <!-- Phone Number -->
+          <div class="col-12 mb-3">
+            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+            <input type="tel" class="form-control" id="phoneNumber" placeholder="98XXXXXXXX" required maxlength="10">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" id="saveAddressBtn">
+          <span class="spinner-border spinner-border-sm d-none" id="saveSpinner"></span>
+          Placed Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--modal end-->
+
 <div class="container-fluid" style="height: 100%;padding:0px !important; margin-bottom: 20px;">
   <h2 class="mb-3 text-center fw-bold">Your Order Summary</h2>
 
-  <form id="order-form" class="d-flex flex-column flex-md-row justify-content-center align-items-stretch gap-4"
+  <form id="order-form" method="POST" class="d-flex flex-column flex-md-row justify-content-center align-items-stretch gap-4"
     style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
     <!-- Cart Items - UPDATED with dynamic variants -->
     <div id="cart-items" class="w-100 w-md-50"style="max-width:400px;">
@@ -86,26 +145,25 @@
       {% endfor %}
     </div>
 
-  
-    <!-- User + Address Info -->
     <div class="w-100 w-md-50 d-flex flex-column justify-content-between mt-0" style="max-width:600px;">
       <div class="border rounded p-3 mb-3 bg-light">
-      <h4>Payable Amount</h4>
-      <div class="d-flex align-items-center w-100 justify-content-between">
-        <div>Product item-- </div>
-        <div class="text-secondary">{{price|floatformat:2}}</div>
+        <h4>Payable Amount</h4>
+        <div class="d-flex align-items-center w-100 justify-content-between">
+          <div>Product item-- </div>
+          <div class="text-secondary" id="summary-price">{{price|floatformat:2}}</div>  <!-- ✅ Added ID -->
+        </div>
+        <div class="d-flex align-items-center w-100 justify-content-between">
+          <div>Discount Amount-- </div>
+          <div class="text-danger" id="summary-discount">-{{discount}}</div>          <!-- ✅ Added ID -->
+        </div>
+        <br>
+        <hr>
+        <div class="d-flex align-items-center w-100 justify-content-between">
+          <div>Total-- </div>
+          <div class="text-success" id="summary-total">{{total|floatformat:2}}</div>  <!-- ✅ Added ID -->
+        </div>
       </div>
-      <div class="d-flex align-items-center w-100 justify-content-between">
-        <div>Discount Amount-- </div>
-        <div class="text-danger">-{{discount}}</div>
-      </div>
-      <br>
-      <hr>
-      <div class="d-flex align-items-center w-100 justify-content-between">
-        <div>Total-- </div>
-        <div class="text-success">{{total|floatformat:2}}</div>
-      </div>
-    </div>
+
     
       <div class="border rounded p-3 mb-3 bg-light">
         <h4 class="mb-3">User Details</h4>
@@ -115,25 +173,18 @@
         <p><strong>Address:</strong> {{ user.address }}</p>
         {% endif %}
       </div>
-      <label for="delivery-address" class="mt-2"><strong>Mobile Number*</strong></label>
-        <input class="form-control" name="phone" id="phone" value={{request.user.phone}} required>
-      <label for="delivery-address" class="mt-2"><strong>Delivery Address</strong></label>
-      <textarea id="delivery-address" name="address" class="form-control mb-2" placeholder="Enter delivery address manually..."
-        required>{{request.user.address}}</textarea>
-      <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="getCurrentLocation()">
-        Use My Current Location
-      </button>
-      <div class="mb-3">
-        <label>Select Payment Options</label>
+      
+      <label>Select Payment Options</label>
         <select id="paymentSelect" name="select" class="form-control" required>
           <option value="">--Select--</option>
           <option value="cod">Cash On Delivery</option>
         </select>
-      </div>
-      <button id="orderBtn" type="submit" class="btn btn-success d-block mt-auto" disabled>Place Order</button>
+      <button id="orderBtn" type="button" class="btn btn-success d-block mt-4" disabled>Proceed</button>
     </div>
   </form>
 </div>
+
+
 <script>
 let updateTimeout = {}; // Debounce timer for each cart item
 
@@ -144,11 +195,84 @@ document.addEventListener('DOMContentLoaded', function() {
     initCartItemVariants(itemId);
   });
 
-  // Payment select
-  document.getElementById('paymentSelect').addEventListener('change', function() {
-    const btn = document.getElementById('orderBtn');
-    btn.disabled = this.value !== 'cod';
+  // 🔥 NEW: ORDER FLOW HANDLERS
+  const orderBtn = document.getElementById('orderBtn');
+  const paymentSelect = document.getElementById('paymentSelect');
+  const saveAddressBtn = document.getElementById('saveAddressBtn');
+  const orderForm = document.getElementById('order-form');
+  const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryAddressModal'));
+
+  // Payment select - Enable proceed button
+  paymentSelect.addEventListener('change', function() {
+    orderBtn.disabled = this.value !== 'cod';
   });
+
+  // 🔥 1. Proceed button → Open address modal
+  orderBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    deliveryModal.show();
+  });
+
+  // 🔥 2. Place Order button → Submit with address + phone ONLY
+  saveAddressBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (!validateAddressForm()) {
+      return;
+    }
+
+    // Show spinner
+    document.getElementById('saveSpinner').classList.remove('d-none');
+    this.disabled = true;
+
+    // 🔥 CREATE COMMA-SEPARATED ADDRESS for backend
+    const state = document.getElementById('stateSelect').value;
+    const dist = document.getElementById('citySelect').value;
+    const vill = document.getElementById('locality').value;
+    const road = document.getElementById('road').value;
+    const pincode = document.getElementById('pinCode').value;
+    const phone = document.getElementById('phoneNumber').value;
+
+    const addressString = `${state}, ${dist}, ${vill}, ${road}, ${pincode}`;
+
+    // Add ONLY address and phone (exactly what backend expects)
+    const hiddenFields = `
+      <input type="hidden" name="address" value="${addressString}">
+      <input type="hidden" name="phone" value="${phone}">
+    `;
+
+    orderForm.insertAdjacentHTML('beforeend', hiddenFields);
+    deliveryModal.hide();
+    
+    // Submit form after modal closes
+    setTimeout(() => {
+      orderForm.submit();
+    }, 200);
+  });
+
+  // 🔥 Address validation
+  function validateAddressForm() {
+    const fields = ['stateSelect', 'citySelect', 'pinCode', 'locality', 'road', 'phoneNumber'];
+    let isValid = true;
+
+    fields.forEach(id => {
+      const field = document.getElementById(id);
+      if (!field.value.trim()) {
+        field.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        field.classList.remove('is-invalid');
+      }
+    });
+
+    if (!isValid) {
+      showMessage('error', 'Please fill all address fields');
+    }
+    return isValid;
+  }
+
+  // 🔥 Initialize state/city dropdowns
+  initStateCityDropdowns();
 });
 
 function initCartItemVariants(itemId) {
@@ -349,7 +473,13 @@ function updateCartItem(itemId) {
     quantityInput.value = matchingVariant.stock; // Auto-correct
     return;
   }
-
+  
+  // Show loader
+  const loader = document.querySelector('.loading');
+  if (loader) {
+      loader.style.display = 'flex';
+  }
+  
   // 🔥 AUTO CALL API
   fetch('/api/cart/update/', {
     method: 'POST',
@@ -366,26 +496,52 @@ function updateCartItem(itemId) {
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success) {
-      console.log('✅ Cart auto-updated for item:', itemId);
-      // No reload - stays smooth!
-    } else {
-      showMessage('error', data.error || 'Update failed');
-      location.reload(); // Reload on error
-    }
+      if (data.success) {
+          console.log('✅ Cart auto-updated for item:', itemId);
+          loader.style.display = 'none';
+          
+          // 🔥 UPDATE SUMMARY IMMEDIATELY
+          if (data.summary) {
+              updateOrderSummary(data.summary);
+          }
+          
+          showMessage('success', 'Cart updated!');
+      } else {
+          loader.style.display = 'none';
+
+          showMessage('error', data.error || 'Update failed');
+          location.reload();
+      }
   })
+
   .catch(error => {
+      loader.style.display = 'none';
     console.error('Auto-update error:', error);
     showMessage('error', 'Network error');
   });
 }
 
-function showMessage(type, message) {
-  alert(`${type.toUpperCase()}: ${message}`);
+// 🔥 UPDATE ORDER SUMMARY
+function updateOrderSummary(summary) {
+    const formatPrice = (value) => {
+        const num = parseFloat(value) || 0;
+        return `₹${num.toFixed(2)}`;
+    };
+    
+    // Now targets exact elements! ✅
+    document.getElementById('summary-price').textContent = formatPrice(summary.original_price);
+    document.getElementById('summary-discount').textContent = `-${formatPrice(summary.discount)}`;
+    document.getElementById('summary-total').textContent = formatPrice(summary.total);
 }
+
 
 function removeItem(itemId) {
   if (confirm('Remove this item from cart?')) {
+    // Show loader
+    const loader = document.querySelector('.loading');
+    if (loader) {
+        loader.style.display = 'flex';
+    }
     fetch(`/cart/remove/${itemId}/`, { // Fixed URL - match your backend
       method: 'POST',
       headers: {
@@ -397,13 +553,16 @@ function removeItem(itemId) {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        loader.style.display = 'none';
         showMessage('success', 'Item removed!');
         setTimeout(() => location.reload(), 1000);
       } else {
+        loader.style.display = 'none';
         showMessage('error', data.error || 'Remove failed');
       }
     })
     .catch(error => {
+      loader.style.display = 'none';
       console.error('Remove error:', error);
       showMessage('error', 'Network error');
     });
@@ -424,8 +583,42 @@ function getCookie(name) {
   }
   return cookieValue;
 }
+
+// 🔥 NEW: State/City dropdown population
+function initStateCityDropdowns() {
+  const states = ['West Bengal', 'Delhi', 'Maharashtra', 'Uttar Pradesh', 'Kerala'];
+  const stateSelect = document.getElementById('stateSelect');
+  
+  states.forEach(state => {
+    const option = document.createElement('option');
+    option.value = state;
+    option.textContent = state;
+    stateSelect.appendChild(option);
+  });
+
+  stateSelect.addEventListener('change', function() {
+    const citySelect = document.getElementById('citySelect');
+    citySelect.innerHTML = '<option value="">Select City</option>';
+    citySelect.disabled = false;
+    
+    const cities = {
+      'West Bengal': ['Kolkata', 'Siliguri', 'Durgapur', 'Asansol'],
+      'Delhi': ['New Delhi', 'Delhi'],
+      'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
+      'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra'],
+      'Kerala': ['Kochi', 'Thiruvananthapuram', 'Kozhikode']
+    };
+    
+    if (cities[this.value]) {
+      cities[this.value].forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
+      });
+    }
+  });
+}
 </script>
-
-
 
 {% endblock %}

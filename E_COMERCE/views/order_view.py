@@ -48,7 +48,8 @@ class OrderCreateView(EnduserRequiredMixin, View):
     def post(self, request):
         address = request.POST.get("address")
         phone = request.POST.get("phone")
-        
+        # print(address)
+        # print(phone)
         if not address:
             return JsonResponse({'error': 'Delivery address is required.'}, status=400)
             
@@ -57,14 +58,11 @@ class OrderCreateView(EnduserRequiredMixin, View):
         
         try:
             order = order_service.create_order_from_cart(request.user, address, phone)
-            return JsonResponse({
-                'success': True, 
-                'order_id': order.id,
-                'message': f'Order #{order.id} created successfully!'
-            })
+            return redirect(f'/track_order/{order.id}/')
+
             
         except ValueError as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return redirect('/cart/')
 
 
 @method_decorator(csrf_exempt, name='dispatch')

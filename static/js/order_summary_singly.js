@@ -1,29 +1,29 @@
-function getCurrentLocation() {
-  const textarea = document.getElementById('delivery-address');
-  textarea.placeholder = "Fetching location...";
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        const { latitude, longitude } = position.coords;
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
-          .then(res => res.json())
-          .then(data => {
-            const addr = data.address;
-            const address = [
-              addr.house_number, addr.road, addr.suburb, addr.village,
-              addr.town, addr.city, addr.state, addr.postcode, addr.country
-            ].filter(Boolean).join('\n');
-            textarea.value = address.length > 20 ? address : data.display_name;
-            textarea.placeholder = "Location fetched.";
-          })
-          .catch(() => { textarea.placeholder = "Failed to fetch location."; });
-      },
-      () => { textarea.placeholder = "Permission denied or location unavailable."; }
-    );
-  } else {
-    textarea.placeholder = "Geolocation not supported.";
-  }
-}
+// function getCurrentLocation() {
+//   const textarea = document.getElementById('delivery-address');
+//   textarea.placeholder = "Fetching location...";
+//   if (navigator.geolocation) {
+//     navigator.geolocation.getCurrentPosition(
+//       function (position) {
+//         const { latitude, longitude } = position.coords;
+//         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
+//           .then(res => res.json())
+//           .then(data => {
+//             const addr = data.address;
+//             const address = [
+//               addr.house_number, addr.road, addr.suburb, addr.village,
+//               addr.town, addr.city, addr.state, addr.postcode, addr.country
+//             ].filter(Boolean).join('\n');
+//             textarea.value = address.length > 20 ? address : data.display_name;
+//             textarea.placeholder = "Location fetched.";
+//           })
+//           .catch(() => { textarea.placeholder = "Failed to fetch location."; });
+//       },
+//       () => { textarea.placeholder = "Permission denied or location unavailable."; }
+//     );
+//   } else {
+//     textarea.placeholder = "Geolocation not supported.";
+//   }
+// }
 
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('direct-order-form');

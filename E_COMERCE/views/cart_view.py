@@ -106,9 +106,17 @@ class ApiCartUpdateView(EnduserRequiredMixin, View):
             cart_item.quantity = quantity
             cart_item.save()
 
-            # ✅ FIX 5: Update stock AND save
-            variant.stock -= quantity
-            variant.save()  # ← MISSING IN YOUR CODE
+            # After cart_item.save() - REPLACE the existing return
+            cart_items = cart_service.get_cart_details(request.user)
+
+            original_price = float(sum(item['product_item'].price * item['quantity'] for item in cart_items))
+            total_discount = float(sum(
+                (cart_service.get_discount_by_id(item['product_item']) or 0) * item['quantity']
+                for item in cart_items
+            ))
+            platform_fee = float(0)
+            total = float(original_price - total_discount + platform_fee)
+
 
             return JsonResponse({
                 'success': True, 
@@ -117,9 +125,17 @@ class ApiCartUpdateView(EnduserRequiredMixin, View):
                     'id': cart_item.id,
                     'quantity': cart_item.quantity,
                     'size': cart_item.size,
-                    'color': cart_item.color
+                    'color': cart_item.color,
+                },
+                # 🔥 NEW: Return FULL SUMMARY
+                'summary': {
+                    'original_price': original_price,
+                    'discount': total_discount,  # Now guaranteed float
+                    'platform_fee': platform_fee,
+                    'total': total
                 }
             })
+
 
         except ValueError:
             return JsonResponse({'success': False, 'error': 'Invalid data format'})
@@ -172,19 +188,19 @@ class CartCreateView(EnduserRequiredMixin,View):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class CartUpdateView(EnduserRequiredMixin,View):
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            user = request.user
-            cart_item_id = data.get('cart_item_id')
-            quantity = int(data.get('quantity'))
+# @method_decorator(csrf_exempt, name='dispatch')
+# class CartUpdateView(EnduserRequiredMixin,View):
+#     def post(self, request):
+#         try:
+#             data = json.loads(request.body)
+#             user = request.user
+#             cart_item_id = data.get('cart_item_id')
+#             quantity = int(data.get('quantity'))
 
-            item = cart_service.update_cart_item(user, cart_item_id, quantity)
-            return JsonResponse({'status': 'success', 'message': 'Item updated', 'item_id': item.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+#             item = cart_service.update_cart_item(user, cart_item_id, quantity)
+#             return JsonResponse({'status': 'success', 'message': 'Item updated', 'item_id': item.id})
+#         except Exception as e:
+#             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
