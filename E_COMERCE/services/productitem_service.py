@@ -6,6 +6,8 @@ from uuid import uuid4
 from collections import defaultdict
 from E_COMERCE.services import product_info_service,offer_service,productitem_service
 import json
+from django.core.paginator import Paginator
+
 
 def get_average_rating(ratings):
     if ratings:
@@ -49,22 +51,33 @@ def get_prduct_sale_and_orignal_price_by_product_item(product_item):
         'sale_price':sale_price
     }
     return data
-def get_product_items_by_category(category_id):
-    items = ProductItem.objects.filter(product__subcategory__category__id= category_id, is_active =True)
+
+# In get_product_items_by_category_paginated - RETURN page_obj.object_list instead
+def get_product_items_by_category_paginated(category_id, page=1):
+    items_qs = ProductItem.objects.filter(
+        product__subcategory__category__id=category_id, 
+        is_active=True
+    ).order_by('-id')
+    
+    paginator = Paginator(items_qs, 12)
+    page_obj = paginator.get_page(page)
+    
     data = []
-    if items:
-        data = [
-            {
-                'id':item.id,
-                'photo_url':item.photo_url,  
-                'product_name': item.product.name,
-                'price_data': get_prduct_sale_and_orignal_price_by_product_item(item),
-                'rating_count':len(get_all_rating_by_product(item.product)),
-                'rating':get_average_rating(get_all_rating_by_product(item.product))
-            }
-            for item in items
-        ]
-    return data
+    for item in page_obj.object_list:  # Use .object_list
+        data.append({
+            'id': item.id,
+            'photo_url': item.photo_url,  
+            'product_name': item.product.name,
+            'price_data': get_prduct_sale_and_orignal_price_by_product_item(item),
+            'rating_count': len(get_all_rating_by_product(item.product)),
+            'rating': get_average_rating(get_all_rating_by_product(item.product))
+        })
+    
+    return {
+        'items': data,
+        'has_next': page_obj.has_next(),
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None
+    }
 
 def get_product_item_related_product_items(product_id):
     items = list( ProductItem.objects.filter(product__id = product_id,is_active = True))
