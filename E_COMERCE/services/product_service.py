@@ -76,12 +76,12 @@ def category_product_search(request):
     productitems = []
     if query == "":
         productitems = []
-        
     else:
         productitems = ProductItem.objects.filter(
             product__name__icontains=query,
             is_active=True
-        )
+        )[:10]  # Limit to top 10 results
+
     # print(f"Found {productitems.count()} items")  # log result count
 
     results = [{

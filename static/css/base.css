@@ -306,7 +306,7 @@ footer button:hover {
 }
 
 .result-title {
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 500;
     color: #1a0dab;
     margin-bottom: 2px;
@@ -324,13 +324,14 @@ footer button:hover {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    font-size: 14px;
+    font-size: 12px;
     color: #545b64;
 }
 
 .result-price {
     font-weight: 600;
     color: #007bff;
+    font-size:12px;
 }
 
 .result-category {
@@ -342,7 +343,7 @@ footer button:hover {
 
 .result-arrow {
     color: #5f6368;
-    font-size: 18px;
+    font-size: 14px;
     margin-left: 8px;
 }
 
@@ -470,6 +471,7 @@ body {
     border: 1px solid rgb(204, 204, 204);
     width: 90% !important;
     max-height: 200px;
+    padding: 15px 10px;
     overflow-y: auto;
     z-index: 1000;
   }
