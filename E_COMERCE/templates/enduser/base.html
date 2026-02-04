@@ -156,9 +156,9 @@
     </nav>
     <sub-nav class="sub-navbar" id="SubNav" style="display: none;">
       <div class="nav-item" onclick="window.location.href='/'"><i class="bi bi-house"></i> Home</div>
-      <div class="nav-item" onclick="window.location.href='/orders/'"><i class="bi bi-truck"></i> Orders</div>
-      <div class="nav-item" onclick="window.location.href='/cart/'"><i class="bi bi-cart"></i> Cart</div>
       <div class="nav-item" onclick="window.location.href='/wishlist/'"><i class="bi bi-heart"></i> Wishlist</div>
+      <div class="nav-item" onclick="window.location.href='/cart/'"><i class="bi bi-cart"></i> Cart</div>
+      <div class="nav-item" onclick="window.location.href='/orders/'"><i class="bi bi-truck"></i> Orders</div>
     </sub-nav>
 
     <div class="sub-container d-flex flex-column align-items-center min-vh-75 overflow-y-scroll" style="
@@ -240,7 +240,157 @@
     .dropdown-item{
       color:white;
     }
+
+  .cart-link.active,
+    #logo-wrp .d-flex.align-items-center.active {
+        background: rgba(33, 214, 249, 0.2) !important;
+        border-radius: 12px !important;
+        color: #21d6f9 !important;
+        transition: all 0.3s ease;
+        padding: 12px 20px;
+    }
+
+    .cart-link.active i,
+    #logo-wrp .d-flex.align-items-center.active i {
+        color: #21d6f9 !important;
+    }
+
+    #SubNav .nav-item.active {
+        background: #5b5b5b;
+        color: white !important;
+    }
+
+    #SubNav .nav-item {
+        transition: all 0.3s ease;
+        padding: 10px 20px;
+    }
+
+    #SubNav .nav-item:hover {
+        background: rgba(33, 214, 249, 0.1);
+        border-radius: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 870px) {
+        .cart-link {
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        #SubNav {
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 5px;
+            background: white;
+            border-top: 1px solid #eee;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    }
+
+    /* Alerts positioning */
+    #error, #success {
+        z-index: 9999;
+        border-radius: 8px;
+        padding: 12px 20px;
+        max-width: 400px;
+    }
+
+    /* Hover effects */
+    .cart-link:hover {
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+        transform: translateY(-1px);
+    }
+  @media(max-width:480px){     /* ✅ Correct syntax */
+    #SubNav .nav-item {
+        padding:8px!important;
+    }
+}
   </style>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Current page path (Django template)
+    const currentPath = window.location.pathname;
+    
+    // 1. DESKTOP NAVBAR - Active states for cart/home/orders links
+    function setDesktopActive() {
+        // Target the clickable cart/home/orders divs
+        const navItems = document.querySelectorAll('.cart-link, #logo-wrp .d-flex.align-items-center');
+        
+        navItems.forEach(item => {
+            const href = item.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+            if (href === currentPath) {
+                item.classList.add('active');
+                item.style.background = 'rgba(33, 214, 249, 0.2)';
+                item.style.borderRadius = '8px';
+                item.style.color = '#21d6f9 !important';
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+    
+    // 2. MOBILE SUB-NAVBAR - Active states
+    function setMobileSubNavActive() {
+        const subNavItems = document.querySelectorAll('#SubNav .nav-item');
+        subNavItems.forEach(item => {
+            const href = item.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+            if (href === currentPath) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+    
+    // 3. RESPONSIVE - Check screen size and apply active states
+    function updateActiveStates() {
+        setDesktopActive();
+        setMobileSubNavActive();
+    }
+    
+    // Initial load
+    updateActiveStates();
+    
+    // Update on resize (for responsive behavior)
+    window.addEventListener('resize', updateActiveStates);
+    
+    // 4. GLOBAL ALERT FUNCTIONS
+    window.showSuccess = function(message) {
+        const alert = document.getElementById('success');
+        if (!alert.querySelector('span')) {
+            alert.innerHTML = '<span></span>';
+        }
+        alert.querySelector('span').textContent = message;
+        alert.style.display = 'block';
+        setTimeout(() => alert.style.display = 'none', 5000);
+    };
+    
+    window.showError = function(message) {
+        const alert = document.getElementById('error');
+        if (!alert.querySelector('span')) {
+            alert.innerHTML = '<span></span>';
+        }
+        alert.querySelector('span').textContent = message;
+        alert.style.display = 'block';
+        setTimeout(() => alert.style.display = 'none', 5000);
+    };
+    
+    // 5. LOGOUT FUNCTION (Django)
+    window.Logout = function() {
+        // Trigger the logout form in dropdown
+        document.querySelector('form[action*="log_out"]').submit();
+    };
+    
+    // 6. MOBILE SUB-NAV TOGGLE (if needed)
+    window.toggleSubNav = function() {
+        const subNav = document.getElementById('SubNav');
+        subNav.style.display = subNav.style.display === 'flex' ? 'none' : 'flex';
+    };
+});
+</script>
+
 </body>
 
 </html>

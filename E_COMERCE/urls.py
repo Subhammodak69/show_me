@@ -28,7 +28,7 @@ urlpatterns = [
     path('product/details/<int:item_id>/',views.ProductDetailsView.as_view(),name = 'product_details'),
     path('review/create/',views.RatingCreateView.as_view(),name = 'rating_create'),
     path('product/toggle-status/<int:product_id>/', views.ProductToggleStatusView.as_view(), name='product_toggle'),
-    path('category/products/search/', services.category_product_search, name='category_product_search'),
+    path('category/products/search/', views.ApiSearchListView.as_view(), name='category_product_search'),
     
     #category
     path('admin/',views.AdminHomeView.as_view(),name='admin'),

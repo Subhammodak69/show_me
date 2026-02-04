@@ -4,117 +4,339 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-    <div class="">
-        <header class="profile-header mb-4">
-            {% if request.user.profile_photo_url %}
-            <img src="{{ request.user.profile_photo_url }}" id="pro-pic" class="rounded-circle" width="40"
-              height="40" style="object-fit: cover" alt="User profile photo" />
-            {% else %}
-            <div id="pro-pic" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: auto; display: flex; justify-content: center; align-items: center; font-size: 35px;" class="avatar-circle mb-3" aria-label="User initial avatar" role="img">
-              {{request.user.first_name|default:request.user.username|slice:":1"|upper }}</div>
-          {% endif %}
-            <h1 id="username">{{request.user.first_name}} {{request.user.last_name}}</h1>
-            <p id="email">{{request.user.email}}</p>
-        </header>
-
-        <nav class="profile-nav">
-            <ul>
-                <li><a href="/profile/" class="nav-active">Personal Info</a></li>
-                <li><a href="/orders/">Order History</a></li>
-            </ul>
-        </nav>
-
-        <main class="profile-content">
-            <!-- Personal Info Section -->
-            <section id="personal">
-                <h2>Personal Information</h2>
-                <form class="info-form" method="post">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" name="first_name" value="{{request.user.first_name}}"required>
-                    </div>
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" name="last_name" value="{{request.user.last_name}}"required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email*</label>
-                        <input type="email" value="{{request.user.email}}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Phone <small class="text-muted">(10 digits only)</small></label>
-                        <input type="tel" 
-                            name="phone" 
-                            value="{{request.user.phone|default:''}}" 
-                            maxlength="10"
-                            pattern="[0-9]{10}"
-                            title="Please enter exactly 10 digits"
-                            inputmode="numeric"
-                            autocomplete="tel"
-                            class="form-control"
-                            placeholder="1234567890"
-                            required>
-                        <div class="form-text">Enter 10-digit mobile number without spaces or special characters.</div>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea class="form-control" name="address" rows="3" required>{{request.user.address|default:''}}</textarea>
+<!-- Delivery Address Modal -->
+<div class="modal fade" id="deliveryAddressModal" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="deliveryModalLabel">
+                    <i class="bi bi-geo-alt me-2"></i>Address
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="deliveryAddressForm">
+                    <div class="row g-3">
+                        <!-- State -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">State <span class="text-danger">*</span></label>
+                            <select class="form-select" id="stateSelect" required>
+                                <option value="">Select State</option>
+                            </select>
+                        </div>
+                        <!-- City -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">City <span class="text-danger">*</span></label>
+                            <select class="form-select" id="citySelect" required disabled>
+                                <option value="">Select City</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div class="form-group mb-3">
-                        <label class="form-label">Gender</label>
-                        <select class="form-select" name="gender" required>
-                           <option value="">--select--</option>
-                            {% for gender in gender_options %}
-                            <option value="{{gender.value}}" {% if request.user.gender == gender.value %}selected{% endif %}>
-                                {{gender.name}}
-                            </option>
-                            {% endfor %}
-                        </select>
+                    <!-- PIN Code -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">PIN Code <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="pinCode" placeholder="110001" required maxlength="6">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" placeholder="9876543210" required maxlength="10">
+                        </div>
                     </div>
-                    <button class="btn btn-success" type="submit">Save Changes</button>
+                    
+                    <!-- Village/Locality & Road/Landmark -->
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Village/Locality <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="locality" placeholder="Enter village/locality" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Road/Street/Landmark <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="road" placeholder="House no, street, landmark" required>
+                        </div>
+                    </div>
                 </form>
-            </section>
-        </main>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveAddressBtn">
+                    <span class="spinner-border spinner-border-sm d-none me-2" id="saveSpinner"></span>
+                    Save Address
+                </button>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<div class="container py-5" style="max-width:800px;">
+    <!-- Profile Header -->
+    <header class="text-center mb-5">
+        {% if request.user.profile_photo_url %}
+        <img src="{{ request.user.profile_photo_url }}" class="rounded-circle shadow-lg mb-3" 
+             style="width: 120px; height: 120px; object-fit: cover;" alt="Profile Photo">
+        {% else %}
+        <div class="rounded-circle m-auto bg-primary text-white d-flex align-items-center justify-content-center mb-3 shadow-lg" 
+            style="width: 60px; height: 60px; font-size: 2rem; font-weight: bold;">
+            {{request.user.first_name|default:request.user.username|slice:":1"|upper }}
+        </div>
+        {% endif %}
+        <h3 class="fw-bold text-dark mb-2" id="username">{{request.user.first_name}} {{request.user.last_name}}</h3>
+        <p class="text-muted mb-1" id="email">{{request.user.email}}</p>
+        <small class="text-success fw-semibold" id="phoneDisplay">{{request.user.phone|default:'No phone added'}}</small>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="profile-nav mb-5">
+        <ul class="nav nav-pills nav-fill rounded-pill shadow-sm bg-white p-1">
+            <li class="nav-item">
+                <a href="/profile/" class="nav-link active rounded-pill px-4 py-2" aria-current="page">
+                    <i class="bi bi-person-circle me-2"></i>Personal Info
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/orders/" class="nav-link px-4 py-2 " style="color: #000000!important; ">
+                    <i class="bi bi-box-seam me-2"></i>Order History
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Personal Info Section -->
+    <section class="profile-card bg-white rounded-4 px-5">
+        <h2 class="h3 fw-bold mb-4 border-bottom pb-3">Personal Information</h2>
+        
+        <form class="info-form" method="post">
+            {% csrf_token %}
+            
+            <div class="row g-4">
+                <!-- First Name -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" name="first_name" 
+                           value="{{request.user.first_name}}" required>
+                </div>
+                
+                <!-- Last Name -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" name="last_name" 
+                           value="{{request.user.last_name}}" required>
+                </div>
+                
+                <!-- Email -->
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control form-control-lg" value="{{request.user.email}}" readonly>
+                </div>
+                
+                <!-- Phone -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Phone <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control form-control-lg" name="phone" 
+                           value="{{request.user.phone|default:''}}" maxlength="10"
+                           pattern="[0-9]{10}" inputmode="numeric" autocomplete="tel" required>
+                    <div class="form-text">Enter 10-digit mobile number</div>
+                </div>
+                
+                <!-- Gender -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Gender</label>
+                    <select class="form-select form-select-lg" name="gender" required>
+                        <option value="">--select--</option>
+                        {% for gender in gender_options %}
+                        <option value="{{gender.value}}" {% if request.user.gender == gender.value %}selected{% endif %}>
+                            {{gender.name}}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Address -->
+                <div class="col-12">
+                    <div class="card border-0 h-100">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <label class="form-label fw-semibold mb-0">Address <span class="text-danger">*</span></label>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="addAddress">
+                                    <i class="bi bi-plus-circle me-1"></i>Add/Edit Address
+                                </button>
+                            </div>
+                            <textarea class="form-control form-control-lg" name="address" id="addressDisplay" 
+                                      rows="4" required readonly 
+                                      style="resize: vertical; min-height: 100px;">{{request.user.address|default:'No address added. Click "Add/Edit Address" to set your delivery address.'}}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-end mt-5">
+                <button class="btn btn-success btn-lg px-5" type="submit">
+                    <i class="bi bi-check-circle me-2"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal(document.getElementById('deliveryAddressModal'));
+    const form = document.getElementById('deliveryAddressForm');
+    const saveBtn = document.getElementById('saveAddressBtn');
+    const addAddressBtn = document.getElementById('addAddress');
+    const addressDisplay = document.getElementById('addressDisplay');
+    const phoneDisplay = document.getElementById('phoneDisplay');
+    
+    // 🔥 YOUR initStateCityDropdowns FUNCTION - INTEGRATED
+    function initStateCityDropdowns() {
+        const states = ['West Bengal', 'Delhi', 'Maharashtra', 'Uttar Pradesh', 'Kerala'];
+        const stateSelect = document.getElementById('stateSelect');
+        
+        states.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state; 
+            option.textContent = state;
+            stateSelect.appendChild(option);
+        });
+
+        stateSelect.addEventListener('change', function() {
+            const citySelect = document.getElementById('citySelect');
+            citySelect.innerHTML = '<option value="">Select City</option>';
+            citySelect.disabled = false;
+            
+            const cities = {
+                'West Bengal': ['Kolkata', 'Siliguri', 'Durgapur', 'Asansol'],
+                'Delhi': ['New Delhi', 'Delhi'],
+                'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
+                'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra'],
+                'Kerala': ['Kochi', 'Thiruvananthapuram', 'Kozhikode']
+            };
+            
+            if (cities[this.value]) {
+                cities[this.value].forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city; 
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            }
+        });
+    }
+    
+    // Initialize dropdowns on page load
+    initStateCityDropdowns();
+    
+    // Open modal & prefill
+    addAddressBtn.addEventListener('click', () => {
+        modal.show();
+        // Prefill current data if exists
+        if (addressDisplay.value && addressDisplay.value !== 'No address added...') {
+            const parts = parseAddress(addressDisplay.value);
+            document.getElementById('stateSelect').value = parts.state || '';
+            document.getElementById('citySelect').value = parts.city || '';
+            document.getElementById('pinCode').value = parts.pin || '';
+            document.getElementById('locality').value = parts.locality || '';
+            document.getElementById('road').value = parts.road || '';
+            document.getElementById('phone').value = parts.phone || '';
+        }
+    });
+    
+    // Parse comma-separated address: "State, City, PIN, Locality, Road, Phone"
+    function parseAddress(address) {
+        const parts = address.split(',');
+        return {
+            state: parts[0]?.trim() || '',
+            city: parts[1]?.trim() || '',
+            pin: parts[2]?.trim() || '',
+            locality: parts[3]?.trim() || '',
+            road: parts[4]?.trim() || '',
+            phone: parts[5]?.trim() || ''
+        };
+    }
+    
+    // Save address to textarea (comma-separated format)
+    saveBtn.addEventListener('click', function() {
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const spinner = document.getElementById('saveSpinner');
+        spinner.classList.remove('d-none');
+        saveBtn.disabled = true;
+        
+        const state = document.getElementById('stateSelect').value;
+        const city = document.getElementById('citySelect').value;
+        const pin = document.getElementById('pinCode').value;
+        const locality = document.getElementById('locality').value;
+        const road = document.getElementById('road').value;
+        const phone = document.getElementById('phone').value;
+        
+        // ✅ PERFECT FORMAT: "State, City, PIN, Locality, Road, Phone"
+        const fullAddress = `${state}, ${city}, ${pin}, ${locality}, ${road}, ${phone}`.trim();
+        
+        // Update form fields for submission
+        addressDisplay.value = fullAddress;
+        phoneDisplay.textContent = phone || 'No phone added';
+        document.querySelector('input[name="phone"]').value = phone;
+        
+        // Reset modal
+        spinner.classList.add('d-none');
+        saveBtn.disabled = false;
+        modal.hide();
+        form.reset();
+        document.getElementById('citySelect').disabled = true;
+        
+        showSuccess('✅ Address saved successfully!');
+    });
+    
+    // Success alert
+    window.showSuccess = function(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success position-fixed top-0 end-0 m-3 shadow-lg';
+        toast.style.cssText = 'z-index: 9999; max-width: 350px;';
+        toast.innerHTML = `
+            <i class="bi bi-check-circle-fill me-2"></i>${msg}
+            <button type="button" class="btn-close btn-close-white ms-2" onclick="this.parentElement.remove()"></button>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    };
+});
+</script>
+
 
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #333; }
-.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.profile-card {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
 
-.profile-header { text-align: center; margin-bottom: 30px; }
-.avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
-.profile-header h1 { font-size: 2em; margin-bottom: 5px; }
-.profile-header p { color: #666; margin-bottom: 15px; }
-.edit-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+.nav-pills .nav-link.active {
+    background: linear-gradient(45deg, #21d6f9, #007bff) !important;
+    color: white !important;
+}
 
-.profile-nav ul { display: flex; list-style: none; border-bottom: 2px solid #eee; overflow-x: auto; }
-.profile-nav a { display: block; padding: 15px 20px; text-decoration: none; color: #666; border-bottom: 3px solid transparent; }
-.profile-nav a.nav-active { color: #007bff; border-bottom-color: #007bff; }
+.form-control:focus {
+    border-color: #21d6f9;
+    box-shadow: 0 0 0 0.2rem rgba(33, 214, 249, 0.25);
+}
 
-.profile-content section { padding: 20px 0; }
-.profile-content h2 { margin-bottom: 20px; }
-.form-group { margin-bottom: 15px; }
-.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-.form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-button[type="submit"], .add-btn {  color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-
-.orders-list, .address-list { display: flex; flex-direction: column; gap: 15px; }
-.order-item, .address-item { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-.edit-small { background: #ffc107; color: #333; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-
-.hidden { display: none; }
-
-@media (max-width: 600px) {
-    .container { padding: 10px; }
-    .profile-nav ul { gap: 10px; }
-    .order-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+@media (max-width: 768px) {
+    .container { padding: 20px 15px; }
+    .profile-card { margin: 0 -15px; border-radius: 0; padding: 0px 30px !important; }
+}
+@media(max-width:480px){
+    input.form-control{
+        font-size: 12px!important;
+    }
+    .form-label{
+        font-size: 12px;
+    }
+    .form-select{
+        font-size: 12px;
+    }
 }
 </style>
-
 {% endblock %}

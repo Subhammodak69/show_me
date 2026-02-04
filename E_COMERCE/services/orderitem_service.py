@@ -46,4 +46,20 @@ def update_orderitem(pk, data):
     return item
 
 def get_all_order_items_by_order_id(order):
-    return OrderItem.objects.filter(order_id = order, is_active = True)
+    items = OrderItem.objects.filter(order_id=order, is_active=True)
+    return [
+        {
+            'product_item': {
+                'product': {
+                    'name': item.product_item.product.name,
+                    'id': item.product_item.product.id
+                },
+                'photo_url': item.product_item.photo_url
+            },
+            'quantity': item.quantity,
+            'price': item.price,
+            'get_size_display': item.get_size_display(),
+            'get_color_display': item.get_color_display()
+        }
+        for item in items
+    ]

@@ -1,7 +1,7 @@
 from django.views import View
 from django.shortcuts import render,redirect
 from E_COMERCE.constants.decorators import AdminRequiredMixin
-from E_COMERCE.services import user_service,poster_service,order_service,productitem_service,category_service
+from E_COMERCE.services import user_service,poster_service,order_service,productitem_service,category_service,product_service
 import random
 from E_COMERCE.constants.default_values import Role
 
@@ -54,6 +54,13 @@ class HomeView(View):
                 'products_by_category': products_by_category.items(),  # pass for template grouping
             }
         )
+
+
+class ApiSearchListView(View):
+    def get(self, request):
+        res = product_service.category_product_search(request)
+        return res 
+    
 
 
 

@@ -4,7 +4,6 @@
 {% block title %}My Wishlist{% endblock %}
 
 {% block content %}
-<h2 class="mb-2 text-center fw-bold"><i class="bi bi-heart-fill me-2"></i>Your Wishlist</h2>
 <div class="container pqr my-3"style="padding:10px !important;height: 100%;">
   <div class="row justify-content-between">
     <!-- Sidebar -->
@@ -24,14 +23,14 @@
       </div>
       <div class="list-group">
         
-        <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/profile/'">
+        <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/profile/'" style="cursor:pointer;">
           <i class="bi bi-person-fill me-2 text-primary"></i> My Profile
         </div>
 
-        <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/orders/'">
+        <div class="list-group-item bg-light fw-semibold" onclick="window.location.href='/orders/'" style="cursor:pointer;">
           <i class="bi bi-bag-check-fill me-2 text-primary"></i> MY ORDERS
         </div>
-        <div class="list-group-item bg-light fw-semibold">
+        <div class="list-group-item bg-light fw-semibold"onclick="window.location.href='/cart/'" style="cursor:pointer;">
           <i class="bi bi-cart-fill me-2 text-primary"></i> My Cart
         </div>
         <div class="list-group-item bg-light fw-semibold">
@@ -58,20 +57,42 @@
                   <img src="{{ item.photo }}" alt="{{ item.name }}" class="img-fluid" style="width:60px; height:60px; object-fit:contain;">
                 </a>
                 {% if item.availibility <= 5 %}
-                  <div class="text-danger small mt-1 text-center fw-semibold">Harry!({{item.availibility}} stocks available)</div>
+                  <div class="text-warning small mt-1 text-center fw-semibold" style="font-size:8px;">Harry!({{item.availibility}} stocks available)</div>
                 {% endif %}
               </div>
               <!-- Details -->
               <div class="flex-grow-1">
-                <div>
-                  <a href="{% url 'product_details' item.id %}" class="fw-semibold text-decoration-none fs-6" style="color:#1976d2;">{{ item.name }}</a>
+                <div style="
+                    display: -webkit-box;
+                    -webkit-line-clamp: 3;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-height: 50px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    line-height: 1.3em;
+                    ">
+                  <a href="{% url 'product_details' item.id %}" class="fw-semibold text-decoration-none" style="color:#1976d2;">{{ item.name }}</a>
                   {% if item.assured %}
                     <span class="ms-2" style="color:#2874f0; font-size:0.93em;">
                       <i class="bi bi-shield-fill-check"></i> Assured
                     </span>
                   {% endif %}
                 </div>
-                <div class="small mt-1 text-muted">{{ item.description|truncatewords:17 }}</div>
+                <div class="small mt-1 text-muted"style="
+                  display: -webkit-box;
+                  -webkit-line-clamp: 3;
+                  -webkit-box-orient: vertical;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  max-height: 50px;
+                  font-size: 10px;
+                  cursor: pointer;
+                  line-height: 1.3em;
+                ">
+                  {{ item.description|truncatewords:17 }}
+                </div>
                 <div class="my-1">
                   <span class="badge bg-light text-dark border me-2">{{ item.display_size }}</span>
                   <span class="badge bg-light text-dark border">{{ item.display_color }}</span>

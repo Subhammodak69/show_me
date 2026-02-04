@@ -130,4 +130,4 @@ def get_all_category():
     return category_data
 
 def get_categories():
-    return Category.objects.all()
+    return Category.objects.filter(is_active = True).all()

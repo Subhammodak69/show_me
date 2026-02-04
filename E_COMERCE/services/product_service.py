@@ -71,7 +71,6 @@ def get_product_items_by_product(product_id):
     return response
 
 
-
 def category_product_search(request):
     query = request.GET.get("q", "").strip()
     productitems = []
@@ -91,5 +90,5 @@ def category_product_search(request):
         "price": item.price,
         "photo_url": item.photo_url,
     } for item in productitems]
-
+    # print(results)
     return JsonResponse(results, safe=False)

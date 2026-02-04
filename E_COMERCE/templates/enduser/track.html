@@ -5,162 +5,162 @@
     {% if not order %}
         <p>Order not found.</p>
     {% else %}
-    <div class="border rounded-3 overflow-auto p-4" style="background:aliceblue; border:1px solid gold;">
-    <!-- ORDER SUMMARY -->
-    <section class="summary" style="background:#f8f9fa;padding:18px 22px 10px 22px;margin-bottom:24px;border-radius:7px;border:1px solid #eee;display:flex;justify-content:space-between;">
-        <div>
-            <div style="font-size:17px;font-weight:bold;">Order #{{ order.id }}</div>
-            <div style="font-size:14px;">Placed on {{ order.created_at|date:"M d, Y H:i" }}</div>
-        </div>
-        <div>
-            <span style="font-size:14px;color:#555;">
-                Status: 
-                {% if status_display %}
-                    <b style="color: {% if status_display == 'DELIVERED' %}green{% elif status_display == 'CANCELLED' %}#d9534f{% else %}#2176fd{% endif %};">{{ status_display }}</b>
-                {% else %}
-                    <b>Pending</b>
-                {% endif %}
-            </span>
-            <br>
-            {% if expected_delivery and status_display != 'DELIVERED' and status_display != 'CANCELLED' %}
-                <span style="font-size:13px;color:#888;">Expected delivery: {{ expected_delivery|date:"M d, Y" }}</span>
-            {% endif %}
-        </div>
-    </section>
-    
-    <!-- ORDER TIMELINE -->
-    <section>
-        <div style="margin-bottom:30px;margin-top:5px;">
-            <div class="d-flex align-items-center overflow-auto gap-4 fs-13-5"style="scrollbar-width:none;">
-                {% comment %}
-                    Adjust the steps as per your real "status"
-                {% endcomment %}
-                <div style="color:{% if order.status >= 1 %}#2176fd{% else %}#aaa{% endif %};">
-                    <b>Order Placed</b><br>
-                    <span style="font-size:12px;">{{ order.created_at|date:"M d" }}</span>
-                </div>
-                <div style="width:28px;height:1px;background:#bbb;display:inline-block;"></div>
-                <div style="color:{% if order.status >= 2 %}#2176fd{% else %}#aaa{% endif %};">
-                    <b>Confirmed</b>
-                </div>
-                <div style="width:28px;height:1px;background:#bbb;display:inline-block;"></div>
-                <div style="color:{% if order.status >= 3 %}#2176fd{% else %}#aaa{% endif %};">
-                    <b>Shipped</b>
-                </div>
-                <div style="width:28px;height:1px;background:#bbb;display:inline-block;"></div>
-                <div style="color:{% if order.status == 4 %}green{% elif order.status == 5 %}#d9534f{% else %}#aaa{% endif %};">
-                    <b>{% if order.status == 4 %}Delivered{% elif order.status == 5 %}Cancelled{% else %}Delivered{% endif %}</b>
-                    {% if order.status == 4 and order.delivered_date %}<br>
-                        <span style="font-size:12px;">{{ order.delivered_date|date:"M d" }}</span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- REFUND SECTION (ONLY IF EXISTS) -->
-    {% if order.refund_amount %}
-        <div class="refund-section" style="border:1px solid #eee;padding:16px;margin-bottom:24px;background:#f8f9fa;">
-            <div style="font-weight:bold">Total refund – ₹{{ order.refund_amount }}</div>
-            <div style="color: #2e6a32; font-weight:600">
-                Refund of ₹{{ order.refund_amount }} – {{ order.refund_method|default:"UPI" }}
-                <span style="margin-left:10px; color:green;">&#10004; Completed</span>
-            </div>
-            <div style="font-size:13px;color:#555;margin-top:4px">
-                The money was sent to your Bank Account linked with UPI ID <strong>{{ order.upi_id_masked }}</strong> on {{ order.refund_date|date:"M d, H:i A" }}.<br>
-                For any questions, please contact your bank with reference number <strong>{{ order.refund_reference }}</strong>.
-            </div>
-            <a href="#" style="color:#2176fd;font-size:13px">How do I check my bank account?</a>
-        </div>
-    {% endif %}
-    
-    <div class="wrp_dt d-flex align-items-center justify-content-around">
-        <!-- ORDER ITEMS -->
-        <div>
+    <div class="overflow-auto p-4">
+        <!-- ORDER SUMMARY -->
+        <section class="summary" style="background:#f8f9fa;padding:18px 22px 10px 22px;margin-bottom:24px;border-radius:7px;border:1px solid #eee;display:flex;justify-content:space-between;">
             <div>
-            {% for item in order_items %}
-                <div style="display:flex; gap:18px;align-items:flex-start;padding:18px 0; border-bottom:1px solid #eee;flex-direction:column;">
-                    <img src="{{ item.product_item.photo_url }}" alt="product" style="margin: auto;width: 40%;object-fit:cover;border-radius:7px;">
-                    <div style="margin: auto; width: 100%;padding: 10px 20px;">
-                        <div style="font-weight:bold;font-size:17px;">{{ item.product_item.product.name }}</div>
-                        <div style="color:#555;font-size:14px;">
-                            Size: {{ item.get_size_display }} 
-                            Color: {{ item.product_item.get_color_display }} 
-                            Qty: {{ item.quantity }}
-                        </div>
-                        <div style="margin-top:7px;">
-                            <span style="font-size:15px;color:#111;font-weight:bold;">₹{{ item.product_item.price }}</span>
-                            {% if item.discount_price %}
-                              <span style="color:green;">(Discounted)</span>
-                            {% endif %}
-                        </div>
+                <div style="font-size:17px;font-weight:bold;">Order #{{ order.id }}</div>
+                <div class="text-muted" style="font-size:12px;">Placed on {{ order.created_at|date:"M d, Y H:i" }}</div>
+            </div>
+            <div>
+                <span style="font-size:12px;color:#555;">
+                    Status: 
+                    {% if status_display %}
+                        <b style="color: {% if status_display == 'DELIVERED' %}green{% elif status_display == 'CANCELLED' %}#d9534f{% else %}#2176fd{% endif %};">{{ status_display }}</b>
+                    {% else %}
+                        <b>Pending</b>
+                    {% endif %}
+                </span>
+                <br>
+                {% if expected_delivery and status_display != 'DELIVERED' and status_display != 'CANCELLED' %}
+                    <span style="font-size:13px;color:#888;">Expected delivery: {{ expected_delivery|date:"M d, Y" }}</span>
+                {% endif %}
+            </div>
+        </section>
+        
+        <!-- ORDER TIMELINE -->
+        <section>
+            <div style="margin-bottom:30px;margin-top:5px;">
+                <div class="status-bar d-flex justify-content-center align-items-center overflow-auto gap-4 fs-13-5"style="scrollbar-width:none;font-size:12px;">
+
+                    <div style="color:{% if order.status >= 1 %}#2176fd{% else %}#aaa{% endif %};">
+                        <b>Order Placed</b><br>
+                        <span style="font-size:12px;">{{ order.created_at|date:"M d" }}</span>
+                    </div>
+                    <div style="width:28px;height:1px;background:#bbb;display:inline-block;"></div>
+                    <div style="color:{% if order.status >= 2 %}#2176fd{% else %}#aaa{% endif %};">
+                        <b>Confirmed</b>
+                    </div>
+                    <div style="width:28px;height:1px;background:#bbb;display:inline-block;"></div>
+                    <div style="color:{% if order.status >= 3 %}#2176fd{% else %}#aaa{% endif %};">
+                        <b>Shipped</b>
+                    </div>
+                    <div style="width:28px;height:1px;background:#bbb;display:inline-block;"></div>
+                    <div style="color:{% if order.status == 4 %}green{% elif order.status == 5 %}#d9534f{% else %}#aaa{% endif %};">
+                        <b>{% if order.status == 4 %}Delivered{% elif order.status == 5 %}Cancelled{% else %}Delivered{% endif %}</b>
+                        {% if order.status == 4 and order.delivered_date %}<br>
+                            <span style="font-size:12px;">{{ order.delivered_date|date:"M d" }}</span>
+                        {% endif %}
                     </div>
                 </div>
-            {% endfor %}
             </div>
-        </div>
+        </section>
         
-        <!-- ORDER SIDE PANEL -->
-        <div class="order-side-panel" style="flex:1;width: 100%;">
-            <div class="delivery-details" style="border:1px solid #eee;padding:12px 16px;margin-bottom:18px;border-radius:5px;">
-                <h4 style="margin:0 0 6px 0;">Delivery details</h4>
-                <div>{{ order.created_by.first_name }} {{ order.created_by.last_name }}</div>
-                <div>{{ order.created_by.phone }}</div>
-                <div style="font-size:14px;margin-top:3px">{{ order.delivery_address }}</div>
+        <!-- REFUND SECTION (ONLY IF EXISTS) -->
+        {% if order.refund_amount %}
+            <div class="refund-section" style="border:1px solid #eee;padding:16px;margin-bottom:24px;background:#f8f9fa;">
+                <div style="font-weight:bold">Total refund – ₹{{ order.refund_amount }}</div>
+                <div style="color: #2e6a32; font-weight:600">
+                    Refund of ₹{{ order.refund_amount }} – {{ order.refund_method|default:"UPI" }}
+                    <span style="margin-left:10px; color:green;">&#10004; Completed</span>
+                </div>
+                <div style="font-size:13px;color:#555;margin-top:4px">
+                    The money was sent to your Bank Account linked with UPI ID <strong>{{ order.upi_id_masked }}</strong> on {{ order.refund_date|date:"M d, H:i A" }}.<br>
+                    For any questions, please contact your bank with reference number <strong>{{ order.refund_reference }}</strong>.
+                </div>
+                <a href="#" style="color:#2176fd;font-size:13px">How do I check my bank account?</a>
             </div>
-            <div class="price-breakdown" style="border:1px solid #eee;padding:12px 16px;border-radius:5px;">
-                <h4 style="margin:0 0 6px 0;">Price Details</h4>
-                <table style="width:100%;font-size:14px;">
-                    {% if order.list_price %}
+        {% endif %}
+        
+        <div class="wrp_dt d-flex align-items-center justify-content-around">
+            <!-- ORDER ITEMS -->
+            <div>
+                <div>
+                {% for item in order_items %}
+                    <div style="display:flex; gap:18px;align-items:flex-start;padding:18px 0; border-bottom:1px solid #eee;flex-direction:column;">
+                        <img src="{{ item.product_item.photo_url }}" alt="product" style="margin: auto;width: 40%;object-fit:cover;border-radius:7px;">
+                        <div style="margin: auto; width: 100%;padding: 10px 20px;">
+                            <div style="font-weight:bold;font-size:17px;">{{ item.product_item.product.name }}</div>
+                            <div style="color:#555;font-size:14px;">
+                                Size: {{ item.get_size_display }} 
+                                Color: {{ item.product_item.get_color_display }} 
+                                Qty: {{ item.quantity }}
+                            </div>
+                            <div style="margin-top:7px;">
+                                <span style="font-size:15px;color:#111;font-weight:bold;">₹{{ item.product_item.price }}</span>
+                                {% if item.discount_price %}
+                                <span style="color:green;">(Discounted)</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+            
+            <!-- ORDER SIDE PANEL -->
+            <div class="order-side-panel" style="flex:1;width: 100%;">
+                <div class="delivery-details" style="border:1px solid #eee;padding:12px 16px;margin-bottom:18px;border-radius:5px;">
+                    <h4 style="margin:0 0 6px 0;">Delivery details</h4>
+                    <div>{{ order.created_by.first_name }} {{ order.created_by.last_name }}</div>
+                    <div>{{ order.created_by.phone }}</div>
+                    <div style="font-size:14px;margin-top:3px">{{ order.delivery_address }}</div>
+                </div>
+                <div class="price-breakdown" style="border:1px solid #eee;padding:12px 16px;border-radius:5px;">
+                    <h4 style="margin:0 0 6px 0;">Price Details</h4>
+                    <table style="width:100%;font-size:14px;">
+                        {% if order.list_price %}
+                            <tr>
+                                <td>List price</td>
+                                <td style="text-align:right"><s>₹{{ order.list_price }}</s></td>
+                            </tr>
+                        {% endif %}
                         <tr>
-                            <td>List price</td>
-                            <td style="text-align:right"><s>₹{{ order.list_price }}</s></td>
+                            <td>Selling price</td>
+                            <td style="text-align:right">₹{{ order.selling_price|default:order.total_price }}</td>
                         </tr>
-                    {% endif %}
-                    <tr>
-                        <td>Selling price</td>
-                        <td style="text-align:right">₹{{ order.selling_price|default:order.total_price }}</td>
-                    </tr>
-                    {% if order.extra_discount %}
-                    <tr>
-                        <td>Extra Discount</td>
-                        <td style="text-align:right;color:green">-₹{{ order.extra_discount }}</td>
-                    </tr>
-                    {% endif %}
-                    <tr>
-                        <td>Handling Fee</td>
-                        <td style="text-align:right">
-                            {% if order.handling_fee == 0 %}Free{% else %}₹{{ order.handling_fee }}{% endif %}
-                        </td>
-                    </tr>
-                    {% if order.payment_handling_fee %}
-                    <tr>
-                        <td>Payment Handling Fee</td>
-                        <td style="text-align:right">₹{{ order.payment_handling_fee }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if order.platform_fee %}
-                    <tr>
-                        <td>Platform Fee</td>
-                        <td style="text-align:right">₹{{ order.platform_fee }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if order.other_discount %}
-                    <tr>
-                        <td>Other Discount</td>
-                        <td style="text-align:right;color:green">{{ order.other_discount|default:"" }}</td>
-                    </tr>
-                    {% endif %}
-                    <tr style="font-weight:700;border-top:1px solid #eee">
-                        <td>Total</td>
-                        <td style="text-align:right">₹{{ order.total_price }}</td>
-                    </tr>
-                </table>
+                        {% if order.extra_discount %}
+                        <tr>
+                            <td>Extra Discount</td>
+                            <td style="text-align:right;color:green">-₹{{ order.extra_discount }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td>Handling Fee</td>
+                            <td style="text-align:right">
+                                {% if order.handling_fee == 0 %}Free{% else %}₹{{ order.handling_fee }}{% endif %}
+                            </td>
+                        </tr>
+                        {% if order.payment_handling_fee %}
+                        <tr>
+                            <td>Payment Handling Fee</td>
+                            <td style="text-align:right">₹{{ order.payment_handling_fee }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if order.platform_fee %}
+                        <tr>
+                            <td>Platform Fee</td>
+                            <td style="text-align:right">₹{{ order.platform_fee }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if order.other_discount %}
+                        <tr>
+                            <td>Other Discount</td>
+                            <td style="text-align:right;color:green">{{ order.other_discount|default:"" }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr style="font-weight:700;border-top:1px solid #eee">
+                            <td>Total</td>
+                            <td style="text-align:right">₹{{ order.total_price }}</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
-    
+    <div class="d-flex justify-content-center mt-4">
+        <a class="btn btn-warning w-100" style="max-width:300px;" href="/orders/"><i class="bi bi-arrow-left me-2"></i>Back</a>
+    </div>
     {% endif %}
 </div>
 
@@ -175,6 +175,10 @@
 @media (max-width: 550px) {
   .summary{
     flex-direction: column !important;
+  }
+  .status-bar{
+    gap: 5px !important;
+    font-size: 8px !important;
   }
 }
 </style>

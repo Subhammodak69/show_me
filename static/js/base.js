@@ -117,55 +117,92 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // jQuery search functionality
 $(document).ready(function () {
-  let $searchInput = $('#searchInputDesktop, #searchInputMobile');
+    let $searchInput = $('#searchInputDesktop, #searchInputMobile');
+    
+    // Google-style results container
+    let $resultsList = $(
+        '<div id="searchResults" style="\
+            position: absolute; \
+            top: 100%; left: 0;right: 0;\
+            width: 70%; max-width: 600px; \
+            background: white; \
+            border: 1px solid #dfe1e5; \
+            border-radius: 24px; \
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); \
+            max-height: 400px; \
+            overflow-y: auto; \
+            z-index: 10000; \
+            display: none; margin:0 auto;\
+        "></div>'
+    );
+    
+    $searchInput.after($resultsList);
+    $resultsList.hide();
 
-  let $resultsList = $('<ul id="searchResults" style="left: 20%; top: 100%; position: absolute; background: white; border: 1px solid rgb(204, 204, 204); width: 60%; max-height: 200px; overflow-y: auto; z-index: 1000;"></ul>');
-  $searchInput.after($resultsList);
-  $resultsList.hide();
+    let debounceTimer;
 
-  let debounceTimer;
-
-  $searchInput.on('input', function () {
-    clearTimeout(debounceTimer);
-    let query = $(this).val().trim();
-    if (query.length < 2) {
-      $resultsList.empty().hide();
-      return;
-    }
-
-    debounceTimer = setTimeout(function () {
-      $.ajax({
-        url: `/category/products/search/?q=${encodeURIComponent(query)}`,
-        method: 'GET',
-        success: function (data) {
-          $resultsList.empty();
-          if (data.length === 0) {
-            $resultsList.append('<li>No results found</li>');
-          } else {
-            data.forEach(function (item) {
-              let $li = $('<li style="padding: 5px; cursor: pointer;"></li>');
-              $li.text(item.product_name);
-              $li.on('click', function () {
-                window.location.href = `/product/details/${item.id}/`;
-              });
-              $resultsList.append($li);
-            });
-          }
-          $resultsList.show();
-        },
-        error: function () {
-          $resultsList.empty().append('<li>Error fetching results</li>').show();
+    $searchInput.on('input', function () {
+        clearTimeout(debounceTimer);
+        let query = $(this).val().trim();
+        
+        if (query.length < 2) {
+            $resultsList.empty().hide();
+            return;
         }
-      });
-    }, 300);
-  });
 
-  $(document).on('click', function (e) {
-    if (!$(e.target).closest($searchInput).length && !$(e.target).closest($resultsList).length) {
-      $resultsList.hide();
-    }
-  });
+        debounceTimer = setTimeout(function () {
+            $.ajax({
+                url: `/category/products/search/?q=${encodeURIComponent(query)}`,
+                method: 'GET',
+                success: function (data) {
+                    $resultsList.empty();
+                    
+                    if (data.length === 0) {
+                        $resultsList.html('<div class="search-no-result">No products found</div>');
+                    } else {
+                        data.forEach(function (item) {
+                            let $result = $(`
+                                <div class="google-search-result" data-product-id="${item.id}">
+                                    <div class="result-image">
+                                        <img src="${item.photo_url || '/static/no_image.png'}" alt="${item.product_name}">
+                                    </div>
+                                    <div class="result-content">
+                                        <div class="result-title">${item.product_name}</div>
+                                        <div class="result-details">
+                                            <span class="result-price">${item.price ? '₹' + item.price : 'Price not available'}</span>
+                                            <span class="result-category">${item.category || 'Category'}</span>
+                                        </div>
+                                    </div>
+                                    <div class="result-arrow">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </div>
+                                </div>
+                            `);
+                            
+                            $result.on('click', function () {
+                                window.location.href = `/product/details/${item.id}/`;
+                            });
+                            
+                            $resultsList.append($result);
+                        });
+                    }
+                    $resultsList.show();
+                },
+                error: function () {
+                    $resultsList.html('<div class="search-error">Error fetching results</div>').show();
+                }
+            });
+        }, 300);
+    });
+
+    // Click outside to hide
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest($searchInput).length && !$(e.target).closest($resultsList).length) {
+            $resultsList.hide();
+        }
+    });
 });
+
 
 
 window.showMessage = function(type, message, redirectUrl = null) {
