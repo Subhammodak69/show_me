@@ -1,11 +1,12 @@
 {% extends "enduser/base.html" %}
 {% load static %}
-
 {% block title %}Home | Show_me{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/products.css' %}">
 {% endblock %}
-
+{% block extra_js %}
+  <script src="{% static 'js/home.js' %}"></script>
+{% endblock %}
 {% block content %}
 <div class="home-container" style="gap: 20px;display: flex;">
   <section class="d-flex flex-column" style="width: 100%; overflow-y: auto; gap:10px;">
@@ -77,113 +78,4 @@
     {% endif %}
   </section>
 </div>
-
-<!-- ADD HTMX SCRIPT -->
-<script src="https://unpkg.com/htmx.org@1.9.12"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    loadWishlistProducts();
-});
-
-async function loadWishlistProducts() {
-    try {
-        // Fetch user's wishlist from your existing API endpoint
-        const response = await fetch('/api/is-liked-status-check/', {  // Update with your actual URL
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            credentials: 'same-origin'
-        });
-
-        if (!response.ok) {
-            console.log('No wishlist items or user not logged in');
-            return;
-        }
-
-        const wishlistData = await response.json();
-        // Backend returns product_item_id, frontend uses product.id
-        const wishlistProductItemIds = wishlistData.map(item => item.product_item_id);
-
-        // Update heart icons for wishlist products
-        wishlistProductItemIds.forEach(productItemId => {
-            const wishlistIcon = document.getElementById(`wishlist-icon-${productItemId}`);
-            if (wishlistIcon) {
-                wishlistIcon.classList.remove('bi-heart');
-                wishlistIcon.classList.add('bi-heart-fill');
-                wishlistIcon.style.color = '#ff4757';
-                wishlistIcon.title = 'Remove from wishlist';
-            }
-        });
-
-    } catch (error) {
-        console.error('Error loading wishlist:', error);
-    }
-}
-
-// Helper function to get CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-
-function toggle_wishlist_create_update(item_id) {
-    const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";
-    if (!isAuthenticated) {
-        window.location.href = "{% url 'log_in' %}";
-        return;
-    }
-    fetch("{% url 'wishlist_create_update' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken")
-        },
-        body: JSON.stringify({ item_id })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'redirect' && data.login_url) {
-            window.location.href = data.login_url;
-            return;
-        }
-        const icon = document.querySelector(`#wishlist-icon-${item_id}`);
-        if (icon) {
-            if (data.status === 'added') {
-                icon.className = "bi bi-heart-fill text-danger wishlist-bounce position-absolute top-0 end-0 m-2 p-1 wishlist-icon";
-                setTimeout(() => icon.classList.remove("wishlist-bounce"), 500);
-            } else if (data.status === 'removed') {
-                icon.className = "bi bi-heart position-absolute top-0 end-0 m-2 p-1 wishlist-icon";
-            }
-        }
-    });
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-    document.cookie.split(';').forEach(cookie => {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        }
-    });
-    return cookieValue;
-}
-</script>
-
-
-
 {% endblock %}

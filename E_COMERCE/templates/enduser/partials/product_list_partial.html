@@ -41,11 +41,16 @@
 {% endfor %}
 
 <!-- Add new trigger for next page -->
-{% if has_next %}
-<div id="infinite-scroll-trigger" 
-     hx-get="{% url 'category_products_ajax' category_id %}?page={{ next_page }}"
-     hx-target="#product-grid" 
-     hx-swap="beforeend"
-     hx-trigger="revealed"
-     style="height: 20px;"></div>
+{% if initial_data.has_next %}
+  <div id="infinite-scroll-trigger" 
+      hx-get="{% url 'category_products_ajax' category_id %}?page={{ initial_data.next_page }}"
+      hx-target="#product-grid" 
+      hx-swap="beforeend"
+      hx-trigger="revealed"
+      hx-indicator="#loading"
+      style="height: 20px;"></div>
+  <div id="loading" class="text-center py-4" style="display: none;">
+    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+    Loading more products...
+  </div>
 {% endif %}

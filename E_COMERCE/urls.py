@@ -22,6 +22,8 @@ urlpatterns = [
 
     #product
     path('', views.HomeView.as_view(), name='home'), 
+    path('api/best-deals/', views.BestDealsAPIView.as_view(), name='api_best_deals'),
+    path('api/products-by-category/<int:page>/', views.ProductsByCategoryAPIView.as_view(), name='api_products_by_category'),
     path('admin/product/',views.ProductListView.as_view(),name='product'),
     path('admin/product/create/',views.ProductCreateView.as_view(),name='product_create'),
     path('admin/product/update/<int:product_id>/',views.ProductUpdateView.as_view(),name='Product_update'),
