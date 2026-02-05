@@ -60,13 +60,14 @@
             </div>
         </section>
 
-        <!-- 🔥 PRODUCTS - DYNAMIC CONTAINER (Replace static) -->
+        <!-- 🔥 PRODUCTS - DYNAMIC CONTAINER -->
         <div class="hot-items d-flex flex-column" id="products-container" style="max-height: 70vh; gap:14px;">
             <div id="loading" class="text-center py-4" style="display: none;">
-                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                Loading more products...
+                <div class="spinner-border spinner-border-lg me-2" role="status"></div>
+                Loading more categories...
             </div>
         </div>
+
     </div>
 </div>
 <style>
@@ -93,6 +94,11 @@
 #loading.htmx-request {
   display: block !important;
 }
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
 
 .spinner-border {
   color: #007bff;
@@ -107,7 +113,7 @@
     window.DJANGO_URLS = {
         login: "{% url 'log_in' %}",
         wishlist: "{% url 'wishlist_create_update' %}",
-        product_details: "{% url 'product_details' 0 %}".replace('0', ''), // Pattern
+        product_details: "{% url 'product_details' 0 %}".replace(/0\/$/, ''),
         best_deals: '/api/best-deals/',
         products: '/api/products-by-category/'
     };

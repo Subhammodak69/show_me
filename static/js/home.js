@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = 1;
     let isLoadingMore = false;
     let allProductsHtml = '';
-    let categoryStates = {}; // { categoryId: { page: 1, isLoading: false, scrollListener: null, section: null } }
+    let categoryStates = {}; 
 
     /* =======================
      HELPERS
@@ -44,11 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function createProductCard(item) {
         const hasDiscount = item.original_price !== item.sale_price;
         return `
-        <div class="card p-2 text-center position-relative" style="min-width:170px;max-width:180px;height:300px;">
+        <div class="card p-2 text-center position-relative" style="min-width:170px;max-width:180px;height:300px;flex: 0 0 180px;">
             <i class="bi bi-heart position-absolute top-0 end-0 m-2 wishlist-icon"
-               data-product-id="${item.product_id}"
-               style="cursor:pointer"
-               onclick="toggle_wishlist_create_update(${item.product_id})"></i>
+               data-product-id="${item.id}"
+               style="cursor:pointer;color: red;"
+               onclick="toggle_wishlist_create_update(${item.id})"></i>
 
             <div style="height:150px" class="d-flex justify-content-center align-items-center">
                 <img src="${item.photo_url}" style="width:100px;height:130px;object-fit:contain">
@@ -57,82 +57,118 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-body px-0">
                 <div class="text-muted">⭐${item.rating.toFixed(1)} (${item.rating_count})</div>
                 <div style="
-                   display: -webkit-box;
-                   -webkit-line-clamp: 3;
-                   -webkit-box-orient: vertical;
-                   overflow: hidden;
-                   text-overflow: ellipsis;
-                   max-height: 60px;
-                   font-size:15px; 
-                   color: blue; 
-                   cursor:pointer;
-                   line-height: 1.3em;
-                 "
+                     display: -webkit-box;
+                     -webkit-line-clamp: 3;
+                     -webkit-box-orient: vertical;
+                     overflow: hidden;
+                     text-overflow: ellipsis;
+                     max-height: 60px;
+                     font-size:15px; 
+                     color: blue; 
+                     cursor:pointer;
+                     line-height: 1.3em;
+                   "
                      onclick="location.href='${window.DJANGO_URLS.product_details}${item.id}/'">
                      ${item.title}
                 </div>
                 ${
                     hasDiscount
-                    ? `<del>₹${item.original_price}</del> ₹${item.sale_price}`
+                    ? `<del>₹${item.original_price}</del> <strong>₹${item.sale_price}</strong>`
                     : `₹${item.original_price}`
                 }
             </div>
         </div>`;
     }
 
+    // 🔥 LOADING SKELETONS HTML
+    function createLoadingSkeletons(count = 6) {
+        let html = '';
+        for(let i = 0; i < count; i++) {
+            html += `<div class="loading-skeleton" style="flex: 0 0 180px; height: 300px; background: #f0f0f0; border-radius: 8px; animation: pulse 1.5s infinite;"></div>`;
+        }
+        return html;
+    }
+
     /* =======================
-     BEST DEALS
+     BEST DEALS - WITH LOADING
     ======================= */
     async function loadBestDeals() {
-        const res = await fetch('/api/best-deals/');
-        const data = await res.json();
         const box = document.getElementById('best-deals-container');
-        box.innerHTML = '';
-        data.best_deals.forEach(p => box.innerHTML += createProductCard(p));
+        box.innerHTML = createLoadingSkeletons(7); 
+        
+        try {
+            const res = await fetch('/api/best-deals/');
+            const data = await res.json();
+            box.innerHTML = '';
+            data.best_deals.forEach(p => box.innerHTML += createProductCard(p));
+            await loadWishlistProducts(); // Update hearts after loading
+        } catch (error) {
+            box.innerHTML = '<div class="text-center py-4 text-muted">Failed to load deals</div>';
+        }
     }
 
     /* =======================
-     PRODUCTS + SCROLL - INITIAL CATEGORIES LOAD
+     PRODUCTS + SCROLL - FIXED LOADING
     ======================= */
     async function loadProductsByCategory(page) {
-        const res = await fetch(`/api/products-by-category/${page}/`);
-        const data = await res.json();
         const box = document.getElementById('products-container');
-
+        const loadingEl = document.getElementById('loading');
+        
         if (page === 1) {
             allProductsHtml = '';
-            box.innerHTML = '';
-            categoryStates = {}; // Reset all category states
-            cleanupCategoryScrolls(); // Cleanup previous listeners
+            categoryStates = {};
+            cleanupCategoryScrolls();
+            box.innerHTML = '<div class="text-center py-5"><div class="spinner-border" style="width: 3rem; height: 3rem;"></div><p>Loading products...</p></div>';
+            loadingEl.style.display = 'none';
+        } else {
+            loadingEl.style.display = 'block';
         }
 
-        data.categories.forEach(cat => {
-            // Initialize category state
-            if (!categoryStates[cat.category_id]) {
-                categoryStates[cat.category_id] = { page: 1, isLoading: false, scrollListener: null, section: null };
-            }
+        try {
+            const res = await fetch(`/api/products-by-category/${page}/`);
+            const data = await res.json();
 
-            // 🔥 EXACT BEST DEALS STRUCTURE
-            allProductsHtml += `
-            <section class="mb-4" style="width: 100%;">
-                <h5 class="fw-bold ms-1 mb-3">${cat.category_name}</h5>
-                <div class="hot-items d-flex flex-row category-products-container loading-section" 
-                    data-category-id="${cat.category_id}" 
-                    style="overflow-x: auto; gap: 14px; min-height: 320px; scrollbar-width: thin;">
-            `;
-            
-            cat.products.forEach(p => allProductsHtml += createProductCard(p));
-            allProductsHtml += `</div></section>`;
-        });
+            allProductsHtml = ''; 
+            data.categories.forEach(cat => {
+                if (!categoryStates[cat.category_id]) {
+                    categoryStates[cat.category_id] = { page: 1, isLoading: false, scrollListener: null, section: null };
+                }
 
-        box.innerHTML = allProductsHtml;
-        currentPage = data.page;
-        
-        // Setup per-category scroll listeners after DOM update
-        setupCategoryScrolls();
+                allProductsHtml += `
+                <section class="mb-4" style="width: 100%;">
+                    <h5 class="fw-bold ms-1 mb-3">${cat.category_name}</h5>
+                    <div class="hot-items d-flex flex-row category-products-container loading-section" 
+                         data-category-id="${cat.category_id}" 
+                         style="overflow-x: auto; gap: 14px; min-height: 320px; scrollbar-width: thin;">
+                        ${createLoadingSkeletons(8)}
+                    </div>
+                </section>`;
+            });
+
+            box.innerHTML = allProductsHtml;
+            currentPage = data.page;
+
+            // 🔥 Replace skeletons with real data after short delay
+            setTimeout(async () => {
+                document.querySelectorAll('.category-products-container').forEach(container => {
+                    const catId = container.dataset.categoryId;
+                    const category = data.categories.find(c => c.category_id == parseInt(catId));
+                    
+                    if (category) {
+                        container.innerHTML = '';
+                        category.products.forEach(p => container.innerHTML += createProductCard(p));
+                    }
+                });
+                await loadWishlistProducts(); // 🔥 Update ALL hearts
+                setupCategoryScrolls();
+                loadingEl.style.display = 'none';
+            }, 800);
+
+        } catch (error) {
+            box.innerHTML = '<div class="text-center py-5 text-danger">Failed to load products</div>';
+            loadingEl.style.display = 'none';
+        }
     }
-
-
 
     /* =======================
      MAIN CONTAINER SCROLL (for more categories)
@@ -142,8 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
         box.addEventListener('scroll', () => {
             if (box.scrollTop + box.clientHeight >= box.scrollHeight - 50 && !isLoadingMore) {
                 isLoadingMore = true;
+                document.getElementById('loading').style.display = 'block';
                 loadProductsByCategory(currentPage + 1).then(() => {
                     isLoadingMore = false;
+                    document.getElementById('loading').style.display = 'none';
                 });
             }
         });
@@ -157,18 +195,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const catId = container.dataset.categoryId;
             const state = categoryStates[catId];
             
-            if (!catId || state.scrollListener) return; // Already setup
+            if (!catId || state.scrollListener) return;
 
-            // Force reflow to get accurate scrollHeight
             container.scrollHeight;
-
             const listener = () => {
                 if (container.scrollTop + container.clientHeight >= container.scrollHeight - 50 && 
                     !state.isLoading) {
                     
                     state.isLoading = true;
-                    loadMoreCategoryProducts(catId, state.page + 1).then(() => {
+                    container.insertAdjacentHTML('beforeend', createLoadingSkeletons(4));
+                    
+                    loadMoreCategoryProducts(catId, state.page + 1).then(async () => {
                         state.isLoading = false;
+                        container.querySelectorAll('.loading-skeleton').forEach(s => s.remove());
+                        await loadWishlistProducts(); // 🔥 Update hearts after new products
                     });
                 }
             };
@@ -191,20 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (html.trim()) {
                 const state = categoryStates[categoryId];
                 const container = state.section;
-                
-                // Append new products to existing horizontal container
                 container.insertAdjacentHTML('beforeend', html);
-                
-                // Update wishlist status for new products
-                await loadWishlistProducts();
-                
                 state.page = page;
             }
         } catch (error) {
             console.error('Failed to load category products:', error);
         }
     }
-
 
     /* =======================
      CLEANUP CATEGORY SCROLL LISTENERS
@@ -220,9 +253,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* =======================
-     WISHLIST (GLOBAL)
+     WISHLIST - FIXED FOR ALL SECTIONS
     ======================= */
     window.toggle_wishlist_create_update = function (item_id) {
+        // 🔥 FIX: Target ALL icons for this product ID across entire page
+        const allIcons = document.querySelectorAll(`.wishlist-icon[data-product-id="${item_id}"]`);
+        if (allIcons.length === 0) return;
+
+        // Toggle ALL icons immediately for instant feedback
+        const isCurrentlyLiked = allIcons[0].classList.contains('bi-heart-fill');
+        
+        allIcons.forEach(icon => {
+            if (isCurrentlyLiked) {
+                // Remove from wishlist
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+                icon.style.color = 'red';
+            } else {
+                // Add to wishlist
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill');
+                icon.style.color = '#ff4444';
+            }
+        });
+
+        // Send request to server
         fetch(window.DJANGO_URLS.wishlist, {
             method: 'POST',
             headers: {
@@ -230,17 +285,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({ item_id })
-        }).then(() => location.reload());
+        }).catch(error => {
+            console.error('Wishlist toggle failed:', error);
+            // Revert ALL icons on error
+            allIcons.forEach(icon => {
+                if (isCurrentlyLiked) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                    icon.style.color = '#ff4444';
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                    icon.style.color = 'red';
+                }
+            });
+        });
     };
 
     async function loadWishlistProducts() {
         try {
             const res = await fetch('/api/is-liked-status-check/');
             const data = await res.json();
+            
+            // 🔥 Clear all hearts first
+            document.querySelectorAll('.wishlist-icon').forEach(icon => {
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+                icon.style.color = 'red';
+            });
+            
+            // 🔥 Set filled hearts for liked products
             data.forEach(i => {
-                document.querySelectorAll(
-                    `.wishlist-icon[data-product-id="${i.product_item_id}"]`
-                ).forEach(icon => icon.classList.replace('bi-heart', 'bi-heart-fill'));
+                document.querySelectorAll(`.wishlist-icon[data-product-id="${i.product_item_id}"]`)
+                    .forEach(icon => {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                        icon.style.color = '#ff4444';
+                    });
             });
         } catch (error) {
             console.error('Failed to load wishlist status:', error);
