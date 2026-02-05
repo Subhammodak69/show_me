@@ -48,7 +48,7 @@
         <section class="mb-4" style=" width: 100%;">
             <h5 class="fw-bold ms-1 mb-3">Best Deals on Clothes</h5>
             <div class="hot-items d-flex flex-row loading-section" id="best-deals-container" 
-                 style="overflow-x:auto;gap:14px; min-height: 320px;">
+                 style="overflow-x:auto;gap:14px; min-height: 320px;scrollbar-width: thin;">
                 <!-- LOADING SKELETONS -->
                 <div class="loading-skeleton" style="flex: 0 0 180px; height: 300px; background: #f0f0f0; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
                 <div class="loading-skeleton" style="flex: 0 0 180px; height: 300px; background: #f0f0f0; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
@@ -61,14 +61,46 @@
         </section>
 
         <!-- 🔥 PRODUCTS - DYNAMIC CONTAINER (Replace static) -->
-        <div class="hot-items d-flex flex-column" id="products-container" style="overflow-y: auto; max-height: 70vh; gap:14px;">
-            <div id="loading-products" class="text-center py-3" style="color: #666;">
-                Loading products...
+        <div class="hot-items d-flex flex-column" id="products-container" style="max-height: 70vh; gap:14px;">
+            <div id="loading" class="text-center py-4" style="display: none;">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                Loading more products...
             </div>
         </div>
     </div>
 </div>
+<style>
+.category-section {
+    scroll-behavior: smooth;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
 
+.category-products {
+    /* Cards flow horizontally then wrap to next row */
+    min-height: 300px;
+}
+
+.category-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.category-section::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+/* paginator loader */
+#loading.htmx-request {
+  display: block !important;
+}
+
+.spinner-border {
+  color: #007bff;
+}
+.card {
+    flex: 0 0 170px; /* Fixed width cards */
+}
+</style>
 <!-- 🔥 INLINE SCRIPT WITH DJANGO URLS -->
 <script>
     // Django URLs (work in inline script only)
