@@ -9,7 +9,7 @@ db.sqlite3
 .env
 
 # Django migrations (ignore all migration files except __init__.py)
-
+E_COMERCE/apps.py
 # VS Code settings
 .vscode/
 
