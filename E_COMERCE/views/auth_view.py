@@ -7,16 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from E_COMERCE.services import user_service
 from E_COMERCE.constants.default_values import Role
-
-
-from django.views import View
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, get_user_model
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from E_COMERCE.services import user_service
-from E_COMERCE.constants.default_values import Role
+
 
 User = get_user_model()
 
@@ -177,20 +169,36 @@ class AdminLoginView(View):
     def post(self, request):
         email = request.POST.get('email')
         password = request.POST.get('password')
-        # print("email=>",email,"password=>",password)
-        user = user_service.user_is_authenticate(email)
-        # print("user:",user)
-
-        if user and user.role == Role.ADMIN.value:
-            login(request, user) 
-            return redirect('admin')
-        else:
-            # print("elseeeee")
+        try:
+            user = User.objects.get(email=email, is_active=True)
+            print(user," ", user.password, " ",user.email)
+            if user.check_password(password):
+                print("Password verified")
+                if(user.role == Role.ADMIN.value or user.is_superuser):
+                    print("logging in.....")
+                    login(request, user)
+                    return redirect('admin')
+                else:
+                    print("error for role")
+                    return render(request, 'admin/admin_login.html', {
+                        'error': 'User not an admin.'
+                    })
+            else:
+                print("error for password")
+                return render(request, 'admin/admin_login.html', {
+                    'error': 'Invalid credentials.'
+                })
+        except User.DoesNotExist:
+            print("user not found")
             return render(request, 'admin/admin_login.html', {
-                'error': 'Invalid credentials or not an admin user.'
+                'error': 'User does not exist.'
             })
+
+
+
+
         
-from django.http import JsonResponse
+
 from django.utils.timezone import now
 from datetime import timedelta
 from django.db.models.functions import TruncDay

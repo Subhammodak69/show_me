@@ -23,15 +23,6 @@ def user_exists(email):
     return User.objects.filter(email = email , role= Role.ENDUSER.value).exists()
 
 
-def user_is_authenticate(email):
-    try:
-        user = User.objects.get(email=email)
-        return user
-    except User.DoesNotExist:
-        return None  
-    
-
-
 class UserNotFoundError(Exception):
     pass
 
@@ -88,4 +79,4 @@ def get_all_user():
     return User.objects.all()
 
 def get_total_user_count():
-    return User.objects.count()
+    return User.objects.filter(role = Role.ENDUSER.value).exclude(is_superuser=True).count()

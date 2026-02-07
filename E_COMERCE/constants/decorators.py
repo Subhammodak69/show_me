@@ -12,7 +12,7 @@ class AdminRequiredMixin(AccessMixin):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
 
-        if getattr(request.user, 'role', None) != Role.ADMIN.value:
+        if not (getattr(request.user, 'role', None) == Role.ADMIN.value or request.user.is_superuser):
             logout(request)
             return redirect(self.login_url)
 

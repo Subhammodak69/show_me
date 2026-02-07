@@ -16,16 +16,14 @@ class Command(BaseCommand):
         # ProductItem.objects.all().delete()
         # Rating.objects.all().delete()
 
-        Wishlist.objects.all().delete()
-        Cart.objects.all().delete()
-        Order.objects.all().delete()
-        OrderItem.objects.all().delete()
-        CartItem.objects.all().delete()
-        # user = User.objects.filter(id = 1).first()
-        # user.password = 'unixdeod@2025'
-        # user.save()
-        # print(users)
-        # Category.objects.filter(id=3).delete()
+        # Wishlist.objects.all().delete()
+        # Cart.objects.all().delete()
+        # Order.objects.all().delete()
+        # OrderItem.objects.all().delete()
+        # CartItem.objects.all().delete()
+
+        user = User.objects.filter(username = 'modaksubham69@gmail.com').first()
+        print(user.email,user.password)      
         
         print("✅ ALL DATA DELETED SUCCESSFULLY!")
         self.stdout.write(self.style.SUCCESS('Database cleared!'))
