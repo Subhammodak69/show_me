@@ -171,25 +171,19 @@ class AdminLoginView(View):
         password = request.POST.get('password')
         try:
             user = User.objects.get(email=email, is_active=True)
-            print(user," ", user.password, " ",user.email)
             if user.check_password(password):
-                print("Password verified")
                 if(user.role == Role.ADMIN.value or user.is_superuser):
-                    print("logging in.....")
                     login(request, user)
                     return redirect('admin')
                 else:
-                    print("error for role")
                     return render(request, 'admin/admin_login.html', {
                         'error': 'User not an admin.'
                     })
             else:
-                print("error for password")
                 return render(request, 'admin/admin_login.html', {
                     'error': 'Invalid credentials.'
                 })
         except User.DoesNotExist:
-            print("user not found")
             return render(request, 'admin/admin_login.html', {
                 'error': 'User does not exist.'
             })

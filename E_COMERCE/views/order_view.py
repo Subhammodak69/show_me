@@ -82,10 +82,8 @@ class DirectOrderView(EnduserRequiredMixin, View):
         })
     
     def post(self, request):
-        print("comeee=========================>")
         try:
             data = json.loads(request.body)
-            print(data)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
         
@@ -133,7 +131,6 @@ class DirectOrderView(EnduserRequiredMixin, View):
                 request.user, variant.id, quantity, size, color, 
                 address, phone
             )
-            print(order)
             return JsonResponse({
             'success': True,
             'message': 'Order placed successfully!',

@@ -15,7 +15,6 @@ def get_average_rating(ratings):
     return 0
 
 def get_all_productitems_by_category():
-    print("come")
     """
     Returns a dict mapping Category instances to a list of their active ProductItems.
     Only active categories, subcategories, products, and product items are included.
@@ -29,15 +28,12 @@ def get_all_productitems_by_category():
     ).select_related(
         'product__subcategory__category'
     ).order_by('product__subcategory__category__name')
-    print("get")
     category_to_products = defaultdict(list)
     
     for item in productitems:
         category = item.product.subcategory.category
         item.price = productitem_service.get_prduct_sale_and_orignal_price_by_product_item(item)
-        # print(item.price)
         category_to_products[category].append(item)
-    print("go")
     return category_to_products
 
 def get_total_is_not_active_items():

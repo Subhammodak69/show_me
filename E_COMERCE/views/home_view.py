@@ -9,7 +9,6 @@ from django.http import JsonResponse
 class HomeView(View):
     def get(self, request):
         # ----- User Data -----
-        print("start")
 
         if request.user.is_authenticated:
             user_id = request.user.id
@@ -28,7 +27,6 @@ class HomeView(View):
         # ----- Poster Data -----
         posters_qs = poster_service.get_all_posters()
         posters = list(posters_qs)  # convert to list
-        print("end")
         return render(
             request,
             'enduser/home.html',
