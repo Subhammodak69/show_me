@@ -37,7 +37,7 @@ class UserNotFoundError(Exception):
 
 
 def get_all_users():
-    return User.objects.all().order_by('id')
+    return User.objects.all().exclude(role = Role.ENDUSER.value).order_by('id')
 
 
 def create_user(data):

@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from E_COMERCE.models import ProductItem, Rating, Poster, Category, Product, Payment, CartItem, Cart, Order, OrderItem, SubCategory, Wishlist,User
+from E_COMERCE.models import *
 
 class Command(BaseCommand):
     help = 'Clear all application data (Render safe)'
@@ -9,20 +8,22 @@ class Command(BaseCommand):
         print("🗑️  Deleting all data...")
         
         # Delete in SAFE order (avoids foreign key errors)
+        
+        # Poster.objects.all().delete()
+        # Category.objects.all().delete()
+        # SubCategory.objects.all().delete()
+        # Product.objects.all().delete()
         # ProductItem.objects.all().delete()
         # Rating.objects.all().delete()
-        # Poster.objects.all().delete()
-        # Product.objects.all().delete()
-        # Category.objects.all().delete()
-        # Wishlist.objects.all().delete()
+
+        Wishlist.objects.all().delete()
         Cart.objects.all().delete()
         Order.objects.all().delete()
         OrderItem.objects.all().delete()
-        # Rating.objects.all().delete()
-        # SubCategory.objects.all().delete()
         CartItem.objects.all().delete()
-        # Payment.objects.all().delete()
-        # users = User.objects.all()
+        # user = User.objects.filter(id = 1).first()
+        # user.password = 'unixdeod@2025'
+        # user.save()
         # print(users)
         # Category.objects.filter(id=3).delete()
         
