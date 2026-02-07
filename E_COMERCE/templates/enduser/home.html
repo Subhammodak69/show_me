@@ -12,17 +12,38 @@
 {% block content %}
 <!-- Category Row (KEEP SAME) -->
 <div class="cat category-row d-flex gap-2 align-items-center bg-white shadow-sm rounded mb-3"
-    style="overflow-x:auto;width: 90%; padding:15px;">
+    style="overflow-x:auto;width: 100%; padding:15px;">
     {% for category in categories %}
-    <div class="category-item text-center" style="flex:0 0 85px;" onclick="window.location.href='{% url 'category_product_list' category.id %}'" style="cursor:pointer;">
-        <img src="{{ category.photo_url }}" alt="" style="width:60px;height:60px;object-fit:cover;">
+    <div class="category-item text-center" style="flex:0 0 120px;" onclick="window.location.href='{% url 'category_product_list' category.id %}'" style="cursor:pointer;">
+        <img src="{{ category.photo_url }}" alt="" style="width:70%;object-fit:cover;">
         <div id="cat-name" style="font-size:14px;margin-top:2px;">{{ category.name }}</div>
     </div>
     {% endfor %}
+    <div class="category-item text-center" style="flex:0 0 120px;">
+        <div class="loading-skeleton m-auto" style="height: 70px; width:70%; background: #aaaaaa; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
+        <div id="cat-name text-center" style="font-size:14px;margin-top:2px;">Coming...</div>
+    </div>
+    <div class="category-item text-center" style="flex:0 0 120px;">
+        <div class="loading-skeleton m-auto" style="height: 70px; width:70%; background: #aaaaaa; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
+        <div id="cat-name text-center" style="font-size:14px;margin-top:2px;">Coming...</div>
+    </div>
+    <div class="category-item text-center" style="flex:0 0 120px;">
+        <div class="loading-skeleton m-auto" style="height: 70px; width:70%; background: #aaaaaa; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
+        <div id="cat-name text-center" style="font-size:14px;margin-top:2px;">Coming...</div>
+    </div>
+    <div class="category-item text-center" style="flex:0 0 120px;">
+        <div class="loading-skeleton m-auto" style="height: 70px; width:70%; background: #aaaaaa; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
+        <div id="cat-name text-center" style="font-size:14px;margin-top:2px;">Coming...</div>
+    </div>
+    <div class="category-item text-center" style="flex:0 0 120px;">
+        <div class="loading-skeleton m-auto" style="height: 70px; width:70%; background: #aaaaaa; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
+        <div id="cat-name text-center" style="font-size:14px;margin-top:2px;">Coming...</div>
+    </div>
+    
 </div>
 
 <!-- Main Flex Layout (SAME STRUCTURE) -->
-<div class="d-flex justify-content-center flex-row main" style="gap:20px;width: 90%;">
+<div class="d-flex justify-content-center flex-row main" style="gap:20px;width: 100%;">
     <div class="w-100" style="flex: 4;">
         <!-- Main Carousel (KEEP SAME) -->
         <section class="carousel-container mb-4" style="position:relative;">
@@ -35,10 +56,10 @@
                     </div>
                     {% endfor %}
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                <button class="carousel-control-prev car-btn" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon"></span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                <button class="carousel-control-next car-btn" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon"></span>
                 </button>
             </div>
