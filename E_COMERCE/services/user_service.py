@@ -37,7 +37,7 @@ class UserNotFoundError(Exception):
 
 
 def get_all_users():
-    return User.objects.all().exclude(role = Role.ENDUSER.value).order_by('id')
+    return User.objects.all().exclude(role = Role.ADMIN.value).order_by('id')
 
 
 def create_user(data):
@@ -49,7 +49,7 @@ def create_user(data):
         first_name=data.get('first_name', ''),
         last_name=data.get('last_name', ''),
         is_staff=data.get('is_staff', False),
-        role= Role.ADMIN.value if data.get('is_admin') == True else Role.ENDUSER.value ,
+        role=Role.ADMIN.value if data.get('is_staff') else Role.ENDUSER.value,
         is_active=data.get('is_active', True),
         password=data['password']
     )
