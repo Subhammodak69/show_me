@@ -20,7 +20,10 @@
         {% endfor %}
       </select>
     </div>
-
+    <div class="mb-3">
+      <label class="form-label">Brand</label>
+      <input type="text" name="brand" class="form-control" value="{{item.brand}}" required>
+    </div>
     <div class="mb-3">
       <label class="form-label">Price</label>
       <input type="number" name="price" class="form-control" value="{{ item.price }}" required>

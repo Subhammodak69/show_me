@@ -173,7 +173,7 @@ def create_productitem(request, file):
     try:
         product_id = request.POST.get('product')
         price = int(request.POST.get('price'))
-
+        brand = request.POST.get('brand')
         product = Product.objects.get(id=product_id, is_active=True)
 
         if not file:
@@ -193,6 +193,7 @@ def create_productitem(request, file):
 
         item = ProductItem.objects.create(
             product=product,
+            brand_name = brand,
             price=price,
             photo_url=photo_url,  # Full Cloudinary CDN URL
         )
@@ -209,6 +210,7 @@ def update_productitem(item_id, data, file=None):
         item = ProductItem.objects.get(id=item_id)
         item.product = Product.objects.get(id=data.get('product'))
         item.price = int(data.get('price'))
+        item.brand_name = data.get('brand')
         
         # ✅ NEW PHOTO + OLD PHOTO DELETE (SAME AS OTHERS)
         if file:
