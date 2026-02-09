@@ -92,6 +92,10 @@
 
     </div>
 </div>
+<script>
+    window.isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+    window.loginUrl = "{% url 'log_in' %}";
+</script>
 <style>
 .category-section {
     scroll-behavior: smooth;

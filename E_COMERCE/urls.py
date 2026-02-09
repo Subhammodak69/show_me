@@ -71,6 +71,7 @@ urlpatterns = [
     path('cart/delete/<int:cart_id>/',views.CartDeleteView.as_view(),name='cart_delete'),
     path('category/products/<int:category_id>/',views.CategoryProductsListView.as_view(),name='category_product_list'),
     path('category/<int:category_id>/ajax/', views.CategoryProductsAjaxView.as_view(), name='category_products_ajax'),
+    path('category/products/<int:category_id>/ajax/', views.CategoryProductsAjaxListView.as_view(), name='category_products_list_ajax'),
     path('api/all/category/',views.CategoryApiListView.as_view(),name='api_category_list'),
     
     #admin cart

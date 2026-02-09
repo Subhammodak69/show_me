@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoadingMore = false;
     let allProductsHtml = '';
     let categoryStates = {}; 
+    
 
     /* =======================
      HELPERS
@@ -43,12 +44,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createProductCard(item) {
         const hasDiscount = item.original_price !== item.sale_price;
+        const wishlistOnClick = window.isAuthenticated 
+        ? `toggle_wishlist_create_update(${item.id})`
+        : `window.location.href='${window.loginUrl}'`;
         return `
         <div class="card p-2 text-center position-relative" style="min-width: 150px; max-width: 150px; height: 270px; flex: 0 0 150px;">
             <i class="bi bi-heart position-absolute top-0 end-0 m-2 wishlist-icon"
                data-product-id="${item.id}"
-               style="cursor:pointer;color: red;"
-               onclick="toggle_wishlist_create_update(${item.id})"></i>
+               style="cursor:pointer;color: red;width: 30px;height: 30px;"
+                onclick="${wishlistOnClick}"></i>
 
             <div style="height:150px" class="d-flex justify-content-center align-items-center">
                 <img src="${item.photo_url}" style="width:100px;height:130px;object-fit:contain">

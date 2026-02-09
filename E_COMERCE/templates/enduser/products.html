@@ -4,9 +4,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/products.css' %}">
 {% endblock %}
-{% block extra_js %}
-  <script src="{% static 'js/home.js' %}"></script>
-{% endblock %}
+
 {% block content %}
 <div class="home-container" style="gap: 20px;display: flex;">
   <section class="d-flex flex-column" style="width: 100%; overflow-y: auto; gap:10px;">
@@ -21,8 +19,13 @@
           <!-- Your existing product card HTML stays EXACTLY the same -->
           <i id="wishlist-icon-{{ product.id }}" 
              class="bi bi-heart position-absolute top-0 end-0 m-2 p-1 wishlist-icon"
-             style="font-size: 18px; z-index: 10; cursor: pointer;"
-             onclick="toggle_wishlist_create_update({{ product.id }})"
+             data-product-id="{{ product.id }}" 
+             style="font-size: 18px; z-index: 10; cursor: pointer;width: 30px;height: 30px;"
+            {% if user.is_authenticated %}
+                onclick="toggle_wishlist_create_update({{ product.id }})"
+            {% else %}
+                onclick="window.location.href='{% url 'log_in' %}'"
+            {% endif %}
              title="Add to wishlist"></i>
           <div class="d-flex align-items-center justify-content-center" style="height: 150px;">
             <img src="{{ product.photo_url }}" alt="{{ product.title }}" class="card-img-top mx-auto"
@@ -60,7 +63,7 @@
 
    {% if initial_data.has_next %}
     <div id="infinite-scroll-trigger" 
-        hx-get="{% url 'category_products_ajax' category_id %}?page={{ initial_data.next_page }}"
+        hx-get="{% url 'category_products_list_ajax' category_id %}?page={{ initial_data.next_page }}"
         hx-target="#product-grid" 
         hx-swap="beforeend"
         hx-trigger="revealed"
@@ -78,6 +81,8 @@
     {% endif %}
   </section>
 </div>
+<script src="{% static 'js/products.js' %}"></script>
+
 <style>
   @media(max-width:430px){
     .pro-cards{

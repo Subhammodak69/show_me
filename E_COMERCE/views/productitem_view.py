@@ -40,6 +40,17 @@ class CategoryProductsAjaxView(View):
             'next_page': product_items['next_page'],
             'category_id': category_id
         })
+    
+class CategoryProductsAjaxListView(View):
+    def get(self, request, category_id):
+        page = request.GET.get('page', 1)
+        product_items = productitem_service.get_product_items_by_category_paginated(category_id, int(page))
+        return render(request, 'enduser/partials/products_partial.html', {
+            'product_items': product_items['items'],
+            'has_next': product_items['has_next'],
+            'next_page': product_items['next_page'],
+            'category_id': category_id
+        })
 
 class ProductItemListView(AdminRequiredMixin, View):
 

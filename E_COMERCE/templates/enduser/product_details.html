@@ -3,17 +3,21 @@
 {% block title %}{{ product_item_data.product_name }} | Show_me{% endblock %}
 
 {% block content %}
-<div class="container" style="height: 100%;margin: auto;">
+<div class="container" style="height: 100%;margin: auto;max-width: 100%;">
   {% if product_item_data %}
   <div class="row justify-content-between">
     <!-- Main Product Image + Related Items -->
-    <div class="col-md-4">
-      <div class="border rounded shadow-sm p-2 mb-3" style="height:500px;">
+    <div class="col-md-5">
+      <div class="border rounded shadow-sm p-2 mb-3" style="margin: auto;max-width: 600px;max-height: 100%;">
         <div class="position-relative w-100" style="cursor:pointer;">
           <i class="bi bi-heart wishlist-icon" 
             data-product-id="{{ product_item_data.id }}"
             style="align-items: center; display: flex; justify-content: center; width: 40px; height: 40px; font-size:25px; border-radius: 50%; background: white; color: red; position: absolute; right: 10px; top: 10px; cursor: pointer; z-index: 10; transition: all 0.2s ease;"
-            onclick="toggle_wishlist_create_update({{ product_item_data.id }})"
+            {% if user.is_authenticated %}
+                onclick="toggle_wishlist_create_update({{ product_item_data.id }})"
+            {% else %}
+                onclick="window.location.href='{% url 'log_in' %}'"
+            {% endif %}
             title="Add to wishlist"></i>
         </div>
         <!-- UPDATE YOUR MAIN IMAGE - ADD DATA ATTRIBUTES -->
@@ -22,7 +26,7 @@
             data-original-src="{{ product_item_data.photo }}" 
             data-original-alt="{{ product_item_data.product_name }}"
             class="img-fluid rounded main-product-image" 
-            style="width: 100%; height: 100%; object-fit: contain;">
+            style="width: 100%; height: 100%; object-fit: cover;">
       </div>
     </div>
 

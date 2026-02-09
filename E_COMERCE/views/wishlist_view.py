@@ -44,10 +44,12 @@ class WishlistCreateUpdateView(EnduserRequiredMixin,View):
         try:
             data = json.loads(request.body)
             item_id = data.get("item_id")
+            print(data)
             if not item_id:
                 return JsonResponse({'status': 'error', 'message': 'Product item ID is required'}, status=400)
 
             status = wishlist_service.toggle_user_wishlist(request.user, item_id)
+            print(status)
             return JsonResponse({'status': status})
         
         except ObjectDoesNotExist as e:
