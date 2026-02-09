@@ -17,7 +17,7 @@
          style="min-height: 280px;">
       {% for product in product_items %}
         <div class="card pro-cards p-2 text-center position-relative flex-shrink-0" 
-             style="min-width:170px;max-width:180px;height:300px;margin: 15px;">
+             style="min-width:150px; width:100%; max-width:200px; margin: 15px auto;">
           <!-- Your existing product card HTML stays EXACTLY the same -->
           <i id="wishlist-icon-{{ product.id }}" 
              class="bi bi-heart position-absolute top-0 end-0 m-2 p-1 wishlist-icon"
@@ -78,4 +78,11 @@
     {% endif %}
   </section>
 </div>
+<style>
+  @media(max-width:430px){
+    .pro-cards{
+      max-width: 150px !important;
+    }
+  }
+</style>
 {% endblock %}

@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createProductCard(item) {
         const hasDiscount = item.original_price !== item.sale_price;
         return `
-        <div class="card p-2 text-center position-relative" style="min-width:170px;max-width:180px;height:300px;flex: 0 0 180px;">
+        <div class="card p-2 text-center position-relative" style="min-width: 150px; max-width: 150px; height: 270px; flex: 0 0 150px;">
             <i class="bi bi-heart position-absolute top-0 end-0 m-2 wishlist-icon"
                data-product-id="${item.id}"
                style="cursor:pointer;color: red;"
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createLoadingSkeletons(count = 6) {
         let html = '';
         for(let i = 0; i < count; i++) {
-            html += `<div class="loading-skeleton" style="flex: 0 0 180px; height: 300px; background: #f0f0f0; border-radius: 8px; animation: pulse 1.5s infinite;"></div>`;
+            html += `<div class="loading-skeleton" style="flex: 0 0 150px; height: 270px; background: #f0f0f0; border-radius: 8px; animation: pulse 1.5s infinite;"></div>`;
         }
         return html;
     }
