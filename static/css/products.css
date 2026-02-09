@@ -164,11 +164,11 @@
 }
 
 @media(max-width:480px){
-  .pro-cards{
+  /* .pro-cards{
     margin:10px!important;
     min-width: 130px!important;
     max-width: 130px!important;
-  }
+  } */
   .home-container{
     padding:0px!important;
   }
