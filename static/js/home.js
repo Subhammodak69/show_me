@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 ${
                     hasDiscount
-                    ? `<del>₹${item.original_price}</del> <strong>₹${item.sale_price}</strong>`
+                    ? `<span style="text-decoration: line-through;font-size:14px; color: #dc3545;">₹${item.original_price}</span> <span style="font-size:14px;">₹${item.sale_price}</span>`
                     : `₹${item.original_price}`
                 }
             </div>
