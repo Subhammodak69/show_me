@@ -30,7 +30,9 @@ class WishlistDeleteView(EnduserRequiredMixin,View):
 
         try:
             wishlist_service.delete_wishlist_item_by_id(wishlist_item_id)
-            return JsonResponse({"success": True})
+            wishlist_count = wishlist_service.get_wishlist_by_user(request.user).count()
+            print(wishlist_count)
+            return JsonResponse({"success": True,"wishlist_count":wishlist_count})
         except:
             return JsonResponse({"success": False, "error": "Item not found"}, status=404)
 

@@ -45,7 +45,7 @@
     <!-- Wishlist Main Content -->
     <div class="col-md-7 xyz">
       <div class="bg-white rounded-3 shadow-sm p-3 mb-4">
-        <h4 class="fw-semibold mb-0">Items <span class="text-muted fs-6">({{ wishlist_items_data|length }})</span></h4>
+        <h4 class="fw-semibold mb-0">Items <span class="text-muted fs-6" id="itemCount">({{ wishlist_items_data|length }})</span></h4>
       </div>
       {% if wishlist_items_data %}
         <div class="list-group list-group-flush">
@@ -117,7 +117,7 @@
           {% endfor %}
         </div>
       {% else %}
-        <div class="alert alert-warning text-center mt-5 py-5 rounded-3 shadow-sm">
+        <div class="alert alert-warning text-center mt-5 py-5 rounded-3 shadow-sm" id="noItem">
           <i class="bi bi-heartbreak fs-1 text-danger mb-3"></i>
           <h4 class="fw-semibold mb-2">Your wishlist is empty</h4>
           <p class="mb-0">Start adding products you love!</p>
@@ -161,6 +161,16 @@
         if (data.success) {
           const itemRow = document.querySelector(`[data-item-id="${wishlist_id}"]`);
           if (itemRow) itemRow.remove();
+          const wislilistCount = document.getElementById('itemCount').innerHTML = `${data.wishlist_count}`;
+          if(data.wishlist_count == 0){
+            document.querySelector('.xyz').innerHTML = `
+                <div class="alert alert-warning text-center mt-5 py-5 rounded-3 shadow-sm" id="noItem">
+                  <i class="bi bi-heartbreak fs-1 text-danger mb-3"></i>
+                  <h4 class="fw-semibold mb-2">Your wishlist is empty</h4>
+                  <p class="mb-0">Start adding products you love!</p>
+                  <a href="{% url 'home' %}" class="btn btn-primary mt-3 px-4">Shop Now</a>
+                </div>`;
+          }
         } else {
           alert(data.error || "Failed to remove from wishlist.");
         }
