@@ -242,10 +242,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedVariantId) addToCart(selectedVariantId);
     };
     
-    window.buyNowDynamic = (e) => {
-        e.preventDefault();
+    window.buyNowDynamic = function(event) {
+        event.preventDefault();
         if (selectedVariantId) {
-            window.location.href = `/direct-order/?variant_id=${encodeURIComponent(selectedVariantId)}`;
+            window.location.href = `{% url 'direct_order' %}?variant_id=${encodeURIComponent(selectedVariantId)}`;
         }
     };
 });
@@ -447,7 +447,7 @@ function addToCart(ItemInfoId) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            window.location.href = "/user-cart/"; // Update this URL as needed
+            window.location.href = "/cart/"; 
         } else {
             alert("Failed to add item to cart: " + data.message);
         }
