@@ -9,6 +9,14 @@
     <!-- Main Product Image + Related Items -->
     <div class="col-md-4">
       <div class="border rounded shadow-sm p-2 mb-3"style="height:500px;">
+        <div class="position-relative w-100" style="cursor:pointer;">
+          <i class="bi bi-heart wishlist-icon" 
+            data-product-id="{{ product_item_data.id }}"
+            style="align-items: center; display: flex; justify-content: center; width: 40px; height: 40px; font-size:25px; border-radius: 50%; background: white; color: red; position: absolute; right: 10px; top: 10px; cursor: pointer; z-index: 10; transition: all 0.2s ease;"
+            onclick="toggle_wishlist_create_update({{ product_item_data.id }})"
+            title="Add to wishlist"></i>
+        </div>
+        
         <img src="{{ product_item_data.photo }}" alt="{{ product_item_data.product_name }}" 
              class="img-fluid rounded" 
              style="width: 100%; height: 100%; object-fit: contain;">
@@ -191,6 +199,124 @@
     {% endif %}
   </div>
 </div>
+<script>
+    // CSRF Cookie helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ✅ FUNCTION 1: Load ALL wishlist products status (runs on page load + after toggle)
+    async function loadWishlistProducts() {
+        try {
+            const res = await fetch('/api/is-liked-status-check/');
+            const data = await res.json();
+            
+            // 🔥 Reset ALL hearts first (for ALL products on page)
+            document.querySelectorAll('.wishlist-icon').forEach(icon => {
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+                icon.style.color = 'red';
+                icon.title = 'Add to wishlist';
+            });
+            
+            // 🔥 Set filled hearts for wishlist products ONLY
+            data.forEach(item => {
+                document.querySelectorAll(`.wishlist-icon[data-product-id="${item.product_item_id}"]`)
+                    .forEach(icon => {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                        icon.style.color = '#ff4444';
+                        icon.title = 'Remove from wishlist';
+                    });
+            });
+            
+            console.log(`✅ Loaded ${data.length} wishlist products`);
+        } catch (error) {
+            console.error('Failed to load wishlist status:', error);
+            // On error, keep all as empty hearts
+        }
+    }
+
+    // ✅ FUNCTION 2: Toggle single product (calls loadWishlistProducts after)
+    window.toggle_wishlist_create_update = async function(item_id) {
+        console.log("Toggling wishlist for item:", item_id);
+        
+        const allIcons = document.querySelectorAll(`.wishlist-icon[data-product-id="${item_id}"]`);
+        if (allIcons.length === 0) return;
+
+        // Get current state before toggle
+        const isCurrentlyLiked = allIcons[0].classList.contains('bi-heart-fill');
+        
+        // 🔄 Instant visual feedback (optimistic update)
+        allIcons.forEach(icon => {
+            if (isCurrentlyLiked) {
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+                icon.style.color = 'red';
+                icon.title = 'Add to wishlist';
+            } else {
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill');
+                icon.style.color = '#ff4444';
+                icon.title = 'Remove from wishlist';
+            }
+        });
+
+        try {
+            const wishlistUrl = "{% url 'wishlist_create_update' %}"; 
+            
+            const response = await fetch(wishlistUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ item_id })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            // ✅ Refresh ALL wishlist status after successful toggle
+            await loadWishlistProducts();
+
+        } catch (error) {
+            console.error('Wishlist toggle failed:', error);
+            // 🔄 Revert visual feedback on error
+            allIcons.forEach(icon => {
+                if (isCurrentlyLiked) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                    icon.style.color = '#ff4444';
+                    icon.title = 'Remove from wishlist';
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                    icon.style.color = 'red';
+                    icon.title = 'Add to wishlist';
+                }
+            });
+        }
+    };
+
+    // ✅ Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadWishlistProducts();
+    });
+</script>
+
 
 <style>
   #starRating {
@@ -573,4 +699,6 @@ function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
     });
   }
 </script>
+
+
 {% endblock %}
