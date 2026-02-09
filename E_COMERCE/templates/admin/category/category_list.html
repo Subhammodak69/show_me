@@ -28,7 +28,7 @@
         <td>{{ category.name }}</td>
         <td>{{ category.description|truncatechars:50 }}</td>
         <td><img src="{{category.photo_url}}" height="70px" width="70px"></td>
-        <td>{{ category.created_by.get_full_name }}</td>
+        <td>{{ category.created_by.email }}</td>
         <td>{{ category.created_at }}</td>
         <td>
           <span id="status-badge-{{ category.id }}" class="badge {% if category.is_active %}bg-success{% else %}bg-danger{% endif %}">
