@@ -8,7 +8,7 @@
   <div class="row justify-content-between">
     <!-- Main Product Image + Related Items -->
     <div class="col-md-4">
-      <div class="border rounded shadow-sm p-2 mb-3"style="height:500px;">
+      <div class="border rounded shadow-sm p-2 mb-3" style="height:500px;">
         <div class="position-relative w-100" style="cursor:pointer;">
           <i class="bi bi-heart wishlist-icon" 
             data-product-id="{{ product_item_data.id }}"
@@ -16,10 +16,13 @@
             onclick="toggle_wishlist_create_update({{ product_item_data.id }})"
             title="Add to wishlist"></i>
         </div>
-        
-        <img src="{{ product_item_data.photo }}" alt="{{ product_item_data.product_name }}" 
-             class="img-fluid rounded" 
-             style="width: 100%; height: 100%; object-fit: contain;">
+        <!-- UPDATE YOUR MAIN IMAGE - ADD DATA ATTRIBUTES -->
+        <img src="{{ product_item_data.photo }}" 
+            alt="{{ product_item_data.product_name }}" 
+            data-original-src="{{ product_item_data.photo }}" 
+            data-original-alt="{{ product_item_data.product_name }}"
+            class="img-fluid rounded main-product-image" 
+            style="width: 100%; height: 100%; object-fit: contain;">
       </div>
     </div>
 
@@ -29,11 +32,11 @@
       <div>
         <h6 class="text-muted mb-2">Other Available Items</h6>
         <div class="row overflow-x-auto flex-nowrap gap-2">
-          {% for item in related_products_data %}
+         {% for item in related_products_data %}
           <div class="border p-2 text-center flex-shrink-0" style="width: 100px; cursor: pointer;" onclick="window.location.href='{% url 'product_details' item.id %}'">
             <img src="{{ item.photo }}" class="img-fluid mb-1" style="height: 70px; object-fit: contain;">
           </div>
-          {% endfor %}
+         {% endfor %}
         </div>
       </div>
       {% endif %}
@@ -44,36 +47,39 @@
         {{ product_item_data.product_subcategory_name }} 
       </p>
       <h4 class="text-success">
-        {% if product_item_data.sale_price == product_item_data.price  %}
+        {% if product_item_data.sale_price == product_item_data.price %}
           ₹{{ product_item_data.sale_price }}
         {% else %}
-        <span style="text-decoration: line-through; color: #dc3545;">₹{{ product_item_data.price }}</span>  
+          <span style="text-decoration: line-through; color: #dc3545;">₹{{ product_item_data.price }}</span>  
           ₹{{ product_item_data.sale_price }}
         {% endif %}
       </h4>
 
-
       <div class="mb-2">
         ⭐ {{product_item_data.rating}} | {{product_item_data.rating_count}} ratings & reviews
       </div>
-      <!-- ✅ CORRECT field name -->
+      
+      <!-- Product variants JSON -->
       <script id="product-variants" type="application/json">{{ product_item_data.product_infos_json|safe }}</script>
+      
       <div class="mb-3">
         <strong>Size</strong>
-        <!-- Selectors with populated options -->
         <select name="size" id="size-select" class="form-control">
-            <option value="">Select Size</option>
+          <option value="">Select Size</option>
         </select>
       </div>
+      
       <div class="mb-3">
         <strong>Color</strong>
         <select name="color" id="color-select" class="form-control">
-            <option value="">Select Color</option>
+          <option value="">Select Color</option>
         </select>
       </div>
+      
       <div id="product-info">
         <p><strong>Availability:</strong> <span id="display-availability">Not Selected yet.</span></p>
       </div>
+      
       <div class="d-flex gap-3 mt-3">
         <button class="btn btn-warning" 
                 id="addToCartBtn"
@@ -89,235 +95,108 @@
           Buy Now
         </button>
       </div>
+    </div>
+  </div>
 
+  <div class="mt-4">
+    <h5>Description</h5>
+    <p style="font-size:14px">{{ product_item_data.product_description }}</p>
+    <p style="font-size:14px">{{ product_item_data.product_subcategory_description }}</p>
+    <p style="font-size:14px">{{ product_item_data.product_category_description }}</p>
+  </div>
 
-     </div>
+  <div class="mt-4">
+    <h6 class="fw-bold">Available Offers</h6>
+    <ul class="list-unstyled">
+     {% if product_item_data.offer %}
+      <li class="text-success" style="font-size: 12px; font-style: italic; font-family: system-ui;">{{product_item_data.offer}}({{product_item_data.offer_description}} up to ₹{{product_item_data.discount}})</li>
+     {% else %}
+      <p class="text-danger"> Offer not found yet.</p>
+     {% endif %}
+    </ul>
+  </div>
+  
+  <!-- Ratings & Reviews -->
+  <div class="mt-4">
+    <div class="d-flex justify-content-between">
+      <h4>Reviews</h4>
+      {% if user.is_authenticated %}
+      <button class="btn btn-primary" onclick="openreviewmodal()">Give your's Reviews</button>
+      {% endif %}
     </div>
 
-      <div class="mt-4">
-        <h5>Description</h5>
-        <p style="font-size:14px">{{ product_item_data.product_description }}</p>
-        <p style="font-size:14px">{{ product_item_data.product_subcategory_description }}</p>
-        <p style="font-size:14px">{{ product_item_data.product_category_description }}</p>
-      </div>
-
-      <div class="mt-4">
-        <h6 class="fw-bold">Available Offers</h6>
-        <ul class="list-unstyled">
-          {% if product_item_data.offer %}
-          <li class="text-success"style="font-size: 12px; font-style: italic; font-family: system-ui;">{{product_item_data.offer}}({{product_item_data.offer_description}} up to ₹{{product_item_data.discount}})</li>
-          {% else %}
-          <p class="text-danger"> Offer not found yet.</p>
-          {% endif %}
-        </ul>
-      </div>
-      
-      <!-- Ratings & Reviews -->
-      <div class="mt-4">
-        <div class="d-flex justify-content-between">
-          <h4>Reviews</h4>
-          {% if user.is_authenticated %}
-          <button class="btn btn-primary" onclick="openreviewmodal()">Give your's Reviews</button>
-          {% endif %}
-        </div>
-
-        <!-- Review Modal -->
-        <div class="review-modal" id="reviewModal" style="display:none;">
-          <div>
-            <form id="reviewForm" onsubmit="event.preventDefault(); create_review();">
-              <input type="hidden" id="product_id" value="{{ product_item_data.product_id }}" />
-
-              <div id="starRating">
-                <span class="star" data-value="1">&#9733;</span>
-                <span class="star" data-value="1">&#9733;</span>
-                <span class="star" data-value="1">&#9733;</span>
-                <span class="star" data-value="1">&#9733;</span>
-                <span class="star" data-value="1">&#9733;</span>
-              </div>
-              <input type="hidden" id="rating" name="rating" />
-
-              <div class="px-2">
-                <div class="d-flex justify-content-between" style="position: relative;">
-                  <textarea id="review" style="border:none; background:rgb(206, 206, 206); padding:10px; width:100%;" placeholder="Write your review" required></textarea>
-
-                  <!-- Hidden file input to select photo -->
-                  <input type="file" id="photoInput" accept="image/*" style="display:none;" />
-
-                  <!-- Photo icon - click triggers file input -->
-                  <i id="photoIcon" style="right: 10px; bottom: 22%; position: absolute; font-size: 20px; cursor: pointer;" class="bi-card-image"></i>
-                </div>
-
-                <!-- Preview container -->
-                <div id="photoPreviewContainer" style="margin-top: 10px; display:none;">
-                  <img id="photoPreview" src="" alt="Photo Preview" style="max-width: 100%; max-height: 70px; border-radius: 4px;" />
-                </div>
-
-                <button class="btn btn-primary mt-2" type="submit">Submit Review</button>
-              </div>
-            </form>
+    <!-- Review Modal -->
+    <div class="review-modal" id="reviewModal" style="display:none;">
+      <div>
+        <form id="reviewForm">
+          <input type="hidden" id="product_id" value="{{ product_item_data.product_id }}" />
+          
+          <div id="starRating">
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="1">&#9733;</span>
           </div>
-        </div>
-          <hr>
+          <input type="hidden" id="rating" name="rating" />
+          
+          <div class="px-2">
+            <div class="d-flex justify-content-between" style="position: relative;">
+              <textarea id="review" style="border:none; background:rgb(206, 206, 206); padding:10px; width:100%;" placeholder="Write your review" required></textarea>
+              <input type="file" id="photoInput" accept="image/*" style="display:none;" />
+              <i id="photoIcon" style="right: 10px; bottom: 22%; position: absolute; font-size: 20px; cursor: pointer;" class="bi-card-image"></i>
+            </div>
+            
+            <div id="photoPreviewContainer" style="margin-top: 10px; display:none;">
+              <img id="photoPreview" src="" alt="Photo Preview" style="max-width: 100%; max-height: 70px; border-radius: 4px;" />
+            </div>
+            
+            <button class="btn btn-primary mt-2" type="submit">Submit Review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <hr>
 
-        <!-- Reviews List -->
-        {% if ratings %}
-          <div class="reviews-container space-y-4">
-            <div id="reviews-show"></div>
-            {% for rating in ratings %}
-              <div>
-                <div class="d-flex justify-content-between items-center justify-between divhel">
-                  <div class=" d-flex gap-2 font-bold helstar">
-                    <p style="font-weight: bold; margin:0px!important;">
-                    {{ rating.created_by_fullname|default:"Anonymous" }}
-                    </p>
-                    <div id="ratingTime" data-timestamp="{{ rating.created_at|date:'c' }}"style="font-size: medium;color: #75716d;">
-                      <!-- JS will replace this -->
-                    </div>
-                  </div>
-                  {% for i in rating.rating_range %}
-                    ⭐
-                  {% endfor %}
-                  {% for i in rating.empty_range %}
-                    ☆
-                  {% endfor %}
-
-                </div>
-                <p class="text-gray-700 mb-2 m-auto" style="width:96%;">{{ rating.review }}</p>
-                {% if rating.photo %}
-                  <img src="{{ rating.photo }}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />
-                {% endif %}
+    <!-- Reviews List -->
+    {% if ratings %}
+    <div class="reviews-container space-y-4">
+      <div id="reviews-show"></div>
+      {% for rating in ratings %}
+        <div>
+          <div class="d-flex justify-content-between items-center justify-between divhel">
+            <div class="d-flex gap-2 font-bold helstar">
+              <p style="font-weight: bold; margin:0px!important;">
+                {{ rating.created_by_fullname|default:"Anonymous" }}
+              </p>
+              <div id="ratingTime" data-timestamp="{{ rating.created_at|date:'c' }}" style="font-size: medium;color: #75716d;">
               </div>
+            </div>
+            {% for i in rating.rating_range %}
+              ⭐
+            {% endfor %}
+            {% for i in rating.empty_range %}
+              ☆
             {% endfor %}
           </div>
-        {% else %}
-      </div>
-      <div id="reviews-show"></div>
-      <p id="noReview" class="text-red-600 font-semibold">No reviews found yet.</p>
-    {% endif %}
+          <p class="text-gray-700 mb-2 m-auto" style="width:96%;">{{ rating.review }}</p>
+          {% if rating.photo %}
+            <img src="{{ rating.photo }}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
     {% else %}
-      <h3>Product not found</h3>
+    <div id="reviews-show"></div>
+    <p id="noReview" class="text-red-600 font-semibold">No reviews found yet.</p>
     {% endif %}
-  </div>
+  {% else %}
+    <h3>Product not found</h3>
+  {% endif %}
 </div>
-<script>
-    // CSRF Cookie helper
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
 
-    // ✅ FUNCTION 1: Load ALL wishlist products status (runs on page load + after toggle)
-    async function loadWishlistProducts() {
-        try {
-            const res = await fetch('/api/is-liked-status-check/');
-            const data = await res.json();
-            
-            // 🔥 Reset ALL hearts first (for ALL products on page)
-            document.querySelectorAll('.wishlist-icon').forEach(icon => {
-                icon.classList.remove('bi-heart-fill');
-                icon.classList.add('bi-heart');
-                icon.style.color = 'red';
-                icon.title = 'Add to wishlist';
-            });
-            
-            // 🔥 Set filled hearts for wishlist products ONLY
-            data.forEach(item => {
-                document.querySelectorAll(`.wishlist-icon[data-product-id="${item.product_item_id}"]`)
-                    .forEach(icon => {
-                        icon.classList.remove('bi-heart');
-                        icon.classList.add('bi-heart-fill');
-                        icon.style.color = '#ff4444';
-                        icon.title = 'Remove from wishlist';
-                    });
-            });
-            
-            console.log(`✅ Loaded ${data.length} wishlist products`);
-        } catch (error) {
-            console.error('Failed to load wishlist status:', error);
-            // On error, keep all as empty hearts
-        }
-    }
-
-    // ✅ FUNCTION 2: Toggle single product (calls loadWishlistProducts after)
-    window.toggle_wishlist_create_update = async function(item_id) {
-        console.log("Toggling wishlist for item:", item_id);
-        
-        const allIcons = document.querySelectorAll(`.wishlist-icon[data-product-id="${item_id}"]`);
-        if (allIcons.length === 0) return;
-
-        // Get current state before toggle
-        const isCurrentlyLiked = allIcons[0].classList.contains('bi-heart-fill');
-        
-        // 🔄 Instant visual feedback (optimistic update)
-        allIcons.forEach(icon => {
-            if (isCurrentlyLiked) {
-                icon.classList.remove('bi-heart-fill');
-                icon.classList.add('bi-heart');
-                icon.style.color = 'red';
-                icon.title = 'Add to wishlist';
-            } else {
-                icon.classList.remove('bi-heart');
-                icon.classList.add('bi-heart-fill');
-                icon.style.color = '#ff4444';
-                icon.title = 'Remove from wishlist';
-            }
-        });
-
-        try {
-            const wishlistUrl = "{% url 'wishlist_create_update' %}"; 
-            
-            const response = await fetch(wishlistUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({ item_id })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            // ✅ Refresh ALL wishlist status after successful toggle
-            await loadWishlistProducts();
-
-        } catch (error) {
-            console.error('Wishlist toggle failed:', error);
-            // 🔄 Revert visual feedback on error
-            allIcons.forEach(icon => {
-                if (isCurrentlyLiked) {
-                    icon.classList.remove('bi-heart');
-                    icon.classList.add('bi-heart-fill');
-                    icon.style.color = '#ff4444';
-                    icon.title = 'Remove from wishlist';
-                } else {
-                    icon.classList.remove('bi-heart-fill');
-                    icon.classList.add('bi-heart');
-                    icon.style.color = 'red';
-                    icon.title = 'Add to wishlist';
-                }
-            });
-        }
-    };
-
-    // ✅ Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        loadWishlistProducts();
-    });
-</script>
-
-
+<!-- Load external JS -->
+<script src="{% static 'js/product_details.js' %}"></script>
 <style>
   #starRating {
     font-size: 2rem;
@@ -334,371 +213,11 @@
   }
   @media(max-width:480px){
     .helstar{
-          justify-content: space-between;
+        justify-content: space-between;
     }
     .divhel{
       flex-direction: column;
     }
   }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const variantsScript = document.getElementById('product-variants');
-    const sizeSelect = document.getElementById('size-select');
-    const colorSelect = document.getElementById('color-select');
-    const addToCartBtn = document.getElementById('addToCartBtn');
-    const buyNowBtn = document.getElementById('buyNowBtn');
-    
-    let variants = [];
-    let selectedVariantId = null;
-    
-    try {
-        variants = JSON.parse(variantsScript.textContent);
-    } catch (e) {
-        console.error('JSON Parse Error:', e);
-        return;
-    }
-
-    // ✅ POPULATE SELECT OPTIONS (sorted)
-    if (variants.length > 0) {
-        const uniqueSizes = [...new Set(variants.map(v => v.display_size))].sort();
-        const uniqueColors = [...new Set(variants.map(v => v.display_color))].sort();
-        
-        uniqueSizes.forEach(size => {
-            sizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
-        });
-        uniqueColors.forEach(color => {
-            colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
-        });
-    }
-
-    function updateProductInfo() {
-        const selectedSize = sizeSelect.value;
-        const selectedColor = colorSelect.value;
-        
-        const matchingVariant = variants.find(v => 
-            v.display_size === selectedSize && v.display_color === selectedColor
-        );
-
-        const availabilitySpan = document.getElementById('display-availability');
-        const productImage = document.querySelector('.col-md-4 img');
-        
-        // Reset buttons to disabled state
-        addToCartBtn.disabled = true;
-        buyNowBtn.disabled = true;
-        addToCartBtn.classList.remove('btn-warning');
-        addToCartBtn.classList.add('btn-secondary');
-        buyNowBtn.classList.remove('btn-danger');
-        buyNowBtn.classList.add('btn-secondary');
-        
-        selectedVariantId = null;
-
-        if (matchingVariant) {
-            // ✅ UPDATE PRODUCT IMAGE
-            if (matchingVariant.image && productImage) {
-                productImage.src = matchingVariant.image;
-                productImage.alt = matchingVariant.display_color + ' - ' + matchingVariant.display_size;
-            }
-            
-            // ✅ NEW STOCK LOGIC
-            if (matchingVariant.stock > 10) {
-                availabilitySpan.innerHTML = 'Stock available';
-                availabilitySpan.className = 'text-success';
-            } else if (matchingVariant.stock > 0) {
-                availabilitySpan.innerHTML = `Hurry! Limited stock available (${matchingVariant.stock})`;
-                availabilitySpan.className = 'text-warning';
-            } else {
-                availabilitySpan.innerHTML = 'Out of stock';
-                availabilitySpan.className = 'text-danger';
-            }
-            
-            // Enable buttons only if stock > 0
-            if (matchingVariant.stock > 0) {
-                addToCartBtn.disabled = false;
-                buyNowBtn.disabled = false;
-                addToCartBtn.classList.remove('btn-secondary');
-                addToCartBtn.classList.add('btn-warning');
-                buyNowBtn.classList.remove('btn-secondary');
-                buyNowBtn.classList.add('btn-danger');
-                
-                selectedVariantId = matchingVariant.id;
-            }
-        } else {
-            // ✅ NEW: Check if both are selected or not
-            if (selectedSize && selectedColor) {
-                availabilitySpan.innerHTML = 'Please select available color and size both';
-                availabilitySpan.className = 'text-danger'; 
-            } else {
-                availabilitySpan.innerHTML = 'Please select color and size';
-                availabilitySpan.className = 'text-muted';
-
-            }
-            
-            // Reset to original image
-            if (productImage) {
-                productImage.src = "{{ product_item_data.photo }}";
-                productImage.alt = "{{ product_item_data.product_name }}";
-            }
-        }
-    }
-
-    // Event listeners
-    sizeSelect.addEventListener('change', updateProductInfo);
-    colorSelect.addEventListener('change', updateProductInfo);
-    updateProductInfo();
-
-    // ✅ Dynamic Add to Cart function - passes correct variant ID
-    window.addToCartDynamic = function(event) {
-        event.preventDefault();
-        if (selectedVariantId) {
-            addToCart(selectedVariantId);
-        }
-    };
-
-    // ✅ Dynamic Buy Now function - passes correct variant ID
-    window.buyNowDynamic = function(event) {
-        event.preventDefault();
-        if (selectedVariantId) {
-            window.location.href = `{% url 'direct_order' %}?variant_id=${encodeURIComponent(selectedVariantId)}`;
-        }
-    };
-});
-
-</script>
-
-
-
-<script>
-  // Open review modal function
-  function openreviewmodal() {
-    document.getElementById('reviewModal').style.display = 'block';
-  }
-
-  // Star rating toggle & sum logic
-  const stars = document.querySelectorAll('#starRating .star');
-  const ratingInput = document.getElementById('rating');
-
-  stars.forEach(star => {
-    star.addEventListener('click', () => {
-      star.classList.toggle('selected');
-      updateRating();
-    });
-  });
-
-  function updateRating() {
-    let total = 0;
-    stars.forEach(star => {
-      if (star.classList.contains('selected')) {
-        total += parseInt(star.getAttribute('data-value'));
-      }
-    });
-    ratingInput.value = total;
-    console.log('Current total rating:', total);
-  }
-
-  // Photo upload & preview
-  const photoIcon = document.getElementById('photoIcon');
-  const photoInput = document.getElementById('photoInput');
-  const photoPreviewContainer = document.getElementById('photoPreviewContainer');
-  const photoPreview = document.getElementById('photoPreview');
-
-  photoIcon.addEventListener('click', () => {
-    photoInput.click();
-  });
-
-  photoInput.addEventListener('change', () => {
-    const file = photoInput.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        photoPreview.src = e.target.result;
-        photoPreviewContainer.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    } else {
-      photoPreview.src = '';
-      photoPreviewContainer.style.display = 'none';
-    }
-  });
-
-  // Fetch CSRF cookie helper
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        const trimmed = cookie.trim();
-        if (trimmed.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-
-  // Submit review via AJAX with photo base64
-  function create_review() {
-    const csrftoken = getCookie('csrftoken');
-
-    const product_id = document.getElementById('product_id').value;
-    const rating = document.getElementById('rating').value;
-    const review = document.getElementById('review').value;
-
-    if (photoInput.files.length > 0) {
-      const file = photoInput.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const photo_url = e.target.result;
-        sendReviewData(product_id, photo_url, rating, review, csrftoken);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      sendReviewData(product_id, '', rating, review, csrftoken);
-    }
-  }
-
-function sendReviewData(product_id, photo_url, rating, review, csrftoken) {
-  fetch('/review/create/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': 'csrfToken',
-    },
-    body: JSON.stringify({
-      product_id: product_id,
-      photo_url: photo_url,
-      rating: rating,
-      review: review,
-    }),
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      console.log('Review submitted successfully!');
-      console.log(data.data);
-
-      // Reset form fields FIRST
-      const reviewForm = document.getElementById('reviewForm');
-      if (reviewForm) reviewForm.reset();
-      
-      const ratingField = document.getElementById('rating');
-      if (ratingField) ratingField.value = '';
-      
-      const photoPreview = document.getElementById('photoPreview');
-      if (photoPreview) photoPreview.src = '';
-      
-      const photoPreviewContainer = document.getElementById('photoPreviewContainer');
-      if (photoPreviewContainer) photoPreviewContainer.style.display = 'none';
-
-      // Close the review modal
-      const reviewModal = document.getElementById('reviewModal');
-      if (reviewModal) reviewModal.style.display = 'none';
-
-      // Extract data from response
-      const reviewData = data.data;
-      const createdByFullname = reviewData.created_by_fullname || 'Anonymous';
-      const createdAt = new Date(reviewData.created_at).toLocaleString('en-US', {
-        month: 'short', 
-        day: '2-digit', 
-        year: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit'
-      });
-      const reviewText = reviewData.review;
-      const photoUrl = reviewData.photo;
-
-      // Generate stars using rating_range and empty_range arrays from backend
-      let starsHtml = '';
-      
-      // Add filled stars
-      if (Array.isArray(reviewData.rating_range)) {
-        reviewData.rating_range.forEach(() => {
-          starsHtml += '⭐';
-        });
-      }
-
-      // Add empty stars
-      if (Array.isArray(reviewData.empty_range)) {
-        reviewData.empty_range.forEach(() => {
-          starsHtml += '☆';
-        });
-      }
-
-      // Create new review element
-      const reviewsContainer = document.getElementById('reviews-show');
-      const noReview = document.getElementById('noReview');
-      noReview.style.display = 'none';
-      
-      if (reviewsContainer) {
-        const newReviewDiv = document.createElement('div');
-        newReviewDiv.innerHTML = `
-          <div>
-            <div class="d-flex justify-content-between items-center">
-              <div class="d-flex gap-2 font-bold">
-                <p style="font-weight: bold; margin:0px!important;">${createdByFullname}</p>
-                <div id="ratingTime" 
-                  data-timestamp="${createdAt}"
-                  style="font-size: medium;color: #75716d;">
-                </div>
-              </div>
-              <div>${starsHtml}</div>
-            </div>
-            <p class="text-gray-700 mb-2 m-auto" style="width:96%;">${reviewText}</p>
-            ${photoUrl ? `<img src="${photoUrl}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />` : ''}
-          </div>
-        `;
-
-        // Insert at the top of reviews container
-        reviewsContainer.insertBefore(newReviewDiv, reviewsContainer.firstChild);
-        
-        console.log('Review added to DOM successfully');
-      } else {
-        console.error('Reviews container not found');
-      }
-
-    } else {
-      alert('Error: ' + (data.error || 'Unknown error'));
-    }
-  })
-  .catch(error => {
-    console.error('Fetch error:', error);
-    alert('Fetch error: ' + error);
-  });
-}
-
-
-
-  // Add to Cart function (unchanged)
-  function addToCart(ItemInfoId) {
-    const csrftoken = getCookie('csrftoken');
-
-    fetch('/cart/create/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': 'csrfToken',
-      },
-      body: JSON.stringify({
-        varient_id: ItemInfoId,
-        quantity: 1,
-      }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        window.location.href = "{% url 'user_cart' %}";
-      } else {
-        alert("Failed to add item to cart: " + data.message);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Something went wrong!');
-    });
-  }
-</script>
-
-
 {% endblock %}
