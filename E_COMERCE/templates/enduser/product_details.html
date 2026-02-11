@@ -36,16 +36,22 @@
       <div>
         <h6 class="text-muted mb-2">Other Available Items</h6>
         <div class="row overflow-x-auto flex-nowrap gap-2">
-         {% for item in related_products_data %}
-          <div class="border p-2 text-center flex-shrink-0" style="width: 100px; cursor: pointer;" onclick="window.location.href='{% url 'product_details' item.id %}'">
+        {% for item in related_products_data %}
+          <div class="border p-2 text-center flex-shrink-0 related-item" 
+              style="width: 100px; cursor: pointer;"
+              data-color="{{ item.display_color|default:'' }}"
+              data-size="{{ item.display_size|default:'' }}"
+              data-image="{{ item.photo }}">
             <img src="{{ item.photo }}" class="img-fluid mb-1" style="height: 70px; object-fit: contain;">
+            <small class="d-block text-muted" style="font-size: 10px;">{{ item.display_color }}</small>
           </div>
-         {% endfor %}
+        {% endfor %}
         </div>
       </div>
       {% endif %}
 
-      <h3>{{ product_item_data.product_name }}</h3>
+
+      <h3>{{ product_item_data.product_name }}<span class="text-muted" style="font-size:18px;"> ({{product_item_data.brand_name}})</span></h3>
       <p class="text-muted">
         {{ product_item_data.product_category_name }} <br>
         {{ product_item_data.product_subcategory_name }} 
@@ -65,18 +71,18 @@
       
       <!-- Product variants JSON -->
       <script id="product-variants" type="application/json">{{ product_item_data.product_infos_json|safe }}</script>
-      
-      <div class="mb-3">
-        <strong>Size</strong>
-        <select name="size" id="size-select" class="form-control">
-          <option value="">Select Size</option>
-        </select>
-      </div>
-      
+            
       <div class="mb-3">
         <strong>Color</strong>
         <select name="color" id="color-select" class="form-control">
           <option value="">Select Color</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <strong>Size</strong>
+        <select name="size" id="size-select" class="form-control">
+          <option value="">Select Size</option>
         </select>
       </div>
       
@@ -164,35 +170,36 @@
 
     <!-- Reviews List -->
     {% if ratings %}
-    <div class="reviews-container space-y-4">
-      <div id="reviews-show"></div>
-      {% for rating in ratings %}
-        <div>
-          <div class="d-flex justify-content-between items-center justify-between divhel">
-            <div class="d-flex gap-2 font-bold helstar">
-              <p style="font-weight: bold; margin:0px!important;">
-                {{ rating.created_by_fullname|default:"Anonymous" }}
-              </p>
-              <div id="ratingTime" data-timestamp="{{ rating.created_at|date:'c' }}" style="font-size: medium;color: #75716d;">
+      <div class="reviews-container space-y-4">
+        <div id="reviews-show"></div>
+        {% for rating in ratings %}
+          <div>
+            <div class="d-flex justify-content-between items-center justify-between divhel">
+              <div class="d-flex gap-2 font-bold helstar">
+                <p style="font-weight: bold; margin:0px!important;">
+                  {{ rating.created_by_fullname|default:"Anonymous" }}
+                </p>
+                <div id="ratingTime" data-timestamp="{{ rating.created_at|date:'c' }}" style="font-size: medium;color: #75716d;">
+                </div>
               </div>
+              {% for i in rating.rating_range %}
+                ⭐
+              {% endfor %}
+              {% for i in rating.empty_range %}
+                ☆
+              {% endfor %}
             </div>
-            {% for i in rating.rating_range %}
-              ⭐
-            {% endfor %}
-            {% for i in rating.empty_range %}
-              ☆
-            {% endfor %}
+            <p class="text-gray-700 mb-2 m-auto" style="width:96%;">{{ rating.review }}</p>
+            {% if rating.photo %}
+              <img src="{{ rating.photo }}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />
+            {% endif %}
           </div>
-          <p class="text-gray-700 mb-2 m-auto" style="width:96%;">{{ rating.review }}</p>
-          {% if rating.photo %}
-            <img src="{{ rating.photo }}" alt="Review photo" class="max-w-xs rounded-md mb-2 shadow" />
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
+        {% endfor %}
+      </div>
     {% else %}
-    <div id="reviews-show"></div>
-    <p id="noReview" class="text-red-600 font-semibold">No reviews found yet.</p>
+      <div id="reviews-show"></div>
+        <p id="noReview" class="text-red-600 font-semibold">No reviews found yet.</p>
+      </div>
     {% endif %}
   {% else %}
     <h3>Product not found</h3>

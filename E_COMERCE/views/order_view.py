@@ -70,7 +70,7 @@ class OrderCreateView(EnduserRequiredMixin, View):
 class DirectOrderView(EnduserRequiredMixin, View):
     def get(self, request):
         variant_id = request.GET.get('variant_id')
-        # print(variant_id)
+        print(variant_id)
         item_data = product_info_service.get_item_data_by_varient(variant_id) 
         # print(item_data)
         if not item_data:

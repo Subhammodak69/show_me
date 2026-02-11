@@ -81,16 +81,14 @@
                         <img src="{{ item.product_item.photo_url }}" alt="product" style="margin: auto;width: 40%;object-fit:cover;border-radius:7px;">
                         <div style="margin: auto; width: 100%;padding: 10px 20px;">
                             <div style="font-weight:bold;font-size:17px;">{{ item.product_item.product.name }}</div>
+                            <div class="text-muted" style="font-weight:bold;font-size:14px;"><span class="text-muted">Brand:</span>{{ item.product_item.brand_name }}</div>
                             <div style="color:#555;font-size:14px;">
                                 Size: {{ item.get_size_display }} 
-                                Color: {{ item.product_item.get_color_display }} 
+                                Color: {{ item.get_color_display }} 
                                 Qty: {{ item.quantity }}
                             </div>
                             <div style="margin-top:7px;">
-                                <span style="font-size:15px;color:#111;font-weight:bold;">₹{{ item.product_item.price }}</span>
-                                {% if item.discount_price %}
-                                <span style="color:green;">(Discounted)</span>
-                                {% endif %}
+                                <span style="font-size:15px;color:#111;font-weight:bold;">₹{{ item.price }}</span>
                             </div>
                         </div>
                     </div>

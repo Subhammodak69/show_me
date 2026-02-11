@@ -76,18 +76,26 @@ def get_product_items_by_category_paginated(category_id, page=1):
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None
     }
 
-def get_product_item_related_product_items(product_id):
-    items = list( ProductItem.objects.filter(product__id = product_id,is_active = True))
-    data = []
-    if items:
-        data = [
-            {
-                'id': item.id,
-                'photo':item.photo_url,
-            }
-            for item in items
-        ]
+def get_product_item_related_product_items(product_item_id):
+    product_item = ProductItem.objects.get(id=product_item_id)
+    
+    # 🔥 GET UNIQUE COLORS ONLY (1 photo per color)
+    items = ItemInfo.objects.filter(
+        product_item=product_item, 
+        is_active=True,
+        color__isnull=False  # Only colored variants
+    ).values('id', 'photo_url', 'color').distinct('color')
+    
+    data = [
+        {
+            'id': item['id'],
+            'photo': item['photo_url'],
+        }
+        for item in items
+    ]
     return data
+
+
 
 def get_size(size):
     return Size(size).name
@@ -149,6 +157,7 @@ def get_product_items_data(item_id):
         'product_id': product_item.product.id,
         'product_description': product_item.product.description,
         'product_name': product_item.product.name,
+        'brand_name':product_item.brand_name,
         'product_subcategory_name': product_item.product.subcategory.name,
         'product_subcategory_description': product_item.product.subcategory.description,
         'product_category_name': product_item.product.subcategory.category.name,

@@ -77,56 +77,90 @@ def get_iteminfo_by_id(info_id):
 
 def get_item_data_by_varient(variant_id):
     variant = get_iteminfo_object(variant_id)
-    # print(variant)
-    data = {}
-    discount = 0
     
-    if variant:
-        discount = cart_service.get_discount_by_id(variant.product_item)
-        sale_price = (variant.product_item.price) - (discount)
+    if not variant:
+        return None
         
-        # 🔥 Get ALL variants for this product for live selection
-        all_variants = product_info_service.get_iteminfo_objects_by_product_item(variant.product_item.id)
-        variants_json = []
-        
-        for v in all_variants:
-            variants_json.append({
-                'id': v.id,
-                'size_value': v.size,
-                'display_size': Size(v.size).name,
-                'color_value': v.color,
-                'display_color': Color(v.color).name if v.color else None,
-                'stock': v.stock,
-                'price': v.product_item.price,
-                'image': v.product_item.photo_url,
-                'product_item': v.product_item.id
-            })
-        
-        # 🔥 Convert to JSON STRING - THIS IS THE FIX
-        variants_json_string = json.dumps(variants_json, ensure_ascii=False)
-        
-        # 🔥 Size options (unique sizes with stock)
-        size_options = get_all_size_options_by_info_id(variant.id)
-        
-        data = {
-            'id': variant.id,
-            'quantity': 1,
-            'size': variant.size,
-            'size_display': Size(variant.size).name,
-            'color': variant.color,
-            'color_display': Color(variant.color),
-            'size_options': size_options,
-            'color_options': get_all_color_options_by_info_id(variant.id),
-            'variants_json': variants_json_string,  # ✅ NOW VALID JSON
-            'product_name': variant.product_item.product.name,
-            'product_price': variant.product_item.price,
-            'product_photo': variant.product_item.photo_url,
-            'price': variant.product_item.price,
-            'discount': discount,
-            'total_price': sale_price,
-            'product_item': variant.product_item.id,
-        }
+    discount = cart_service.get_discount_by_id(variant.product_item)
+    sale_price = (variant.product_item.price) - discount
+    
+    # 🔥 Get ALL variants for this product
+    all_variants = product_info_service.get_iteminfo_objects_by_product_item(variant.product_item.id)
+    
+    # 🔥 Build variants JSON (UNCHANGED - already good)
+    variants_json = []
+    for v in all_variants:
+        variants_json.append({
+            'id': v.id,
+            'size_value': v.size,
+            'display_size': Size(v.size).name,
+            'color_value': v.color,
+            'display_color': Color(v.color).name if v.color else None,
+            'stock': v.stock,
+            'price': v.product_item.price,
+            'image': v.photo_url,
+            'product_item': v.product_item.id
+        })
+    
+    variants_json_string = json.dumps(variants_json, ensure_ascii=False)
+    
+    # 🔥 FIXED: UNIQUE SIZE OPTIONS (NO DUPLICATES)
+    size_options = get_unique_size_options(all_variants)
+    
+    # 🔥 FIXED: UNIQUE COLOR OPTIONS (NO DUPLICATES)  
+    color_options = get_unique_color_options(all_variants)
+    
+    data = {
+        'id': variant.id,
+        'quantity': 1,
+        'size': variant.size,
+        'size_display': Size(variant.size).name,
+        'color': variant.color,
+        'color_display': Color(variant.color).name if variant.color else None,
+        'size_options': size_options,  # ✅ UNIQUE
+        'color_options': color_options,  # ✅ UNIQUE
+        'variants_json': variants_json_string,
+        'product_name': variant.product_item.product.name,
+        'product_price': variant.product_item.price,
+        'product_photo': variant.photo_url,
+        'price': variant.product_item.price,
+        'discount': discount,
+        'total_price': sale_price,
+        'product_item': variant.product_item.id,
+    }
     return data
+
+
+# 🔥 NEW HELPER FUNCTIONS - Add these to your service
+def get_unique_size_options(all_variants):
+    """Get unique sizes with display names - NO DUPLICATES"""
+    unique_sizes = {}
+    for variant in all_variants:
+        if variant.size and variant.stock > 0:  # Only in-stock sizes
+            size_name = Size(variant.size).name
+            unique_sizes[variant.size] = {
+                'value': variant.size,
+                'name': size_name
+            }
+    
+    # Convert to list sorted by size value
+    return sorted([v for v in unique_sizes.values()], key=lambda x: x['value'])
+
+
+def get_unique_color_options(all_variants):
+    """Get unique colors with display names - NO DUPLICATES"""
+    unique_colors = {}
+    for variant in all_variants:
+        if variant.color and variant.stock > 0:  # Only in-stock colors
+            color_name = Color(variant.color).name
+            unique_colors[variant.color] = {
+                'value': variant.color,
+                'name': color_name
+            }
+    
+    # Convert to list sorted by color value
+    return sorted([v for v in unique_colors.values()], key=lambda x: x['value'])
+
 
 
 def get_all_size_options_by_info_id(variant_id):
@@ -270,3 +304,7 @@ def toggle_iteminfo_status(iteminfo_id):
         return item.is_active
     except ItemInfo.DoesNotExist:
         raise Exception("Item info not found.")
+
+def get_photo_by_color_size(product_item,color,size):
+    variant = ItemInfo.objects.filter(product_item = product_item,size = size,color = color,is_active = True).first()
+    return variant.photo_url

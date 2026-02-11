@@ -175,7 +175,7 @@ def get_order_tracking_info(order_id):
     Raises Http404 if not found.
     """
     order = get_object_or_404(Order.objects.select_related('created_by'), id=order_id)
-    order_items = order.orderitems.select_related('product_item__product').all()
+    order_items = orderitem_service.get_all_order_items_by_order_id(order)
     expected_delivery = order.created_at + timedelta(days=5)
     status_display = Status(order.status).name
 

@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from E_COMERCE.models import OrderItem, Order, ProductItem
+from E_COMERCE.services import product_info_service
 
 def get_all_orderitems():
     return OrderItem.objects.select_related('product_item', 'order_id').order_by('-created_at')
@@ -54,7 +55,9 @@ def get_all_order_items_by_order_id(order):
                     'name': item.product_item.product.name,
                     'id': item.product_item.product.id
                 },
-                'photo_url': item.product_item.photo_url
+                'photo_url': product_info_service.get_photo_by_color_size(item.product_item,item.color,item.size),
+                'brand_name':item.product_item.brand_name
+                 
             },
             'quantity': item.quantity,
             'price': item.price,
