@@ -75,14 +75,18 @@
   <form id="order-form" method="POST" class="d-flex flex-column flex-md-row justify-content-center align-items-stretch gap-4"
     style="background: white; border-radius: 12px; padding: 1.5rem 0.5rem;">
     <!-- Cart Items - UPDATED with dynamic variants -->
-    <div id="cart-items" class="w-100 w-md-50"style="max-width:400px;">
+    <div id="cart-items" class="w-100 w-md-50"style="max-width:400px;overflow: auto;max-height: 80vh;max-width: 400px;scrollbar-width:thin;">
       {% for item in cart_items %}
+      <!-- Remove Button -->
+          <div style="position: relative;width: 100%;">
+            <i class="bi bi-x" onclick="removeItem({{ item.id }})" style=" height: 30px;width: 30px;display: flex;align-items: center;justify-content: center;top: 10px;right: 10px;position: absolute;color: red;font-size: 25px;background: aliceblue;border-radius: 50%;"></i>
+          </div>
       <!-- Add these data attributes to each cart-item div -->
       <div class="cart-item border p-5 rounded text-center mb-3" 
           data-id="{{ item.id }}"
           data-size-display="{{ item.size_display }}"
           data-color-display="{{ item.color_display }}">
-
+         
         <!-- Product Image - DYNAMIC -->
         <div class="mb-3">
           <img id="product-image-{{ item.id }}" 
@@ -117,30 +121,26 @@
                   value="{{ item.quantity }}" 
                   min="1"
                   required 
-                  class="form-control w-50 mx-auto">
+                  class="form-control w-50 mx-auto" style="font-size:12px;">
           </div>
           
+          <!-- Color -->
+          <div class="d-flex align-items-center justify-content-center gap-4 w-100">
+            <label class="d-block">Color:</label>
+            <select id="color-{{ item.id }}" class="form-select text-center w-100"style="font-size:12px;">
+              <option value="">Select Color</option>
+            </select>
+          </div>
           <!-- Size -->
           <div class="d-flex align-items-center justify-content-center gap-4 w-100">
             <label class="d-block">Size:</label>
-            <select id="size-{{ item.id }}" class="form-select text-center w-100">
+            <select id="size-{{ item.id }}" class="form-select text-center w-100"style="font-size:12px;">
               <option value="">Select Size</option>
             </select>
           </div>
 
-          <!-- Color -->
-          <div class="d-flex align-items-center justify-content-center gap-4 w-100">
-            <label class="d-block">Color:</label>
-            <select id="color-{{ item.id }}" class="form-select text-center w-100">
-              <option value="">Select Color</option>
-            </select>
-          </div>
+          
         </div>
-        
-        <!-- Remove Button -->
-        <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeItem({{ item.id }})" style="margin: auto; max-width: 250px;">
-          Remove
-        </button>
       </div>
       {% endfor %}
     </div>
@@ -183,442 +183,4 @@
     </div>
   </form>
 </div>
-
-
-<script>
-let updateTimeout = {}; // Debounce timer for each cart item
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize each cart item
-  document.querySelectorAll('.cart-item').forEach(function(cartItem) {
-    const itemId = cartItem.dataset.id;
-    initCartItemVariants(itemId);
-  });
-
-  // 🔥 NEW: ORDER FLOW HANDLERS
-  const orderBtn = document.getElementById('orderBtn');
-  const paymentSelect = document.getElementById('paymentSelect');
-  const saveAddressBtn = document.getElementById('saveAddressBtn');
-  const orderForm = document.getElementById('order-form');
-  const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryAddressModal'));
-
-  // Payment select - Enable proceed button
-  paymentSelect.addEventListener('change', function() {
-    orderBtn.disabled = this.value !== 'cod';
-  });
-
-  // 🔥 1. Proceed button → Open address modal
-  orderBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    deliveryModal.show();
-  });
-
-  // 🔥 2. Place Order button → Submit with address + phone ONLY
-  saveAddressBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    
-    if (!validateAddressForm()) {
-      return;
-    }
-
-    // Show spinner
-    document.getElementById('saveSpinner').classList.remove('d-none');
-    this.disabled = true;
-
-    // 🔥 CREATE COMMA-SEPARATED ADDRESS for backend
-    const state = document.getElementById('stateSelect').value;
-    const dist = document.getElementById('citySelect').value;
-    const vill = document.getElementById('locality').value;
-    const road = document.getElementById('road').value;
-    const pincode = document.getElementById('pinCode').value;
-    const phone = document.getElementById('phoneNumber').value;
-
-    const addressString = `${state}, ${dist}, ${vill}, ${road}, ${pincode}`;
-
-    // Add ONLY address and phone (exactly what backend expects)
-    const hiddenFields = `
-      <input type="hidden" name="address" value="${addressString}">
-      <input type="hidden" name="phone" value="${phone}">
-    `;
-
-    orderForm.insertAdjacentHTML('beforeend', hiddenFields);
-    deliveryModal.hide();
-    
-    // Submit form after modal closes
-    setTimeout(() => {
-      orderForm.submit();
-    }, 200);
-  });
-
-  // 🔥 Address validation
-  function validateAddressForm() {
-    const fields = ['stateSelect', 'citySelect', 'pinCode', 'locality', 'road', 'phoneNumber'];
-    let isValid = true;
-
-    fields.forEach(id => {
-      const field = document.getElementById(id);
-      if (!field.value.trim()) {
-        field.classList.add('is-invalid');
-        isValid = false;
-      } else {
-        field.classList.remove('is-invalid');
-      }
-    });
-
-    if (!isValid) {
-      showMessage('error', 'Please fill all address fields');
-    }
-    return isValid;
-  }
-
-  // 🔥 Initialize state/city dropdowns
-  initStateCityDropdowns();
-});
-
-function initCartItemVariants(itemId) {
-  const cartItemDiv = document.querySelector(`[data-id="${itemId}"]`);
-  const variantsScript = document.getElementById(`variants-${itemId}`);
-  const sizeSelect = document.getElementById(`size-${itemId}`);
-  const colorSelect = document.getElementById(`color-${itemId}`);
-  const quantityInput = document.getElementById(`quantity-${itemId}`);
-  const productImage = document.getElementById(`product-image-${itemId}`);
-  const availabilitySpan = document.getElementById(`display-availability-${itemId}`);
-  
-  let variants = [];
-  let selectedVariantId = null;
-  
-  // Get initial values FIRST
-  const initialSize = cartItemDiv.dataset.sizeDisplay;
-  const initialColor = cartItemDiv.dataset.colorDisplay;
-  
-  console.log(`Item ${itemId}: Initial Size="${initialSize}", Color="${initialColor}"`);
-  
-  try {
-    variants = JSON.parse(variantsScript.textContent);
-  } catch (e) {
-    console.error('JSON Parse Error for item', itemId, e);
-    availabilitySpan.textContent = 'Error loading variants';
-    availabilitySpan.className = 'badge bg-danger';
-    return;
-  }
-
-  // Store original image
-  productImage.dataset.originalSrc = productImage.src;
-
-  // Populate sizes
-  if (variants.length > 0) {
-    const uniqueSizes = [...new Set(variants.map(v => v.display_size))].sort();
-    
-    uniqueSizes.forEach(size => {
-      const option = document.createElement('option');
-      option.value = size;
-      option.textContent = size;
-      sizeSelect.appendChild(option);
-    });
-    
-    // Set initial size
-    if (initialSize && uniqueSizes.includes(initialSize)) {
-      sizeSelect.value = initialSize;
-      console.log(`✅ Set initial size: ${initialSize}`);
-    }
-  }
-
-  function updateColorOptions() {
-    const selectedSize = sizeSelect.value;
-    colorSelect.innerHTML = '<option value="">Select Color</option>';
-    
-    if (selectedSize && variants.length > 0) {
-      const availableColors = [...new Set(
-        variants
-          .filter(v => v.display_size === selectedSize && v.stock > 0)
-          .map(v => v.display_color)
-      )].sort();
-      
-      availableColors.forEach(color => {
-        const option = document.createElement('option');
-        option.value = color;
-        option.textContent = color;
-        colorSelect.appendChild(option);
-      });
-      
-      // Set initial color
-      if (initialColor && availableColors.includes(initialColor)) {
-        colorSelect.value = initialColor;
-        console.log(`✅ Set initial color: ${initialColor}`);
-      }
-    }
-  }
-
-  function updateVariantInfo() {
-    const selectedSize = sizeSelect.value;
-    const selectedColor = colorSelect.value;
-    
-    const matchingVariant = variants.find(v => 
-      v.display_size === selectedSize && v.display_color === selectedColor
-    );
-
-    // Reset styles
-    selectedVariantId = null;
-    sizeSelect.classList.remove('border-success', 'border-warning', 'border-danger');
-    colorSelect.classList.remove('border-success', 'border-warning', 'border-danger');
-    
-    if (matchingVariant) {
-      // Update image
-      if (matchingVariant.image) {
-        productImage.src = matchingVariant.image;
-        productImage.alt = `${matchingVariant.display_color} - ${matchingVariant.display_size}`;
-      }
-      
-      // Update availability
-      if (matchingVariant.stock > 10) {
-        availabilitySpan.textContent = 'In Stock';
-        availabilitySpan.className = 'badge bg-success';
-        sizeSelect.classList.add('border-success');
-        colorSelect.classList.add('border-success');
-      } else if (matchingVariant.stock > 0) {
-        availabilitySpan.textContent = `Low Stock (${matchingVariant.stock})`;
-        availabilitySpan.className = 'badge bg-warning';
-        sizeSelect.classList.add('border-warning');
-        colorSelect.classList.add('border-warning');
-      } else {
-        availabilitySpan.textContent = 'Out of Stock';
-        availabilitySpan.className = 'badge bg-danger';
-        sizeSelect.classList.add('border-danger');
-        colorSelect.classList.add('border-danger');
-      }
-      
-      selectedVariantId = matchingVariant.id;
-    } else if (selectedSize && selectedColor) {
-      availabilitySpan.textContent = 'Combination not available';
-      availabilitySpan.className = 'badge bg-danger';
-      productImage.src = productImage.dataset.originalSrc;
-    } else {
-      availabilitySpan.textContent = 'Select size & color';
-      availabilitySpan.className = 'badge bg-secondary';
-      productImage.src = productImage.dataset.originalSrc;
-    }
-    
-    // 🔥 AUTO UPDATE CART when variant changes
-    debounceUpdateCart(itemId);
-  }
-
-  // 🔥 DEBOUNCE AUTO-UPDATE (300ms delay)
-  function debounceUpdateCart(itemId) {
-    // Clear existing timeout
-    if (updateTimeout[itemId]) {
-      clearTimeout(updateTimeout[itemId]);
-    }
-    
-    // Set new timeout
-    updateTimeout[itemId] = setTimeout(() => {
-      updateCartItem(itemId);
-    }, 300);
-  }
-
-  // Event listeners - ALL trigger auto-update
-  sizeSelect.addEventListener('change', () => {
-    updateColorOptions();
-    updateVariantInfo();
-  });
-  
-  colorSelect.addEventListener('change', updateVariantInfo);
-  
-  quantityInput.addEventListener('change', () => debounceUpdateCart(itemId));
-  quantityInput.addEventListener('input', () => debounceUpdateCart(itemId)); // Real-time as user types
-
-  // Initial load
-  updateColorOptions();
-  updateVariantInfo();
-}
-
-// 🔥 MAIN AUTO-UPDATE FUNCTION
-function updateCartItem(itemId) {
-  const quantityInput = document.getElementById(`quantity-${itemId}`);
-  const sizeSelect = document.getElementById(`size-${itemId}`);
-  const colorSelect = document.getElementById(`color-${itemId}`);
-  
-  const quantity = parseInt(quantityInput.value);
-  const sizeDisplay = sizeSelect.value;
-  const colorDisplay = colorSelect.value;
-
-  // Validations
-  if (!quantity || quantity <= 0) {
-    showMessage('error', 'Please enter valid quantity');
-    return;
-  }
-
-  if (!sizeDisplay || !colorDisplay) {
-    showMessage('error', 'Please select size and color');
-    return;
-  }
-
-  const variantsScript = document.getElementById(`variants-${itemId}`);
-  const variants = JSON.parse(variantsScript.textContent);
-  const matchingVariant = variants.find(v => 
-    v.display_size === sizeDisplay && v.display_color === colorDisplay
-  );
-
-  if (!matchingVariant) {
-    showMessage('error', 'Invalid variant selected');
-    return;
-  }
-
-  if (matchingVariant.stock === 0) {
-    showMessage('error', 'Selected variant is out of stock');
-    return;
-  }
-
-  if (quantity > matchingVariant.stock) {
-    showMessage('error', `Only ${matchingVariant.stock} items available`);
-    quantityInput.value = matchingVariant.stock; // Auto-correct
-    return;
-  }
-  
-  // Show loader
-  const loader = document.querySelector('.loading');
-  if (loader) {
-      loader.style.display = 'flex';
-  }
-  
-  // 🔥 AUTO CALL API
-  fetch('/api/cart/update/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCookie('csrftoken')
-    },
-    body: JSON.stringify({
-      cart_item_id: parseInt(itemId),
-      quantity: quantity,
-      size: matchingVariant.size_value,
-      color: matchingVariant.color_value
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.success) {
-          console.log('✅ Cart auto-updated for item:', itemId);
-          loader.style.display = 'none';
-          
-          // 🔥 UPDATE SUMMARY IMMEDIATELY
-          if (data.summary) {
-              updateOrderSummary(data.summary);
-          }
-          
-          showMessage('success', 'Cart updated!');
-      } else {
-          loader.style.display = 'none';
-
-          showMessage('error', data.error || 'Update failed');
-          location.reload();
-      }
-  })
-
-  .catch(error => {
-      loader.style.display = 'none';
-    console.error('Auto-update error:', error);
-    showMessage('error', 'Network error');
-  });
-}
-
-// 🔥 UPDATE ORDER SUMMARY
-function updateOrderSummary(summary) {
-    const formatPrice = (value) => {
-        const num = parseFloat(value) || 0;
-        return `₹${num.toFixed(2)}`;
-    };
-    
-    // Now targets exact elements! ✅
-    document.getElementById('summary-price').textContent = formatPrice(summary.original_price);
-    document.getElementById('summary-discount').textContent = `-${formatPrice(summary.discount)}`;
-    document.getElementById('summary-total').textContent = formatPrice(summary.total);
-}
-
-
-function removeItem(itemId) {
-  if (confirm('Remove this item from cart?')) {
-    // Show loader
-    const loader = document.querySelector('.loading');
-    if (loader) {
-        loader.style.display = 'flex';
-    }
-    fetch(`/cart/remove/${itemId}/`, { // Fixed URL - match your backend
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ cart_item_id: parseInt(itemId) })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        loader.style.display = 'none';
-        showMessage('success', 'Item removed!');
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        loader.style.display = 'none';
-        showMessage('error', data.error || 'Remove failed');
-      }
-    })
-    .catch(error => {
-      loader.style.display = 'none';
-      console.error('Remove error:', error);
-      showMessage('error', 'Network error');
-    });
-  }
-}
-
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-// 🔥 NEW: State/City dropdown population
-function initStateCityDropdowns() {
-  const states = ['West Bengal', 'Delhi', 'Maharashtra', 'Uttar Pradesh', 'Kerala'];
-  const stateSelect = document.getElementById('stateSelect');
-  
-  states.forEach(state => {
-    const option = document.createElement('option');
-    option.value = state;
-    option.textContent = state;
-    stateSelect.appendChild(option);
-  });
-
-  stateSelect.addEventListener('change', function() {
-    const citySelect = document.getElementById('citySelect');
-    citySelect.innerHTML = '<option value="">Select City</option>';
-    citySelect.disabled = false;
-    
-    const cities = {
-      'West Bengal': ['Kolkata', 'Siliguri', 'Durgapur', 'Asansol'],
-      'Delhi': ['New Delhi', 'Delhi'],
-      'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
-      'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra'],
-      'Kerala': ['Kochi', 'Thiruvananthapuram', 'Kozhikode']
-    };
-    
-    if (cities[this.value]) {
-      cities[this.value].forEach(city => {
-        const option = document.createElement('option');
-        option.value = city;
-        option.textContent = city;
-        citySelect.appendChild(option);
-      });
-    }
-  });
-}
-</script>
-
 {% endblock %}

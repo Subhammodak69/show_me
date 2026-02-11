@@ -6,7 +6,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
+from E_COMERCE.services import CartItem
 #admin
 class AdminCartListView(AdminRequiredMixin, View):
     def get(self, request):
@@ -63,52 +63,99 @@ class AdminCartUpdateView(AdminRequiredMixin, View):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-@method_decorator(csrf_exempt,name='dispatch')
+from django.db import transaction
+
+@method_decorator(csrf_exempt, name='dispatch')
 class ApiCartUpdateView(EnduserRequiredMixin, View):
     def post(self, request):
         try:
-            # Parse JSON data from frontend
             data = json.loads(request.body)
             cart_item_id = data.get('cart_item_id')
             quantity = data.get('quantity')
-            size = data.get('size')
-            color = data.get('color')
+            size = data.get('size') 
+            color = data.get('color') 
 
             # Validate input
             if not cart_item_id or not quantity or quantity <= 0:
                 return JsonResponse({'success': False, 'error': 'Invalid quantity or item ID'})
 
-            # ✅ FIX 1: Get cart item AND validate user ownership
+            quantity = int(quantity)
+
+            # ✅ Get cart item AND validate user ownership
             cart_item = cartitem_service.get_cart_item_object(cart_item_id)
             if not cart_item or cart_item.cart.user != request.user:
                 return JsonResponse({'success': False, 'error': 'Cart item not found'})
 
-            # ✅ FIX 2: Convert to int
-            quantity = int(quantity)
-            size = int(size) if size else None
-            color = int(color) if color else None
-
-            # ✅ FIX 3: Get variant with NEW size/color
+            # ✅ Get variant with size/color (already integers)
             variant = product_info_service.get_iteminfo_by_product_item(
                 cart_item.product_item, size, color
             )
             
-            # ✅ FIX 4: Proper stock validation
             if not variant or variant.stock < quantity:
                 return JsonResponse({
                     'success': False, 
                     'error': f'Insufficient stock (Available: {variant.stock if variant else 0})'
                 })
 
-            # Update cart item
-            cart_item.size = size
-            cart_item.color = color
-            cart_item.quantity = quantity
-            cart_item.save()
+            # ✅ TRANSACTION ATOMIC - Ensures all changes succeed or rollback completely
+            with transaction.atomic():
+                # FIXED LOGIC: Handle existing_target properly
+                if cart_item.size == size and cart_item.color == color:
+                    # Same variant - just update quantity
+                    cart_item.quantity = quantity
+                    cart_item.save()
+                    updated_item = cart_item
+                    
+                else:
+                    # Different variant - check for conflicts
+                    existing_target = CartItem.objects.select_for_update().filter(
+                        cart=cart_item.cart,
+                        product_item=cart_item.product_item,
+                        size=size,
+                        color=color,
+                        is_active=True  # Only active items matter for unique constraint
+                    ).exclude(id=cart_item.id).first()
 
-            # After cart_item.save() - REPLACE the existing return
+                    if existing_target:
+                        # Active item exists with target size/color - MERGE
+                        existing_target.quantity += quantity
+                        if existing_target.quantity > variant.stock:
+                            raise ValueError(f'Insufficient stock after merge (Available: {variant.stock})')
+                        existing_target.save()
+                        # Deactivate current item instead of delete
+                        cart_item.is_active = False
+                        cart_item.save()
+                        updated_item = existing_target
+                        
+                    else:
+                        # Check for inactive item with target size/color
+                        inactive_target = CartItem.objects.select_for_update().filter(
+                            cart=cart_item.cart,
+                            product_item=cart_item.product_item,
+                            size=size,
+                            color=color,
+                            is_active=False
+                        ).exclude(id=cart_item.id).first()
+
+                        if inactive_target:
+                            # Reactivate inactive item
+                            inactive_target.is_active = True
+                            inactive_target.quantity = quantity
+                            inactive_target.save()
+                            # Deactivate current item
+                            cart_item.is_active = False
+                            cart_item.save()
+                            updated_item = inactive_target
+                        else:
+                            # No conflict - safe to update current item
+                            cart_item.size = size
+                            cart_item.color = color
+                            cart_item.quantity = quantity
+                            cart_item.save()
+                            updated_item = cart_item
+
+            # Get updated cart summary (only active items) - OUTSIDE transaction
             cart_items = cart_service.get_cart_details(request.user)
-
             original_price = float(sum(item['product_item'].price * item['quantity'] for item in cart_items))
             total_discount = float(sum(
                 (cart_service.get_discount_by_id(item['product_item']) or 0) * item['quantity']
@@ -117,38 +164,32 @@ class ApiCartUpdateView(EnduserRequiredMixin, View):
             platform_fee = float(0)
             total = float(original_price - total_discount + platform_fee)
 
-
             return JsonResponse({
                 'success': True, 
                 'message': 'Cart updated successfully',
                 'cart_item': {
-                    'id': cart_item.id,
-                    'quantity': cart_item.quantity,
-                    'size': cart_item.size,
-                    'color': cart_item.color,
+                    'id': updated_item.id,
+                    'quantity': updated_item.quantity,
+                    'size': updated_item.size,
+                    'color': updated_item.color,
                 },
-                # 🔥 NEW: Return FULL SUMMARY
                 'summary': {
                     'original_price': original_price,
-                    'discount': total_discount,  # Now guaranteed float
+                    'discount': total_discount,
                     'platform_fee': platform_fee,
                     'total': total
                 }
             })
 
-
-        except ValueError:
-            return JsonResponse({'success': False, 'error': 'Invalid data format'})
+        except ValueError as ve:
+            return JsonResponse({'success': False, 'error': str(ve)})
         except Exception as e:
             return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'})
-
-
 
 #enduser
 class CartDetailsView(EnduserRequiredMixin, View):
     def get(self, request):
         cart_items = cart_service.get_cart_details(request.user)
-        # print("cart-items=> ",cart_items)
         total_items = sum(item['quantity'] for item in cart_items)
         original_price = sum(item['product_item'].price * item['quantity'] for item in cart_items)
 
@@ -186,21 +227,6 @@ class CartCreateView(EnduserRequiredMixin,View):
             return JsonResponse({'status': 'success', 'message': 'Item added to cart', 'item_id': item.id})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-
-
-# @method_decorator(csrf_exempt, name='dispatch')
-# class CartUpdateView(EnduserRequiredMixin,View):
-#     def post(self, request):
-#         try:
-#             data = json.loads(request.body)
-#             user = request.user
-#             cart_item_id = data.get('cart_item_id')
-#             quantity = int(data.get('quantity'))
-
-#             item = cart_service.update_cart_item(user, cart_item_id, quantity)
-#             return JsonResponse({'status': 'success', 'message': 'Item updated', 'item_id': item.id})
-#         except Exception as e:
-#             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
