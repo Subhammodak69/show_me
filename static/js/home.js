@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
                style="cursor:pointer;color: red;width: 30px;height: 30px;"
                 onclick="${wishlistOnClick}"></i>
 
-            <div style="height:150px" class="d-flex justify-content-center align-items-center">
-                <img src="${item.photo_url}" style="width:100px;height:130px;object-fit:contain">
+            <div style="margin: auto;width: 130px;height: 150px;" class="d-flex justify-content-center align-items-center">
+                <img src="${item.photo_url}" class="card-img-top mx-auto rounded" style="width: 100%;height: 100%;object-fit: cover;">
             </div>
 
             <div class="card-body px-0">
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                      -webkit-box-orient: vertical;
                      overflow: hidden;
                      text-overflow: ellipsis;
-                     max-height: 60px;
+                     max-height: 40px;
                      font-size:15px; 
                      color: blue; 
                      cursor:pointer;
@@ -139,9 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 allProductsHtml += `
-                <section class="mb-4" style="width: 100%;">
+                <section class="mb-4 product-section" style="width: 100%;">
                     <h5 class="fw-bold ms-1 mb-3">${cat.category_name}</h5>
-                    <div class="hot-items d-flex flex-row category-products-container loading-section" 
+                    <div class="hot-items d-flex flex-row category-products-container loading-section product-section" 
                          data-category-id="${cat.category_id}" 
                          style="overflow-x: auto; gap: 14px; min-height: 320px; scrollbar-width: thin;">
                         ${createLoadingSkeletons(8)}

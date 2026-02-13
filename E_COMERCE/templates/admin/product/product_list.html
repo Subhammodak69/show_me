@@ -29,7 +29,7 @@
         <td>{{ product.name }}</td>
         <td>{{ product.subcategory.name }}</td>
         <td>{{ product.description }}</td>
-        <td>{{ product.created_at }}</td>
+        <td style="white-space: nowrap;">{{ product.created_at }}</td>
         <td>
           <span id="status-badge-{{ product.id }}" class="badge {% if product.is_active %}bg-success{% else %}bg-danger{% endif %}">
             {% if product.is_active %}Active{% else %}Inactive{% endif %}

@@ -14,7 +14,7 @@
 <div class="cat category-row d-flex gap-2 align-items-center bg-white shadow-sm rounded mb-3"
     style="overflow-x:auto;width: 100%; padding:15px;">
     {% for category in categories %}
-    <div class="category-item text-center" style="flex:0 0 120px;" onclick="window.location.href='{% url 'category_product_list' category.id %}'" style="cursor:pointer;">
+    <div class="category-item text-center" style="flex:0 0 150px;" onclick="window.location.href='{% url 'category_product_list' category.id %}'" style="cursor:pointer;">
         <img src="{{ category.photo_url }}" alt="" style="width:70%;object-fit:cover;">
         <div id="cat-name" style="font-size:14px;margin-top:2px;">{{ category.name }}</div>
     </div>
@@ -66,9 +66,9 @@
         </section>
 
         <!-- 🔥 BEST DEALS - DYNAMIC CONTAINER (Replace static) -->
-        <section class="mb-4" style=" width: 100%;">
+        <section class="mb-4 product-section" style=" width: 100%;">
             <h5 class="fw-bold ms-1 mb-3">Best Deals on Clothes</h5>
-            <div class="hot-items d-flex flex-row loading-section" id="best-deals-container" 
+            <div class="hot-items d-flex flex-row loading-section product-section" id="best-deals-container" 
                  style="overflow-x:auto;gap:14px; min-height: 320px;scrollbar-width: thin;">
                 <!-- LOADING SKELETONS -->
                 <div class="loading-skeleton" style="flex: 0 0 180px; height: 300px; background: #f0f0f0; border-radius: 8px; animation: pulse 1.5s infinite;"></div>
@@ -83,7 +83,7 @@
         </section>
 
         <!-- 🔥 PRODUCTS - DYNAMIC CONTAINER -->
-        <div class="hot-items d-flex flex-column" id="products-container" style="max-height: 70vh; gap:14px;">
+        <div class="hot-items d-flex flex-column product-section" id="products-container" style="max-height: 70vh; gap:14px;">
             <div id="loading" class="text-center py-4" style="display: none;">
                 <div class="spinner-border spinner-border-lg me-2" role="status"></div>
                 Loading more categories...

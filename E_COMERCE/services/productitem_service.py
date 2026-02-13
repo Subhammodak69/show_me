@@ -158,6 +158,7 @@ def get_product_items_data(item_id):
         'product_description': product_item.product.description,
         'product_name': product_item.product.name,
         'brand_name':product_item.brand_name,
+        'category_id':product_item.product.subcategory.category.id,
         'product_subcategory_name': product_item.product.subcategory.name,
         'product_subcategory_description': product_item.product.subcategory.description,
         'product_category_name': product_item.product.subcategory.category.name,

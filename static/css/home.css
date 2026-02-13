@@ -180,3 +180,17 @@
          width: 90% !important;
     }
 }
+
+@media(min-width:992px){
+    .product-section{
+        gap: 50px !important;
+    }
+}
+@media screen and (min-width:661px) and (max-width:991px){
+    .product-section{
+        gap: 40px !important;
+    }
+}
+@media screen and (min-width:480px) and (max-width:661px){
+    .product-section{ gap: 20px !important; }
+}

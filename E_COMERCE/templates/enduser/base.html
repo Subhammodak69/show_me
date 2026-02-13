@@ -391,6 +391,32 @@ document.addEventListener('DOMContentLoaded', function() {
         subNav.style.display = subNav.style.display === 'flex' ? 'none' : 'flex';
     };
 });
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        const button = e.target.closest('.btn');
+        if (button) {
+            // Multiple effects: fade + scale down + shadow
+            button.style.transition = 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)';
+            button.style.opacity = '0.7';
+            button.style.transform = 'scale(0.95)';
+            button.style.filter = 'brightness(0.9)';
+            button.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            
+            // Restore smoothly
+            setTimeout(() => {
+                button.style.opacity = '1';
+                button.style.transform = 'scale(1)';
+                button.style.filter = 'brightness(1)';
+                button.style.boxShadow = '';
+            }, 150);
+        }
+    });
+});
+
 </script>
 
 </body>
