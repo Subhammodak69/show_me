@@ -15,6 +15,7 @@ class Size(Enum):
     L = 3
     XL = 4
     XXL = 5
+    XXXL = 6
     SIZE_26 = 13
     SIZE_28 = 14
     SIZE_30 = 15

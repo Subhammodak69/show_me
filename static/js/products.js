@@ -28,7 +28,6 @@ async function loadWishlistProducts() {
         document.querySelectorAll('.wishlist-icon').forEach(icon => {
             icon.classList.remove('bi-heart-fill');
             icon.classList.add('bi-heart');
-            icon.style.color = 'red';
             icon.title = 'Add to wishlist';
         });
         
@@ -66,7 +65,6 @@ window.toggle_wishlist_create_update = async function(item_id) {
         if (isCurrentlyLiked) {
             icon.classList.remove('bi-heart-fill');
             icon.classList.add('bi-heart');
-            icon.style.color = 'red';
             icon.title = 'Add to wishlist';
         } else {
             icon.classList.remove('bi-heart');
@@ -110,7 +108,6 @@ window.toggle_wishlist_create_update = async function(item_id) {
             } else {
                 icon.classList.remove('bi-heart-fill');
                 icon.classList.add('bi-heart');
-                icon.style.color = 'red';
                 icon.title = 'Add to wishlist';
             }
         });

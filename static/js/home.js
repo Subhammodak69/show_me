@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="card p-2 text-center position-relative" style="min-width: 150px; max-width: 150px; height: 270px; flex: 0 0 150px;">
             <i class="bi bi-heart position-absolute top-0 end-0 m-2 wishlist-icon"
                data-product-id="${item.id}"
-               style="cursor:pointer;color: red;width: 30px;height: 30px;"
+               style="cursor:pointer;width: 30px;height: 30px;display: flex;justify-content: center;align-items: center;background: aliceblue;border-radius: 50%;"
                 onclick="${wishlistOnClick}"></i>
 
             <div style="margin: auto;width: 130px;height: 150px;" class="d-flex justify-content-center align-items-center">
@@ -272,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Remove from wishlist
                 icon.classList.remove('bi-heart-fill');
                 icon.classList.add('bi-heart');
-                icon.style.color = 'red';
             } else {
                 // Add to wishlist
                 icon.classList.remove('bi-heart');
@@ -300,7 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     icon.classList.remove('bi-heart-fill');
                     icon.classList.add('bi-heart');
-                    icon.style.color = 'red';
                 }
             });
         });
