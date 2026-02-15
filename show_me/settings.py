@@ -92,7 +92,15 @@ DATABASES = {
         'OPTIONS': {
             'sslmode': 'require' if not DEBUG else 'prefer',
         },
-    }
+    },
+    # 'local': { 
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'show_me_db',
+    #     'USER': 'postgres',
+    #     'PASSWORD': '2025',
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
 }
 
 # Custom User Model

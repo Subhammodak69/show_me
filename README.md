@@ -23,3 +23,19 @@
 
 # Runserver:
 => python manage.py runserver
+
+# For Data Recover into Local postgresql:
+=> Uncomment This code:
+
+    # 'local': { 
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'show_me_db',
+    #     'USER': 'postgres',
+    #     'PASSWORD': '2025',
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
+
+=> Then run this command in terminal:
+    python manage.py sync_all --dry-run 
+    python manage.py sync_all
