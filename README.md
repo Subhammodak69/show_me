@@ -27,14 +27,52 @@
 # For Data Recover into Local postgresql:
 => Uncomment This code:
 
-    # 'local': { 
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': 'show_me_db',
-    #     'USER': 'postgres',
-    #     'PASSWORD': '2025',
-    #     'HOST': 'localhost',
-    #     'PORT': '5432',
-    # }
+    # This is for local db to cloud db transaction
+     DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'show_me_db',
+            'USER': 'postgres',
+            'PASSWORD': '2025',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        },
+        'local': { 
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST', default='localhost'),
+            'PORT': env('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': 'require' if not DEBUG else 'prefer',
+            },
+        }
+    }
+
+    # This is for cloud db to local db transaction
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST', default='localhost'),
+            'PORT': env('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': 'require' if not DEBUG else 'prefer',
+            },
+        },
+        'local': { 
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'show_me_db',
+            'USER': 'postgres',
+            'PASSWORD': '2025',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+
 
 => Then run this command in terminal:
     python manage.py sync_all --dry-run 
