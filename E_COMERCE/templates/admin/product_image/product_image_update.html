@@ -1,0 +1,145 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Update Product Image | E_COMERCE{% endblock %}
+{% block content %}
+<div class="mb-3 text-center">
+    <h2 class="mb-4">Update Product Image</h2>
+</div>
+<div class="container" style="padding: 40px; max-width: 600px; background: whitesmoke; border-radius: 10px;">
+    <form id="updateImageForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="image_id" value="{{ image.id }}">
+        
+        <div class="mb-3">
+            <label for="product_item" class="form-label">Product</label>
+            <select class="form-control" id="product_item" name="product_item" required>
+                {% for product in products %}
+                <option value="{{ product.id }}" {% if product.id == image.product_item.id %}selected{% endif %}>
+                    {{ product.name }} (ID: {{ product.id }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="photo" class="form-label">New Image (optional)</label>
+            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+            <div class="form-text">Upload new image to replace current one (JPG, PNG, max 5MB)</div>
+            
+            <!-- CURRENT IMAGE -->
+            {% if image.photo_url %}
+            <div class="mt-3">
+                <label class="form-label fw-bold">Current Image:</label>
+                <div class="text-center p-3 border rounded bg-light">
+                    <img src="{{ image.photo_url }}" 
+                         alt="Current Image" 
+                         style="max-width: 250px; max-height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745;">
+                    <div class="mt-2 small text-success">
+                        <i class="fas fa-check-circle me-1"></i>Currently active
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- NEW IMAGE PREVIEW -->
+            <div id="newImagePreviewContainer" class="mt-3" style="display: none;">
+                <label class="form-label fw-bold text-primary">New Image Preview:</label>
+                <div class="text-center p-3 border rounded bg-light">
+                    <img id="newImagePreview" src="" 
+                         alt="New Image Preview" 
+                         style="max-width: 250px; max-height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #007bff;">
+                    <div id="newFileInfo" class="mt-2 small text-primary"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="is_active" name="is_active" 
+                   value="true" {% if image.is_active %}checked{% endif %}>
+            <label class="form-check-label" for="is_active">Active Image</label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Update Image</button>
+        <a href="{% url 'admin_productimage_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+
+<script>
+document.getElementById('updateImageForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+
+    const formData = new FormData(this);
+
+    try {
+        const response = await fetch("{% url 'admin_productimage_update' image.id %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').getAttribute('content')
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            window.location.href = "{% url 'admin_productimage_list' %}";
+        } else {
+            alert(result.error || "Failed to update image");
+        }
+    } catch (error) {
+        alert("Error: " + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Update Image';
+    }
+});
+
+// ✅ NEW IMAGE PREVIEW FUNCTIONALITY
+document.getElementById('photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewContainer = document.getElementById('newImagePreviewContainer');
+    const previewImg = document.getElementById('newImagePreview');
+    const fileInfo = document.getElementById('newFileInfo');
+    
+    if (file) {
+        // Check file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size too large! Please select an image under 5MB.');
+            this.value = '';
+            return;
+        }
+        
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file (JPG, PNG, etc.).');
+            this.value = '';
+            return;
+        }
+        
+        // Show preview
+        previewContainer.style.display = 'block';
+        
+        // Create object URL for preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        // Show file info
+        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+        fileInfo.innerHTML = `
+            <strong>${file.name}</strong><br>
+            Size: ${fileSize} MB | Type: ${file.type}
+        `;
+        
+    } else {
+        // Hide preview if no file
+        previewContainer.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

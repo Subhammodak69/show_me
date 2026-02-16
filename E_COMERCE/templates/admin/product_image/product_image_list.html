@@ -1,0 +1,85 @@
+{% extends 'admin/home.html' %}
+{% load static %}
+{% block title %}Product Images | E_COMERCE{% endblock %}
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Product Images</h2>
+    <div class="mb-3 text-end">
+        <a href="{% url 'admin_productimage_create' %}" class="btn btn-success">+ Add Image</a>
+    </div>
+    <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Product Item</th>
+                <th>Image</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for image in images %}
+            <tr>
+                <td>{{ image.id }}</td>
+                <td>#{{image.product_item.id}} {{ image.product_item.product.name }}</td>
+                <td>
+                    <img src="{{ image.photo_url }}" 
+                         alt="Product Image" 
+                         class="poster-thumb"
+                         style="width:80px;height:60px;object-fit:cover;border-radius:4px;">
+                </td>
+                <td>
+                    <span id="status-badge-{{ image.id }}"
+                          class="badge {% if image.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if image.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </td>
+                <td>{{ image.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <a href="{% url 'admin_productimage_update' image.id %}" class="btn btn-sm btn-warning me-1">
+                        Update
+                    </a>
+                    <button id="toggle-btn-{{ image.id }}"
+                            class="btn btn-sm {% if image.is_active %}btn-danger{% else %}btn-success{% endif %}" 
+                            onclick="toggleImageStatus({{ image.id }}, {{ image.is_active|yesno:'true,false' }})">
+                        {% if image.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No images found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+async function toggleImageStatus(imageId, currentStatus) {
+    const response = await fetch(`/admin/productimage/toggle-status/${imageId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').getAttribute('content')
+        },
+        body: JSON.stringify({ is_active: !currentStatus })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        const newStatus = result.new_status;
+        const badge = document.getElementById(`status-badge-${imageId}`);
+        badge.textContent = newStatus ? 'Active' : 'Inactive';
+        badge.className = `badge ${newStatus ? 'bg-success' : 'bg-danger'}`;
+        const button = document.getElementById(`toggle-btn-${imageId}`);
+        button.textContent = newStatus ? 'Deactivate' : 'Activate';
+        button.className = `btn btn-sm ${newStatus ? 'btn-danger' : 'btn-success'}`;
+        button.setAttribute('onclick', `toggleImageStatus(${imageId}, ${newStatus})`);
+    } else {
+        alert(result.error || 'Failed to update image status.');
+    }
+}
+</script>
+{% endblock %}

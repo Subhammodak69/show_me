@@ -51,9 +51,14 @@ urlpatterns = [
     path('admin/productitem/<int:productitem_id>/update/',views.ProductItemUpdateView.as_view(), name='productitem_update'),
     path('admin/productitem/toggle-status/<int:productitem_id>/',views.ProductItemToggleStatusView.as_view(), name='productitem_toggle_status'),
 
+    #admin Product images
+    path('admin/productimage/', views.AdminProductimageListView.as_view(), name='admin_productimage_list'),
+    path('admin/productimage/create/', views.AdminProductimageCreateView.as_view(), name='admin_productimage_create'),
+    path('admin/productimage/update/<int:pk>/', views.AdminProductimageUpdateView.as_view(), name='admin_productimage_update'),
+    path('admin/productimage/toggle-status/<int:pk>/', views.AdminProductimageToggleStatusView.as_view(), name='admin_productimage_toggle_status'),
 
 
-    #admin poster
+    #admin poster 
     path('admin/poster/',views.PosterListView.as_view(), name='admin_poster_list'),
     path('admin/poster/create/',views.AdminPosterCreateView.as_view(), name='admin_poster_create'),
     path('admin/poster/update/<int:poster_id>/',views.AdminPosterUpdateView.as_view(), name='admin_poster_update'),

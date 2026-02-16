@@ -11,4 +11,5 @@ from .orderitem_service import *
 from .poster_service import *
 from .offer_service import *
 from .product_info_service import *
+from .product_image_service import *
 

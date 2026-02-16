@@ -16,3 +16,4 @@ from .poster_view import *
 from .offer_view import *
 from .rating_view import *
 from .item_info_view import *
+from .product_image_view import *
