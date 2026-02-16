@@ -190,45 +190,80 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ===============================
-      🔥 NEW: RELATED ITEMS CLICK HANDLER
-    ================================ */
+    🔥 DEBUGGED & FIXED: RELATED ITEMS HANDLER
+    =============================== */
+
+    let currentlySelectedRelatedItem = null; // Track selected thumbnail
 
     function handleRelatedItemClick(item) {
         const color = item.dataset.color;
         const size = item.dataset.size;
         const image = item.dataset.image;
 
-        // Update main image immediately
+        // 1. Update main image IMMEDIATELY
         if (productImage && image) {
             productImage.src = image;
         }
 
-        // Auto-select color if available
+        // 2. 🔥 FIXED COLOR SELECTION
         if (color && colorSelect) {
+            // Force create option if missing
+            let colorOption = Array.from(colorSelect.options).find(opt => opt.value === color);
+            if (!colorOption) {
+                colorSelect.innerHTML = `<option value="">Select Color</option>` + 
+                    Array.from(colorSelect.options).map(opt => opt.outerHTML).join('') +
+                    `<option value="${color}" selected>${color}</option>`;
+                colorOption = colorSelect.querySelector(`option[value="${color}"]`);
+            }
+            
+            // Set value + visual selection
             colorSelect.value = color;
-            colorSelect.dispatchEvent(new Event('change')); // Trigger color change logic
+            
+            // Force visual update
+            colorSelect.style.backgroundColor = '#fff3cd'; // Yellow highlight
+            setTimeout(() => colorSelect.style.backgroundColor = '', 1000);
+            
+            // Trigger color change (image + sizes)
+            setTimeout(() => {
+                colorSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }, 50);
         }
 
-        // Auto-select size if available (after color change settles)
-        setTimeout(() => {
-            if (size && sizeSelect) {
-                sizeSelect.value = size;
-                sizeSelect.dispatchEvent(new Event('change')); // Trigger size change logic
-            }
-        }, 100);
+        // 3. Auto-select size (after color loads sizes)
+        if (size && sizeSelect && color) {
+            setTimeout(() => {
+                const sizeOption = Array.from(sizeSelect.options).find(opt => opt.value === size);
+                if (sizeOption) {
+                    sizeSelect.value = size;
+                    sizeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                } 
+            }, 150);
+        }
     }
 
-    // Add click listeners to all related items
-    relatedItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // Visual feedback
-            relatedItems.forEach(i => i.style.borderColor = '#dee2e6');
-            this.style.borderColor = '#ffc107';
-            this.style.borderWidth = '2px';
+    // 🔥 FIXED BORDER: Use !important + higher specificity
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.related-item')) {
+            const item = e.target.closest('.related-item');
             
-            handleRelatedItemClick(this);
-        });
+            // Reset ALL related items borders with !important
+            document.querySelectorAll('.related-item').forEach(i => {
+                i.style.setProperty('border-color', '#dee2e6', 'important');
+                i.style.setProperty('border-width', '1px', 'important');
+                i.style.boxShadow = 'none';
+            });
+            
+            // 🔥 HIGHLIGHT clicked item with !important + THICKER border
+            item.style.setProperty('border-color', '#ffc107', 'important');
+            item.style.setProperty('border-width', '3px', 'important');
+            item.style.setProperty('box-shadow', '0 0 0 2px rgba(255,193,7,0.25)', 'important');
+            
+            currentlySelectedRelatedItem = item;
+            
+            handleRelatedItemClick(item);
+        }
     });
+
 
     /* ===============================
       INITIAL LOAD

@@ -90,6 +90,7 @@ def get_product_item_related_product_items(product_item_id):
         {
             'id': item['id'],
             'photo': item['photo_url'],
+            'display_color':Color(item['color']).name
         }
         for item in items
     ]

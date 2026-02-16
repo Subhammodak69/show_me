@@ -63,3 +63,18 @@ class AdminProductimageToggleStatusView(AdminRequiredMixin, View):
             return JsonResponse({'success': True, 'new_status': new_status})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ApiExtraProductImagesView(View):
+    def get(self, request,product_item_id):
+        try:
+            extra_product_images = product_image_service.get_extra_product_images(product_item_id) 
+            return JsonResponse({
+                'success': True, 
+                'extra_product_images': extra_product_images
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False, 
+                'error': str(e)
+            })

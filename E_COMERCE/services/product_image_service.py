@@ -94,3 +94,21 @@ def toggle_image_status(image_id):
         return image.is_active
     except ProductImage.DoesNotExist:
         raise Exception("Image not found.")
+
+
+def get_extra_product_images(product_item_id):
+    """Get active product images for dynamic showcase"""
+    product_item = ProductItem.objects.get(id = product_item_id,is_active = True)
+    images = ProductImage.objects.filter(
+        is_active=True,
+        product_item = product_item
+    )
+    
+    extra_product_images = []
+    for img in images:
+        extra_product_images.append({
+            'id': img.id,
+            'photo_url': img.photo_url,
+        })
+    
+    return extra_product_images

@@ -11,9 +11,26 @@
   <!-- Product Main Content (unchanged) -->
   <div class="row justify-content-between">
     <!-- Main Product Image + Related Items -->
-    <div class="col-md-5">
+    <div class="col-md-5 d-flex">
       <div class="border rounded shadow-sm p-2 mb-3" style="margin: auto;max-width: 400px;max-height: 600px;height: 100%;">
         <div class="position-relative w-100">
+          <div class="rounded position-absolute">
+            <div class="gap-2 mt-2" id="extraProductsContainer">
+              <input type="hidden" id="product_item_id" value="{{product_item_data.id}}"/>
+                <!-- Dynamic content loads here -->
+                <div class="rounded">
+                  <div class="gap-2" id="extraProductsContainer">
+                      <!-- 2 Skeleton Loaders -->
+                      <div class="skeleton-item mx-1 mb-2">
+                          <div class="skeleton-image"></div>
+                      </div>
+                      <div class="skeleton-item mx-1 mb-2">
+                          <div class="skeleton-image"></div>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </div>
           <i class="bi bi-heart wishlist-icon" 
             data-product-id="{{ product_item_data.id }}"
             style="align-items: center; display: flex; justify-content: center; width: 40px; height: 40px; font-size:25px; border-radius: 50%; background: white; position: absolute; right: 10px; top: 10px; cursor: pointer; z-index: 10; transition: all 0.2s ease;"
@@ -23,7 +40,7 @@
               onclick="window.location.href='{% url 'log_in' %}'"
             {% endif %}
             title="Add to wishlist"></i>
-          <img src="{{ product_item_data.photo }}" 
+          <img src="{{ product_item_data.photo }}" id="mainPic"
               alt="{{ product_item_data.product_name }}" 
               data-original-src="{{ product_item_data.photo }}" 
               data-original-alt="{{ product_item_data.product_name }}"
@@ -218,14 +235,7 @@
 
 <!-- Scripts & Styles -->
 <script src="{% static 'js/product_details.js' %}"></script>
-<style>
-  @media(max-width:440px){
-    .pro-cards{
-      max-width:150px!important;
-    }
-  }
-</style>
-
+<script src="{% static 'js/extra_images_show.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Fix review stars
@@ -240,4 +250,51 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<style>
+  @media(max-width:440px){
+    .pro-cards{
+      max-width:150px!important;
+    }
+  }
+</style>
+<style>
+/* Skeleton Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-item {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-image {
+    width: 70px;
+    height: 50px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    border-radius: 8px;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-text {
+    height: 12px;
+    width: 70%;
+    margin-top: 4px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+</style>
+
 {% endblock %}

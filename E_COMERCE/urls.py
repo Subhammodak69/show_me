@@ -31,6 +31,7 @@ urlpatterns = [
     path('review/create/',views.RatingCreateView.as_view(),name = 'rating_create'),
     path('product/toggle-status/<int:product_id>/', views.ProductToggleStatusView.as_view(), name='product_toggle'),
     path('category/products/search/', views.ApiSearchListView.as_view(), name='category_product_search'),
+    path('api/extra-product-images/<int:product_item_id>/', views.ApiExtraProductImagesView.as_view(), name='api_extra_product_images'),
     
     #category
     path('admin/',views.AdminHomeView.as_view(),name='admin'),
