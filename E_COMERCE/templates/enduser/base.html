@@ -23,7 +23,7 @@
   <!-- Link to custom CSS -->
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <!-- Link to custom JS -->
-   <!-- ADD HTMX SCRIPT -->
+  <!-- ADD HTMX SCRIPT -->
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <script defer src="{% static 'js/base.js' %}"></script>
   <script defer src="{% static 'js/auto_reload.js' %}"></script>
@@ -31,7 +31,7 @@
 </head>
 
 <body>
-<!-- Loader -->
+  <!-- Loader -->
   <div class="loading" style="display:none;">
     <div id="loaderOverlay">
       <div class="spinner"></div>
@@ -39,7 +39,8 @@
   </div>
 
   <div class="main-container" style="background: #ffffff; flex-direction: column; display: flex">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary" style="padding: 0px !important">
+    <nav class="navbar navbar-expand-lg"
+      style="padding: 0px !important; background: linear-gradient(120deg, #ffffff 0%, #f8faff 100%); border-bottom: 1px solid rgba(99, 102, 241, 0.15); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);">
       <div class="container-fluid" style="padding: 5px 0px 5px 10px;max-width: 1400px;">
         <div id="logo-wrp" class="w-100 d-flex justify-content-between align-items-center" style="gap:60px;">
           <div class="d-flex align-items-center" style="gap: 40px;width: 100%;">
@@ -48,7 +49,7 @@
               <li class="nav-item dropdown">
                 <a class="nav-link" id="dropdownToggleBtn" data-bs-toggle="tooltip" data-bs-placement="bottom"
                   title="Category" style="padding: 0px !important; font-size: 25px; margin-left: 20px">
-                  <i class="bi bi-list"></i>
+                  <i class="bi bi-list" style="color:#2196F3;"></i>
                 </a>
                 <ul class="dropdown-menu custom-dropdown-menu overflow-auto" style="top: 126%; max-height: 80vh">
                   <li>
@@ -66,7 +67,8 @@
               </li>
             </ul>
 
-            <div class="navbar-brand" style="font-size: 30px; color: #21d6f9 !important" onclick="window.location.href='/'">
+            <div class="navbar-brand" style="font-size: 30px; color: #007bff !important"
+              onclick="window.location.href='/'">
               <em><b>Show Me</b></em>
             </div>
           </div>
@@ -74,22 +76,22 @@
           <!-- Desktop Search -->
           <input type="text" id="searchInputDesktop" class="form-control desktop-search" placeholder="Search...">
 
-          <!-- Search Icon for Mobile -->
-          <i class="bi bi-search search-icon" id="searchToggleIcon"></i>
-
           <!-- Right icons -->
           <div class="d-flex align-items-center" style="padding: 0px 10px; gap:10px;">
-            <div class="cart-link d-flex align-items-center text-white" onclick="window.location.href='/'"
+            <!-- Search Icon for Mobile -->
+            <i class="bi bi-search search-icon" id="searchToggleIcon"></i>
+
+            <div class="cart-link d-flex align-items-center" onclick="window.location.href='/'"
               style="cursor: pointer; margin-right: 20px; gap: 10px">
               <i class="bi bi-house" style="font-size: 20px;"></i>
               <span style="font-size: 14px; white-space:nowrap;">Home</span>
             </div>
-            <div class="cart-link d-flex align-items-center text-white tq1" onclick="window.location.href='/orders/'"
+            <div class="cart-link d-flex align-items-center tq1" onclick="window.location.href='/orders/'"
               style="cursor: pointer; margin-right: 20px; gap: 10px">
               <i class="bi bi-truck" style="font-size: 20px;"></i>
               <span style="font-size: 14px; white-space:nowrap;">Orders</span>
             </div>
-            <div class="cart-link d-flex align-items-center text-white" onclick="window.location.href='/cart/'"
+            <div class="cart-link d-flex align-items-center" onclick="window.location.href='/cart/'"
               style="cursor: pointer; margin-right: 20px">
               <i class="bi bi-cart3 me-2" style="font-size: 20px"></i>
               <span style="font-size: 14px">Cart</span>
@@ -113,27 +115,32 @@
                       class="bi bi-person-circle"></i> My Profile</a></li>
                 <li><a class="dropdown-item d-flex align-items-center gap-2" href="/orders/"><i
                       class="bi bi-box-seam"></i> Orders</a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="/cart/"><i class="bi bi-cart3 me-2"></i> Cart</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="/cart/"><i
+                      class="bi bi-cart3 me-2"></i> Cart</a></li>
                 <li><a class="dropdown-item d-flex align-items-center gap-2" href="/wishlist/"><i
                       class="bi bi-heart"></i> Wishlist</a></li>
-                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"><i class="bi bi-gear"></i>
+                    Settings</a></li>
                 <li>
                   <hr class="dropdown-divider" />
                 </li>
-          
+
                 <form action="{% url 'log_out' %}" method="POST">{% csrf_token %}
-                  <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                  <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i>
+                    Logout</button>
                 </form>
               </ul>
             </div>
             {% else %}
             <div style="display: flex; gap: 10px;">
               <button type="button" class="btn btn-primary lg-btnn d-flex align-items-center gap-2"
-                onclick="window.location.href='/login/'" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Log In">
+                onclick="window.location.href='/login/'" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                title="Log In">
                 <i class="bi bi-box-arrow-in-right"></i>
               </button>
               <button type="button" class="btn btn-secondary lg-btnn d-flex align-items-center gap-2"
-                onclick="window.location.href='/signin/'" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Sign In">
+                onclick="window.location.href='/signin/'" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                title="Sign In">
                 <i class="bi bi-person-plus"></i>
               </button>
             </div>
@@ -146,7 +153,7 @@
       <div class="mobile-search-container d-flex justify-content-center" style="padding: 0px;">
         <input type="text" id="searchInputMobile" class="form-control mobile-search" placeholder="Search...">
       </div>
-      
+
       <div id="error" class="alert alert-danger" style="display:none;right: 0;top: 110px;position: fixed;">
 
       </div>
@@ -174,27 +181,28 @@
     </div>
 
     <footer class="bg-dark text-white pt-5 pb-4 mt-4">
-      <div class="container text-md-left w-100"style="max-width:1400px;">
+      <div class="container text-md-left w-100" style="max-width:1400px;">
         <div class="row">
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
             <h5 class="text-uppercase fw-bold">show_me</h5>
-            <p>Discover the latest trends in fashion with <strong>show_me</strong>. Shop clothes, accessories, and more with confidence and style.</p>
+            <p>Discover the latest trends in fashion with <strong>show_me</strong>. Shop clothes, accessories, and more
+              with confidence and style.</p>
             <p><i class="bi bi-telephone-fill me-2"></i> +91 6294258762</p>
             <p><i class="bi bi-envelope-fill me-2"></i> showme22k@gmail.com</p>
           </div>
 
           <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mb-4">
             <h5 class="text-uppercase fw-bold">Categories</h5>
-            <span id="sidebar-category-list"></span>  <!-- Unique ID -->
+            <span id="sidebar-category-list"></span> <!-- Unique ID -->
           </div>
 
           <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-4">
             <div>
               <h5 class="text-uppercase fw-bold">Join Our Community</h5>
               <form>
-                
-                <button type="button" 
-                  onclick="window.open('https://chat.whatsapp.com/EwZy2Ma6rlgDIoJyXop7iH', '_blank')" 
+
+                <button type="button"
+                  onclick="window.open('https://chat.whatsapp.com/EwZy2Ma6rlgDIoJyXop7iH', '_blank')"
                   class="btn btn-outline-light btn-sm w-100">
                   JOIN
                 </button>
@@ -214,7 +222,9 @@
           <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-md-0 mb-4">
             <h5 class="text-uppercase fw-bold">Visit Us</h5>
             <div class="ratio ratio-16x9">
-              <iframe src="https://maps.google.com/maps?q=kolkata%20shopping&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed" width="100%" height="150" style="border: 0" allowfullscreen="" loading="lazy"></iframe>
+              <iframe
+                src="https://maps.google.com/maps?q=kolkata%20shopping&amp;t=&amp;z=13&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+                width="100%" height="150" style="border: 0" allowfullscreen="" loading="lazy"></iframe>
             </div>
           </div>
         </div>
@@ -238,22 +248,18 @@
     </footer>
   </div>
   <style>
-    .dropdown-item{
-      color:white;
-    }
-
-  .cart-link.active,
+    .cart-link.active,
     #logo-wrp .d-flex.align-items-center.active {
-        background: rgba(33, 214, 249, 0.2) !important;
-        border-radius: 12px !important;
-        color: #21d6f9 !important;
-        transition: all 0.3s ease;
-        padding: 12px 20px;
+      background: rgba(33, 214, 249, 0.2) !important;
+      border-radius: 5px !important;
+      color: #283593 !important;
+      transition: all 0.3s ease;
+      padding: 5px 15px;
     }
 
     .cart-link.active i,
     #logo-wrp .d-flex.align-items-center.active i {
-        color: #21d6f9 !important;
+      color: #283593 !important;
     }
 
     #SubNav .nav-item.active {
@@ -263,161 +269,165 @@
     }
 
     #SubNav .nav-item {
-        transition: all 0.3s ease;
-        padding: 10px 20px;
+      transition: all 0.3s ease;
+      padding: 10px 20px;
     }
 
     #SubNav .nav-item:hover {
-        background: rgba(33, 214, 249, 0.1);
-        border-radius: 8px;
+      background: rgba(33, 214, 249, 0.1);
+      border-radius: 8px;
     }
 
     /* Responsive */
     @media (max-width: 870px) {
-        .cart-link {
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        #SubNav {
-            display: flex !important;
-            flex-wrap: wrap;
-            gap: 5px;
-            background: white;
-            border-top: 1px solid #eee;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+      .cart-link {
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      #SubNav {
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 5px;
+        background: white;
+        border-top: 1px solid #eee;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
     }
 
     /* Alerts positioning */
-    #error, #success {
-        z-index: 9999;
-        border-radius: 8px;
-        padding: 12px 20px;
-        max-width: 400px;
+    #error,
+    #success {
+      z-index: 9999;
+      border-radius: 8px;
+      padding: 12px 20px;
+      max-width: 400px;
     }
 
     /* Hover effects */
     .cart-link:hover {
-        background: rgba(255,255,255,0.1);
-        border-radius: 8px;
-        transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      transform: translateY(-1px);
     }
-  @media(max-width:480px){     /* ✅ Correct syntax */
-    #SubNav .nav-item {
-        padding:8px!important;
+
+    @media(max-width:480px) {
+
+      /* ✅ Correct syntax */
+      #SubNav .nav-item {
+        padding: 8px !important;
+      }
     }
-}
   </style>
   <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Current page path (Django template)
-    const currentPath = window.location.pathname;
-    
-    // 1. DESKTOP NAVBAR - Active states for cart/home/orders links
-    function setDesktopActive() {
+    document.addEventListener('DOMContentLoaded', function () {
+      // Current page path (Django template)
+      const currentPath = window.location.pathname;
+
+      // 1. DESKTOP NAVBAR - Active states for cart/home/orders links
+      function setDesktopActive() {
         // Target the clickable cart/home/orders divs
         const navItems = document.querySelectorAll('.cart-link, #logo-wrp .d-flex.align-items-center');
-        
+
         navItems.forEach(item => {
-            const href = item.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
-            if (href === currentPath) {
-                item.classList.add('active');
-                item.style.background = 'rgba(33, 214, 249, 0.2)';
-                item.style.borderRadius = '8px';
-                item.style.color = '#21d6f9 !important';
-            } else {
-                item.classList.remove('active');
-            }
+          const href = item.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+          if (href === currentPath) {
+            item.classList.add('active');
+            item.style.background = 'rgba(33, 214, 249, 0.2)';
+            item.style.borderRadius = '8px';
+            item.style.color = '#21d6f9 !important';
+          } else {
+            item.classList.remove('active');
+          }
         });
-    }
-    
-    // 2. MOBILE SUB-NAVBAR - Active states
-    function setMobileSubNavActive() {
+      }
+
+      // 2. MOBILE SUB-NAVBAR - Active states
+      function setMobileSubNavActive() {
         const subNavItems = document.querySelectorAll('#SubNav .nav-item');
         subNavItems.forEach(item => {
-            const href = item.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
-            if (href === currentPath) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
+          const href = item.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+          if (href === currentPath) {
+            item.classList.add('active');
+          } else {
+            item.classList.remove('active');
+          }
         });
-    }
-    
-    // 3. RESPONSIVE - Check screen size and apply active states
-    function updateActiveStates() {
+      }
+
+      // 3. RESPONSIVE - Check screen size and apply active states
+      function updateActiveStates() {
         setDesktopActive();
         setMobileSubNavActive();
-    }
-    
-    // Initial load
-    updateActiveStates();
-    
-    // Update on resize (for responsive behavior)
-    window.addEventListener('resize', updateActiveStates);
-    
-    // 4. GLOBAL ALERT FUNCTIONS
-    window.showSuccess = function(message) {
+      }
+
+      // Initial load
+      updateActiveStates();
+
+      // Update on resize (for responsive behavior)
+      window.addEventListener('resize', updateActiveStates);
+
+      // 4. GLOBAL ALERT FUNCTIONS
+      window.showSuccess = function (message) {
         const alert = document.getElementById('success');
         if (!alert.querySelector('span')) {
-            alert.innerHTML = '<span></span>';
+          alert.innerHTML = '<span></span>';
         }
         alert.querySelector('span').textContent = message;
         alert.style.display = 'block';
         setTimeout(() => alert.style.display = 'none', 5000);
-    };
-    
-    window.showError = function(message) {
+      };
+
+      window.showError = function (message) {
         const alert = document.getElementById('error');
         if (!alert.querySelector('span')) {
-            alert.innerHTML = '<span></span>';
+          alert.innerHTML = '<span></span>';
         }
         alert.querySelector('span').textContent = message;
         alert.style.display = 'block';
         setTimeout(() => alert.style.display = 'none', 5000);
-    };
-    
-    // 5. LOGOUT FUNCTION (Django)
-    window.Logout = function() {
+      };
+
+      // 5. LOGOUT FUNCTION (Django)
+      window.Logout = function () {
         // Trigger the logout form in dropdown
         document.querySelector('form[action*="log_out"]').submit();
-    };
-    
-    // 6. MOBILE SUB-NAV TOGGLE (if needed)
-    window.toggleSubNav = function() {
+      };
+
+      // 6. MOBILE SUB-NAV TOGGLE (if needed)
+      window.toggleSubNav = function () {
         const subNav = document.getElementById('SubNav');
         subNav.style.display = subNav.style.display === 'flex' ? 'none' : 'flex';
-    };
-});
+      };
+    });
 
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.addEventListener('click', function(e) {
+    document.addEventListener('DOMContentLoaded', function () {
+      document.addEventListener('click', function (e) {
         const button = e.target.closest('.btn');
         if (button) {
-            // Multiple effects: fade + scale down + shadow
-            button.style.transition = 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)';
-            button.style.opacity = '0.7';
-            button.style.transform = 'scale(0.95)';
-            button.style.filter = 'brightness(0.9)';
-            button.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-            
-            // Restore smoothly
-            setTimeout(() => {
-                button.style.opacity = '1';
-                button.style.transform = 'scale(1)';
-                button.style.filter = 'brightness(1)';
-                button.style.boxShadow = '';
-            }, 150);
-        }
-    });
-});
+          // Multiple effects: fade + scale down + shadow
+          button.style.transition = 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)';
+          button.style.opacity = '0.7';
+          button.style.transform = 'scale(0.95)';
+          button.style.filter = 'brightness(0.9)';
+          button.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
 
-</script>
+          // Restore smoothly
+          setTimeout(() => {
+            button.style.opacity = '1';
+            button.style.transform = 'scale(1)';
+            button.style.filter = 'brightness(1)';
+            button.style.boxShadow = '';
+          }, 150);
+        }
+      });
+    });
+
+  </script>
 
 </body>
 
